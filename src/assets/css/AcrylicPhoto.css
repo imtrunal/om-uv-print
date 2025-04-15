@@ -1,0 +1,339 @@
+body {
+    user-select: none;
+}
+
+.ap-container {
+    max-width: 70%;
+    margin: 0 auto;
+    height: auto;
+}
+
+.ap-preview-container {
+    position: relative;
+    width: 100%;
+    background: #f5f5f5;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    background-image: url(https://omgs.in/wp-content/uploads/2021/02/wall-c.jpg);
+}
+
+.ap-size-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.ap-size-btn {
+    padding: 8px 8px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+    border-radius: 15%;
+    height: 5%;
+    display: inline-block;
+}
+
+.ap-shape-btn.hidden {
+    display: none;
+}
+
+.ap-size-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.ap-image-container {
+    width: 500px;
+    height: 675px;
+    position: relative;
+    aspect-ratio: 12/9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    background: transparent;
+    border: none;
+    margin-top: 1rem;
+}
+
+.ap-preview-image {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    object-fit: fill;
+}
+
+.ap-image-container.default::before {
+    content: '\f03e';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 36px;
+    color: #bbb;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.ap-shape-options {
+    margin-top: 2%;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+}
+
+.ap-border-colors {
+    right: 10px;
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.ap-color-btn {
+    width: 40px;
+    height: 20px;
+    font-size: 15px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.ap-color-btn:hover {
+    transform: scale(1.1);
+}
+
+.ap-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+    align-items: center;
+}
+
+.ap-download {
+    display: none;
+}
+
+.ap-share {
+    display: none;
+}
+
+.ap-add-to-cart {
+    display: none;
+}
+
+.ap-download:hover {
+    background: #f0f0f0;
+    font-size: 20px;
+    color: #000787;
+    border: 1px solid #000787;
+}
+
+#fileInput {
+    display: none;
+}
+
+.ap-size-indicator {
+    position: absolute;
+    background: black;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 10px;
+}
+
+.ap-width-indicator {
+    top: 7px;
+    left: 40%;
+    transform: translateX(-50%);
+}
+
+.ap-height-indicator {
+    left: -30px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+}
+
+/* ===================shape================ */
+
+.ap-shape-btn {
+    width: 30px;
+    height: 25px;
+    background: #C1995D;
+    border: none;
+    cursor: pointer;
+    box-shadow: 1px 1px 5px #808080;
+}
+
+.ap-shape-btn.ap-circle {
+    border-radius: 50%;
+    height: 30px;
+}
+
+.ap-shape-btn.ap-potrait {
+    border-radius: 0;
+    height: 40px;
+}
+
+.ap-shape-btn.ap-square {
+    border-radius: 5%;
+}
+
+.ap-shape-btn.ap-rect {
+    border-radius: 5%;
+    height: 20px;
+}
+
+.ap-shape-btn.ap-oval {
+    border-radius: 50%;
+    height: 20px;
+}
+
+.ap-shape-btn.ap-custom {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+}
+
+.ap-shape-btn.ap-custom2 {
+    border-radius: 80% 30% 30% 80% / 80% 80% 30% 30%;
+}
+
+.ap-shape-btn.ap-custom3 {
+    border-radius: 50% 50% 0 0 / 50% 50% 0 0;
+}
+
+.ap-shape-btn.ap-custom4 {
+    border-radius: 35% 0 35% 0;
+}
+
+.ap-circle-shape {
+    border-radius: 50%;
+    width: 400px;
+    height: 400px;
+}
+
+.ap-square-shape {
+    height: 400px;
+    width: 400px;
+    /* border-radius: 5%; */
+}
+
+.ap-potrait-shape {
+    height: 400px;
+    width: 250px;
+}
+
+.ap-oval-shape {
+    border-radius: 50%;
+    height: 400px;
+    width: 500px;
+}
+
+.ap-custom-shape {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    height: 400px;
+    width: 400px;
+}
+
+.ap-custom2-shape {
+    border-radius: 80% 30% 30% 80% / 80% 80% 30% 30%;
+    height: 400px;
+    width: 400px;
+}
+
+.ap-custom3-shape {
+    border-radius: 50% 50% 0 0 / 50% 50% 0 0;
+    height: 400px;
+    width: 400px;
+}
+
+.ap-custom4-shape {
+    border-radius: 35% 0 35% 0;
+    height: 400px;
+    width: 350px;
+}
+
+.ap-rect-shape {
+    /* border-radius: 5%; */
+    width: 500px;
+    height: 300px;
+}
+
+.ap-shape-btn.ap-active {
+    outline: 2px solid #000787;
+}
+
+.ap-size-btn.ap-active {
+    background-color: #000787;
+    font-weight: bold;
+    color: #f0f0f0;
+}
+
+#ap-addTextBtn {
+    background: #2F4858;
+    font-size: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+#ap-addTextBtn:hover {
+    background: #f0f0f0;
+    font-size: 20px;
+    color: #2F4858;
+    border: 1px solid #2F4858;
+}
+
+.ap-text-box {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    padding: 10px;
+}
+
+.ap-text-box {
+    position: absolute;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    color: #000;
+    padding: 5px;
+    cursor: move;
+}
+
+.ap-resize-handle {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    display: none;
+    background: transparent;
+    color: #5cb3fa;
+}
+
+.ap-rotate-handle {
+    background-color: transparent;
+    color: #5cb3fa;
+    font-size: 24px;
+    display: none;
+}
+
+#ap-textModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,289 @@
+.afm-container {
+    display: grid;
+    gap: 20px;
+    width: 90%;
+    margin: 20px auto;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.afm-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 10px;
+    background-color: #fff;
+}
+
+.afm-card img {
+    max-width: 100%;
+    height: auto;
+    border-bottom: 1px solid #ddd;
+}
+
+.afm-description {
+    margin: 10px 0;
+    font-size: 1rem;
+}
+
+.afm-card a {
+    display: inline-block;
+    text-decoration: none;
+    background-color: #000787;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.afm-card a:hover {
+    background-color: #000668;
+}
+
+@media (min-width: 1024px) {
+    .afm-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ==============Round Corners CSS =====================*/
+
+.afm-image-customization-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* height: 100vh; */
+}
+
+.afm-page-container {
+    display: flex;
+    gap: 20px;
+    background-color: #ffffff;
+    padding: 20px;
+    touch-action: none;
+    user-select: none;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    width: 80%;
+    /* Increase width */
+    max-width: 1000px;
+    /* Limit max width */
+}
+
+
+.afm-image-customization-page .afm-left {
+    flex: 1.5;
+    width: 100%;
+    height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #595A61;
+    border-right: 1px solid #ddd;
+    padding: 3%;
+    border-radius: 5%;
+
+}
+
+.afm-image-customization-page .afm-upload-box input[type="file"] {
+    display: none;
+}
+
+.afm-image-customization-page .afm-right {
+    flex: 2;
+    padding: 20px;
+}
+
+/* ==============LEFT SIDE========== */
+/* .afm-upload {
+    background: #CC0100;
+    font-size: 15px;
+    color: #fff;
+}
+
+.afm-upload:hover {
+    background: #8a0101;
+    color: #f0f0f0;
+} */
+
+/* Upload Box */
+.afm-upload-box {
+    width: 350px;
+    height: 350px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    background: transparent;
+    border-radius: 15%;
+    cursor: pointer;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2), 0 4px 6px rgba(0, 0, 0, 0.15);
+    background-color: #CCCCCC;
+}
+
+#afm-placeholderText {
+    color: #888;
+    font-size: 16px;
+    text-align: center;
+    font-size: 100px;
+    display: flex;
+}
+
+
+#afm-previewImage {
+    width: 100%;
+    display: none;
+    position: absolute;
+}
+
+.afm-text-box {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    padding: 10px;
+}
+
+.afm-text-box {
+    position: absolute;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    color: #000;
+    padding: 5px;
+    cursor: move;
+}
+
+.afm-resize-handle {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    display: none;
+    background: transparent;
+    color: #5cb3fa;
+}
+
+.afm-rotate-handle {
+    background-color: transparent;
+    color: #5cb3fa;
+    font-size: 24px;
+    display: none;
+}
+
+.afm-resize {
+    background-color: white;
+    cursor: pointer;
+    display: none;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.afm-rotate {
+    background-color: white;
+    cursor: pointer;
+    display: none;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+/* ==============RIGHT SIDE========== */
+
+.afm-row {
+    display: flex;
+    gap: 10px;
+}
+
+.afm-upload-btn {
+    background: #FF5722;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#afm-addTextBtn {
+    display: none;
+    background: #2F4858;
+    font-size: 15px;
+    border: 1px solid #f0f0f0;
+}
+
+#afm-addTextBtn:hover {
+    background: #f0f0f0;
+    color: #2F4858;
+    border: 1px solid #2F4858;
+}
+
+.afm-size-btn {
+    padding: 8px 8px;
+    background-color: #fff;
+    cursor: pointer;
+    border-radius: 15%;
+    height: 5%;
+    display: inline-block;
+    color: #212529;
+    border: 1px solid #048e1d;
+}
+
+.afm-size-btn.afm-active {
+    background-color: #048e1d;
+    font-weight: bold;
+    color: #f0f0f0;
+}
+
+.afm-thickness-btn {
+    padding: 8px 8px;
+    background-color: #fff;
+    cursor: pointer;
+    border-radius: 15%;
+    height: 5%;
+    display: inline-block;
+    color: #212529;
+    border: 1px solid #048e1d;
+}
+
+.afm-thickness-btn.afm-active {
+    background-color: #048e1d;
+    font-weight: bold;
+    color: #f0f0f0;
+}
+
+.afm-download {
+    display: none;
+    background: #000787;
+    font-size: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.afm-share {
+    display: none;
+}
+
+.afm-add-to-cart {
+    display: none;
+}
+
+.afm-download:hover {
+    background: #f0f0f0;
+    font-size: 20px;
+    color: #000787;
+    border: 1px solid #000787;
+}
+
+/* ==============Round CSS =====================*/
+.afm-rounded .afm-upload-box {
+    border-radius: 50%;
+}
+
+/* ==============Leaf CSS =====================*/
+.afm-leaf .afm-upload-box {
+    border-radius: 35% 0 35% 0;
+}
+
+/* ==============Square CSS =====================*/
+.afm-square .afm-upload-box {
+    border-radius: 0;
+}
