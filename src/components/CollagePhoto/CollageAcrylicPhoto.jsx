@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import useCartStore from "../../manage/CartStore";
 import { ImSpinner2 } from "react-icons/im";
+import html2canvas from "html2canvas";
 
 const collageLayouts = {
 
@@ -56,33 +57,567 @@ const CollageAcrylicPhoto = () => {
     console.log(collageType);
     const layout = collageLayouts[collageType];
 
+    // useEffect(() => {
+    //     const newPage = JSON.parse(sessionStorage.getItem("newPage") || "false");
+
+    //     if (newPage) {
+    //         sessionStorage.setItem("newPage", JSON.stringify(false));
+    //         window.location.reload();
+    //     }
+    //     const scriptHtml2Canvas = document.createElement("script");
+    //     scriptHtml2Canvas.src =
+    //         "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+    //     scriptHtml2Canvas.defer = true;
+    //     document.body.appendChild(scriptHtml2Canvas);
+
+    //     // Load main.js after html2canvas is loaded
+    //     scriptHtml2Canvas.onload = () => {
+    //         const scriptMain = document.createElement("script");
+    //         scriptMain.src = "/js/CollagePhoto.js";
+    //         scriptMain.defer = true;
+    //         scriptMain.type = "module";
+    //         document.body.appendChild(scriptMain);
+
+    //         return () => {
+    //             document.body.removeChild(scriptMain);
+    //             document.body.removeChild(scriptHtml2Canvas);
+    //         };
+    //     };
+    // }, [collageType]);
+    
     useEffect(() => {
-        const newPage = JSON.parse(sessionStorage.getItem("newPage") || "false");
-
-        if (newPage) {
-            sessionStorage.setItem("newPage", JSON.stringify(false));
-            window.location.reload();
-        }
-        const scriptHtml2Canvas = document.createElement("script");
-        scriptHtml2Canvas.src =
-            "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-        scriptHtml2Canvas.defer = true;
-        document.body.appendChild(scriptHtml2Canvas);
-
-        // Load main.js after html2canvas is loaded
-        scriptHtml2Canvas.onload = () => {
-            const scriptMain = document.createElement("script");
-            scriptMain.src = "/js/CollagePhoto.js";
-            scriptMain.defer = true;
-            scriptMain.type = "module";
-            document.body.appendChild(scriptMain);
-
-            return () => {
-                document.body.removeChild(scriptMain);
-                document.body.removeChild(scriptHtml2Canvas);
+        const textInput = document.getElementById('acol-textInput');
+        const addTextBtn = document.getElementById('acol-addTextBtn');
+        const deleteTextBtn = document.getElementById('acol-deleteTextBtn');
+        const resetBtn = document.getElementById('acol-reset');
+        const allSizeBtn = document.querySelectorAll('.acol-size-btn');
+        const allThicknessBtn = document.querySelectorAll('.acol-thickness-btn');
+        const cartBtn = document.getElementById('cartBtn');
+        const collagePhoto = document.querySelector('.acol-collage-frame');
+        const iminus = document.getElementById('acol-iminus');
+        const iplus = document.getElementById('acol-iplus');
+        const fontFamilyOptions = document.getElementById('acol-fontStyleSelect');
+        const shareBtn = document.getElementById('acol-shareBtn');
+        const textModal = document.querySelector('.acol-textModal');
+        const zoomRange = document.getElementById('acol-zoomRange');
+        const BASE_URL = window.BASE_URL;
+        const allTextData = [];
+        
+        let uploadedImagesCount = 0;
+        let totalImages = document.querySelectorAll(".acol-small-img, .acol-big-img").length;
+        let activeTextBox = null;
+        let activeImage = null;
+        let scale = 1;
+        let rotation = 0;
+        let currentX = 0, currentY = 0;
+    
+        // Event handlers
+        const handleSlotClick = (slot, input) => {
+            if (!input.disabled) input.click();
+        };
+    
+        const handleFileInputChange = function (input, previewImage, placeholder) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    previewImage.src = reader.result;
+                    previewImage.style.display = "block";
+                    placeholder.style.display = "none";
+                    input.disabled = true;
+                    setActiveImage(previewImage);
+                    incrementUploadedImages();
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    
+        const handlePreviewImageClick = (previewImage) => {
+            setActiveImage(previewImage);
+        };
+    
+        const handleAddTextClick = function () {
+            textModal.style.display = 'flex';
+            fontFamilyOptions.style.display = 'block';
+    
+            const textColor = document.getElementById('acol-textColor').value;
+            const newTextBox = document.createElement('div');
+            newTextBox.className = 'acol-text-box';
+            newTextBox.innerText = 'New Custom Text';
+            newTextBox.style.color = textColor;
+            newTextBox.style.wordBreak = 'break-word';
+            newTextBox.style.whiteSpace = 'pre-wrap';
+            newTextBox.style.overflow = 'hidden';
+            newTextBox.style.maxWidth = '100%';
+    
+            collagePhoto.appendChild(newTextBox);
+            attachHandles(newTextBox);
+            makeDraggable(newTextBox, { resize: 'acol-resize-handle', rotate: 'acol-rotate-handle' });
+            activeTextBox = newTextBox;
+        };
+    
+        const handleDeleteTextClick = function () {
+            if (activeTextBox) {
+                activeTextBox.remove();
+                activeTextBox = null;
+                document.getElementById('acol-textInput').value = '';
+            }
+            textModal.style.display = 'none';
+            fontFamilyOptions.style.display = 'none';
+            document.getElementById('acol-textColor').value = "#000000";
+        };
+    
+        const handleSizeBtnClick = function(btn) {
+            return function() {
+                allSizeBtn.forEach(button => button.classList.remove('acol-active'));
+                btn.classList.add('acol-active');
             };
         };
-    }, [collageType]);
+    
+        const handleThicknessBtnClick = function(btn) {
+            return function() {
+                allThicknessBtn.forEach(button => button.classList.remove('acol-active'));
+                btn.classList.add('acol-active');
+            };
+        };
+    
+        const handleIminusClick = function () {
+            if (activeTextBox) {
+                const currentFontSize = parseInt(window.getComputedStyle(activeTextBox).fontSize);
+                activeTextBox.style.fontSize = (currentFontSize - 5) + 'px';
+                attachHandles(activeTextBox);
+            }
+        };
+    
+        const handleIplusClick = function () {
+            if (activeTextBox) {
+                const currentFontSize = parseInt(window.getComputedStyle(activeTextBox).fontSize);
+                activeTextBox.style.fontSize = (currentFontSize + 5) + 'px';
+                attachHandles(activeTextBox);
+            }
+        };
+    
+        const handleResetClick = () => {
+            location.reload();
+        };
+    
+        const handleZoomRangeInput = function () {
+            scale = parseFloat(zoomRange.value);
+            updateImagePosition();
+        };
+    
+        // Initialize image slots
+        const slotCleanupFunctions = [];
+        document.querySelectorAll(".acol-small-img, .acol-big-img").forEach((slot) => {
+            const input = slot.querySelector("input");
+            const placeholder = slot.querySelector("p");
+            const previewImage = slot.querySelector("img");
+    
+            const slotClickHandler = () => handleSlotClick(slot, input);
+            const fileInputHandler = () => handleFileInputChange(input, previewImage, placeholder);
+            const previewClickHandler = () => handlePreviewImageClick(previewImage);
+    
+            slot.addEventListener("click", slotClickHandler);
+            input.addEventListener("change", fileInputHandler);
+            previewImage.addEventListener("click", previewClickHandler);
+    
+            slotCleanupFunctions.push(() => {
+                slot.removeEventListener("click", slotClickHandler);
+                input.removeEventListener("change", fileInputHandler);
+                previewImage.removeEventListener("click", previewClickHandler);
+            });
+        });
+    
+        // Add other event listeners
+        addTextBtn.addEventListener('click', handleAddTextClick);
+        deleteTextBtn.addEventListener('click', handleDeleteTextClick);
+        iminus.addEventListener('click', handleIminusClick);
+        iplus.addEventListener('click', handleIplusClick);
+        resetBtn.addEventListener('click', handleResetClick);
+        zoomRange.addEventListener('input', handleZoomRangeInput);
+    
+        // Add size and thickness button handlers
+        const sizeBtnCleanupFunctions = [];
+        allSizeBtn.forEach(btn => {
+            const handler = handleSizeBtnClick(btn);
+            btn.addEventListener('click', handler);
+            sizeBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
+        });
+    
+        const thicknessBtnCleanupFunctions = [];
+        allThicknessBtn.forEach(btn => {
+            const handler = handleThicknessBtnClick(btn);
+            btn.addEventListener('click', handler);
+            thicknessBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
+        });
+    
+        // Helper functions (same as before)
+        function incrementUploadedImages() {
+            uploadedImagesCount++;
+            if (totalImages === uploadedImagesCount) {
+                shareBtn.style.display = "block";
+                cartBtn.style.display = 'block';
+            }
+        }
+    
+        function setActiveImage(imageElement) {
+            removeExistingHandles();
+            makeDraggable(imageElement, { resize: 'acol-resize', rotate: 'acol-rotate' });
+            addRotateHandle(imageElement);
+            activeImage = imageElement;
+            
+            if (!imageElement.dataset.scale) imageElement.dataset.scale = 1;
+            if (!imageElement.dataset.rotation) imageElement.dataset.rotation = 0;
+            if (!imageElement.dataset.x) imageElement.dataset.x = 0;
+            if (!imageElement.dataset.y) imageElement.dataset.y = 0;
+    
+            scale = parseFloat(imageElement.dataset.scale);
+            rotation = parseFloat(imageElement.dataset.rotation);
+            currentX = parseFloat(imageElement.dataset.x);
+            currentY = parseFloat(imageElement.dataset.y);
+    
+            updateImagePosition();
+        }
+    
+        function removeExistingHandles() {
+            document.querySelectorAll(".acol-resize, .acol-rotate").forEach((handle) => handle.remove());
+        }
+    
+        function updateImagePosition() {
+            if (activeImage) {
+                activeImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale}) rotate(${rotation}deg)`;
+                activeImage.dataset.scale = scale;
+                activeImage.dataset.rotation = rotation;
+                activeImage.dataset.x = currentX;
+                activeImage.dataset.y = currentY;
+            }
+        }
+    
+        function addRotateHandle(imageElement) {
+            const rotateHandle = document.createElement('div');
+            rotateHandle.className = 'acol-rotate';
+            rotateHandle.innerHTML = '&#8635;';
+    
+            collagePhoto.style.position = 'relative';
+            collagePhoto.appendChild(rotateHandle);
+    
+            const rotateMouseDownHandler = function (e) {
+                e.stopPropagation();
+                const rect = imageElement.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+    
+                function rotate(e) {
+                    const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                    rotation = (angle * (180 / Math.PI) + 90) % 360;
+                    updateImagePosition();
+                }
+    
+                function stopRotating() {
+                    document.removeEventListener('mousemove', rotate);
+                    document.removeEventListener('mouseup', stopRotating);
+                }
+    
+                document.addEventListener('mousemove', rotate);
+                document.addEventListener('mouseup', stopRotating);
+            };
+    
+            rotateHandle.addEventListener('mousedown', rotateMouseDownHandler);
+    
+            return () => {
+                rotateHandle.removeEventListener('mousedown', rotateMouseDownHandler);
+                collagePhoto.removeChild(rotateHandle);
+            };
+        }
+    
+        function makeDraggable(element, handle) {
+            let isDragging = false;
+            let offsetX = 0, offsetY = 0, startX, startY;
+            let rotation = 0;
+    
+            const elementClickHandler = function () {
+                const resizeHandle = document.querySelector(`.${handle.resize}`);
+                const rotateHandle = document.querySelector(`.${handle.rotate}`);
+    
+                if (resizeHandle) resizeHandle.style.display = 'block';
+                if (rotateHandle) rotateHandle.style.display = 'block';
+    
+                element.style.border = '2px dashed #248EE6';
+            };
+    
+            const elementMouseDownHandler = function (e) {
+                const resizeHandle = document.querySelector(`.${handle.resize}`);
+                const rotateHandle = document.querySelector(`.${handle.rotate}`);
+    
+                if (resizeHandle) resizeHandle.style.display = 'block';
+                if (rotateHandle) rotateHandle.style.display = 'block';
+    
+                isDragging = true;
+                startX = e.clientX - offsetX;
+                startY = e.clientY - offsetY;
+                element.style.cursor = 'grabbing';
+    
+                const transform = window.getComputedStyle(element).transform;
+                if (transform !== 'none') {
+                    const matrix = new DOMMatrix(transform);
+                    rotation = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
+                }
+            };
+    
+            const documentMouseMoveHandler = function (e) {
+                if (!isDragging) return;
+    
+                offsetX = e.clientX - startX;
+                offsetY = e.clientY - startY;
+    
+                element.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale}) rotate(${rotation}deg)`;
+            };
+    
+            const documentMouseUpHandler = function () {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.cursor = 'move';
+                    currentX = offsetX;
+                    currentY = offsetY;
+    
+                    if (activeImage) {
+                        activeImage.dataset.x = currentX;
+                        activeImage.dataset.y = currentY;
+                    }
+                }
+            };
+    
+            const documentMouseDownHandler = function (e) {
+                if (!element.contains(e.target)) {
+                    element.style.border = 'none';
+    
+                    const resizeHandle = document.querySelector(`.${handle.resize}`);
+                    const rotateHandle = document.querySelector(`.${handle.rotate}`);
+    
+                    if (resizeHandle) resizeHandle.style.display = 'none';
+                    if (rotateHandle) rotateHandle.style.display = 'none';
+                }
+            };
+    
+            element.addEventListener('click', elementClickHandler);
+            element.addEventListener('mousedown', elementMouseDownHandler);
+            document.addEventListener('mousemove', documentMouseMoveHandler);
+            document.addEventListener('mouseup', documentMouseUpHandler);
+            document.addEventListener('mousedown', documentMouseDownHandler);
+    
+            return () => {
+                element.removeEventListener('click', elementClickHandler);
+                element.removeEventListener('mousedown', elementMouseDownHandler);
+                document.removeEventListener('mousemove', documentMouseMoveHandler);
+                document.removeEventListener('mouseup', documentMouseUpHandler);
+                document.removeEventListener('mousedown', documentMouseDownHandler);
+            };
+        }
+    
+        function updatePreview() {
+            if (activeTextBox) {
+                const text = document.getElementById('acol-textInput').value || 'New Custom Text';
+                const textColor = document.getElementById('acol-textColor').value;
+    
+                activeTextBox.innerText = text;
+                activeTextBox.style.color = textColor;
+                attachHandles(activeTextBox);
+            }
+        }
+    
+        function attachHandles(element) {
+            if (!element.querySelector('.acol-resize-handle')) {
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'acol-resize-handle';
+                resizeHandle.style.position = 'absolute';
+                resizeHandle.style.right = '-11.3px';
+                resizeHandle.style.bottom = '-6.5px';
+                resizeHandle.style.fontSize = '24px';
+                resizeHandle.style.cursor = 'crosshair';
+                resizeHandle.innerText = '+';
+                resizeHandle.style.display = 'none';
+    
+                element.appendChild(resizeHandle);
+    
+                const resizeMouseDownHandler = function (e) {
+                    e.stopPropagation();
+                    const initialFontSize = parseFloat(window.getComputedStyle(element).fontSize);
+                    const initialMouseX = e.clientX;
+    
+                    function resize(e) {
+                        const scaleFactor = 0.2;
+                        const newSize = initialFontSize + (e.clientX - initialMouseX) * scaleFactor;
+    
+                        if (newSize > 10) {
+                            element.style.fontSize = newSize + 'px';
+                        }
+                    }
+    
+                    function stopResizing() {
+                        document.removeEventListener('mousemove', resize);
+                        document.removeEventListener('mouseup', stopResizing);
+                    }
+    
+                    document.addEventListener('mousemove', resize);
+                    document.addEventListener('mouseup', stopResizing);
+                };
+    
+                resizeHandle.addEventListener('mousedown', resizeMouseDownHandler);
+    
+                return () => {
+                    resizeHandle.removeEventListener('mousedown', resizeMouseDownHandler);
+                    element.removeChild(resizeHandle);
+                };
+            }
+    
+            if (!element.querySelector('.acol-rotate-handle')) {
+                const rotateHandle = document.createElement('div');
+                rotateHandle.className = 'acol-rotate-handle';
+                rotateHandle.style.position = 'absolute';
+                rotateHandle.style.top = '-30px';
+                rotateHandle.style.left = '50%';
+                rotateHandle.style.transform = 'translateX(-50%)';
+                rotateHandle.style.cursor = 'pointer';
+                rotateHandle.style.fontSize = '24px';
+                rotateHandle.innerHTML = '&#8635;';
+                rotateHandle.style.display = 'none';
+    
+                element.appendChild(rotateHandle);
+    
+                const rotateMouseDownHandler = function (e) {
+                    e.stopPropagation();
+                    const rect = element.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+    
+                    function rotate(e) {
+                        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                        const degree = (angle * (180 / Math.PI) + 90) % 360;
+                        element.style.transform = `translate(-50%, -50%) rotate(${degree}deg)`;
+                    }
+    
+                    function stopRotating() {
+                        document.removeEventListener('mousemove', rotate);
+                        document.removeEventListener('mouseup', stopRotating);
+                    }
+    
+                    document.addEventListener('mousemove', rotate);
+                    document.addEventListener('mouseup', stopRotating);
+                };
+    
+                rotateHandle.addEventListener('mousedown', rotateMouseDownHandler);
+    
+                return () => {
+                    rotateHandle.removeEventListener('mousedown', rotateMouseDownHandler);
+                    element.removeChild(rotateHandle);
+                };
+            }
+        }
+    
+        function changeFontFamily() {
+            const selectedFont = document.getElementById('acol-fontStyleSelect').value;
+            if (activeTextBox) {
+                activeTextBox.style.fontFamily = selectedFont;
+            }
+        }
+    
+        function getImageDetails() {
+            const imageContainers = document.querySelectorAll('.acol-small-img');
+            const selectedSize = document.querySelector('.acol-size-btn.acol-active');
+            const selectedThickness = document.querySelector('.acol-thickness-btn.acol-active')
+            const size = selectedSize && selectedSize.dataset.ratio !== "default"
+                ? selectedSize.dataset.ratio
+                : "default";
+            let imagesData = [];
+    
+            imageContainers.forEach(container => {
+                const imageElement = container.querySelector('.acol-previewImage');
+                const fileInput = container.querySelector('input[type="file"]');
+                const imageDetails = {
+                    name: imageElement.src ? imageElement.src.split('/').pop() : 'No image selected',
+                    size: fileInput.files.length ? fileInput.files[0].size : 'No file selected',
+                    type: fileInput.files.length ? fileInput.files[0].type : 'No file selected',
+                    width: imageElement ? imageElement.offsetWidth + 'px' : 'No image',
+                    height: imageElement ? imageElement.offsetHeight + 'px' : 'No image',
+                };
+                imagesData.push(imageDetails);
+            });
+            
+            const textElements = document.querySelector('.acol-text-box');
+            const text = document.getElementById('acol-textInput').value || 'New Custom Text';
+            const textColor = document.getElementById('acol-textColor').value;
+            const selectedFont = document.getElementById('acol-fontStyleSelect').value;
+    
+            const imageDetails = {
+                name: `Acrylic Collage (${size})`,
+                images: imagesData,
+                size: size,
+                thickness: selectedThickness ? selectedThickness.dataset.thickness : 'none',
+                type: 'Acrylic Collage',
+                price: 999,
+                addedText: textElements ? [{
+                    text: text,
+                    color: textColor,
+                    style: selectedFont
+                }] : []
+            };
+    
+            return imageDetails;
+        }
+    
+        function shareImage() {
+            return new Promise((resolve, reject) => {
+                html2canvas(collagePhoto, { backgroundColor: null }).then((canvas) => {
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            alert("Error: Failed to generate image!");
+                            reject("Failed to generate image");
+                            return;
+                        }
+    
+                        const formData = new FormData();
+                        const now = new Date();
+                        const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+                        const fileName = `customized-image-${formattedDate}.png`;
+    
+                        const imageData = getImageDetails();
+                        formData.append('image', blob, fileName);
+                        formData.append('details', JSON.stringify(imageData));
+                        const subject = `Collage Acrylic Photo (${imageData.size || "default"})`;
+                        formData.append('subject', JSON.stringify(subject));
+                        resolve(formData);
+                    });
+                }).catch(error => reject(error));
+            });
+        }
+    
+        window.updatePreview = updatePreview;
+        window.changeFontFamily = changeFontFamily;
+        window.getImageDetails = getImageDetails;
+        window.shareImage = shareImage;
+    
+        // Cleanup function
+        return () => {
+            // Remove event listeners
+            addTextBtn.removeEventListener('click', handleAddTextClick);
+            deleteTextBtn.removeEventListener('click', handleDeleteTextClick);
+            iminus.removeEventListener('click', handleIminusClick);
+            iplus.removeEventListener('click', handleIplusClick);
+            resetBtn.removeEventListener('click', handleResetClick);
+            zoomRange.removeEventListener('input', handleZoomRangeInput);
+    
+            // Execute all cleanup functions
+            slotCleanupFunctions.forEach(cleanup => cleanup());
+            sizeBtnCleanupFunctions.forEach(cleanup => cleanup());
+            thicknessBtnCleanupFunctions.forEach(cleanup => cleanup());
+    
+            // Remove window functions
+            delete window.updatePreview;
+            delete window.changeFontFamily;
+            delete window.getImageDetails;
+            delete window.shareImage;
+        };
+    }, []); // Empty dependency array means this runs once on mount
 
     if (!layout) return <h2>Invalid collage type</h2>;
 
