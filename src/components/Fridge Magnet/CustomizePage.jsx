@@ -516,7 +516,9 @@ const CustomizePage = () => {
       fileInput.removeEventListener("change", handleFileInputChange);
       zoomRange.removeEventListener('input', handleZoomRangeInput);
       addTextBtn.removeEventListener('click', handleAddTextClick);
-      document.getElementById('afm-addTextModalBtn').removeEventListener('click', handleAddTextModalClick);
+      if (document.getElementById('afm-addTextModalBtn')) {
+        document.getElementById('afm-addTextModalBtn').removeEventListener('click', handleAddTextModalClick);
+      }
 
       // Remove size button handlers
       sizeButtonClickHandlers.forEach(({ btn, handler }) => {
@@ -535,7 +537,7 @@ const CustomizePage = () => {
       delete window.getImageDetails;
       delete window.shareImage;
     };
-  }, []);// Empty dependency array means this runs once on mount
+  }, []);
 
   const handleAddToCart = async () => {
     setCartLoading(true);
