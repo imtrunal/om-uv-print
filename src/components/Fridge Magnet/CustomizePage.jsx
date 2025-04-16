@@ -510,32 +510,66 @@ const CustomizePage = () => {
 
     // Return cleanup function
     return () => {
-      // Remove event listeners
-      uploadBox.removeEventListener('click', handleUploadBoxClick);
-      uploadButton.removeEventListener('click', handleUploadButtonClick);
-      fileInput.removeEventListener("change", handleFileInputChange);
-      zoomRange.removeEventListener('input', handleZoomRangeInput);
-      addTextBtn.removeEventListener('click', handleAddTextClick);
-      if (document.getElementById('afm-addTextModalBtn')) {
-        document.getElementById('afm-addTextModalBtn').removeEventListener('click', handleAddTextModalClick);
+      // Remove event listeners with null checks
+      if (uploadBox && uploadBox.removeEventListener) {
+        uploadBox.removeEventListener('click', handleUploadBoxClick);
       }
-
+      if (uploadButton && uploadButton.removeEventListener) {
+        uploadButton.removeEventListener('click', handleUploadButtonClick);
+      }
+      if (fileInput && fileInput.removeEventListener) {
+        fileInput.removeEventListener("change", handleFileInputChange);
+      }
+      if (zoomRange && zoomRange.removeEventListener) {
+        zoomRange.removeEventListener('input', handleZoomRangeInput);
+      }
+      if (addTextBtn && addTextBtn.removeEventListener) {
+        addTextBtn.removeEventListener('click', handleAddTextClick);
+      }
+      
+      const addTextModalBtn = document.getElementById('afm-addTextModalBtn');
+      if (addTextModalBtn && addTextModalBtn.removeEventListener) {
+        addTextModalBtn.removeEventListener('click', handleAddTextModalClick);
+      }
+    
       // Remove size button handlers
       sizeButtonClickHandlers.forEach(({ btn, handler }) => {
-        btn.removeEventListener('click', handler);
+        if (btn && btn.removeEventListener) {
+          btn.removeEventListener('click', handler);
+        }
       });
-
+    
       // Remove thickness button handlers
       thicknessButtonClickHandlers.forEach(({ btn, handler }) => {
-        btn.removeEventListener('click', handler);
+        if (btn && btn.removeEventListener) {
+          btn.removeEventListener('click', handler);
+        }
       });
-
+    
       // Execute all cleanup functions
-      cleanupFunctions.forEach(cleanup => cleanup());
-
-      // Remove window functions
-      delete window.getImageDetails;
-      delete window.shareImage;
+      if (cleanupFunctions && Array.isArray(cleanupFunctions)) {
+        cleanupFunctions.forEach(cleanup => {
+          if (typeof cleanup === 'function') {
+            cleanup();
+          }
+        });
+      }
+    
+      // Remove window functions safely
+      if (window.getImageDetails) {
+        try {
+          delete window.getImageDetails;
+        } catch (e) {
+          console.warn("Could not delete window.getImageDetails", e);
+        }
+      }
+      if (window.shareImage) {
+        try {
+          delete window.shareImage;
+        } catch (e) {
+          console.warn("Could not delete window.shareImage", e);
+        }
+      }
     };
   }, []);
 

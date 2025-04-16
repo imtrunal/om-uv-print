@@ -598,25 +598,61 @@ const CollageAcrylicPhoto = () => {
     
         // Cleanup function
         return () => {
-            // Remove event listeners
-            addTextBtn.removeEventListener('click', handleAddTextClick);
-            deleteTextBtn.removeEventListener('click', handleDeleteTextClick);
-            iminus.removeEventListener('click', handleIminusClick);
-            iplus.removeEventListener('click', handleIplusClick);
-            resetBtn.removeEventListener('click', handleResetClick);
-            zoomRange.removeEventListener('input', handleZoomRangeInput);
-    
-            // Execute all cleanup functions
-            slotCleanupFunctions.forEach(cleanup => cleanup());
-            sizeBtnCleanupFunctions.forEach(cleanup => cleanup());
-            thicknessBtnCleanupFunctions.forEach(cleanup => cleanup());
-    
-            // Remove window functions
-            delete window.updatePreview;
-            delete window.changeFontFamily;
-            delete window.getImageDetails;
-            delete window.shareImage;
-        };
+            // Remove event listeners with null checks
+            if (addTextBtn && addTextBtn.removeEventListener) {
+              addTextBtn.removeEventListener('click', handleAddTextClick);
+            }
+            if (deleteTextBtn && deleteTextBtn.removeEventListener) {
+              deleteTextBtn.removeEventListener('click', handleDeleteTextClick);
+            }
+            if (iminus && iminus.removeEventListener) {
+              iminus.removeEventListener('click', handleIminusClick);
+            }
+            if (iplus && iplus.removeEventListener) {
+              iplus.removeEventListener('click', handleIplusClick);
+            }
+            if (resetBtn && resetBtn.removeEventListener) {
+              resetBtn.removeEventListener('click', handleResetClick);
+            }
+            if (zoomRange && zoomRange.removeEventListener) {
+              zoomRange.removeEventListener('input', handleZoomRangeInput);
+            }
+          
+            // Execute all cleanup functions with validation
+            if (slotCleanupFunctions && Array.isArray(slotCleanupFunctions)) {
+              slotCleanupFunctions.forEach(cleanup => {
+                if (typeof cleanup === 'function') {
+                  cleanup();
+                }
+              });
+            }
+            if (sizeBtnCleanupFunctions && Array.isArray(sizeBtnCleanupFunctions)) {
+              sizeBtnCleanupFunctions.forEach(cleanup => {
+                if (typeof cleanup === 'function') {
+                  cleanup();
+                }
+              });
+            }
+            if (thicknessBtnCleanupFunctions && Array.isArray(thicknessBtnCleanupFunctions)) {
+              thicknessBtnCleanupFunctions.forEach(cleanup => {
+                if (typeof cleanup === 'function') {
+                  cleanup();
+                }
+              });
+            }
+          
+            // Remove window functions safely
+            const windowProperties = ['updatePreview', 'changeFontFamily', 'getImageDetails', 'shareImage'];
+            windowProperties.forEach(prop => {
+              if (window[prop] !== undefined) {
+                try {
+                  delete window[prop];
+                } catch (e) {
+                  console.warn(`Could not delete window.${prop}`, e);
+                }
+              }
+            });
+          };
     }, []); // Empty dependency array means this runs once on mount
 
     if (!layout) return <h2>Invalid collage type</h2>;
