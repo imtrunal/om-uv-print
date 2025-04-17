@@ -247,7 +247,7 @@ export const shop = [
     {
         name: "Farewell",
         des: "Capture Every Moment of Love with a Personalized Story Timeline",
-        image: "/public/assets/12 X 18 - OUR LOVE STORY.jpg",
+        image: "/assets/12 X 18 - OUR LOVE STORY.jpg",
     },
     {
         name: "Fathers Day",
