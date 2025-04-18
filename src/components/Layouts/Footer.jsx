@@ -22,33 +22,33 @@ const Footer = () => {
                 <div className="w-full md:w-1/6 text-center md:text-left">
                     <h2 className="text-2xl mb-3">About Us</h2>
                     <ul className="text-sm space-y-2 mt-7">
-                        <li className="cursor-pointer text-base/7"><a href="/service-promise">Service Promise</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/careers">Careers</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/safe-shopping">Safe Shopping</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/site-map">Site Map</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Service Promise</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Careers</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Safe Shopping</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Site Map</a></li>
                     </ul>
                 </div>
 
                 <div className="w-full md:w-1/6 text-center md:text-left">
                     <h2 className="text-2xl mb-3">Useful Links</h2>
                     <ul className="text-sm space-y-2 mt-7">
-                        <li className="cursor-pointer text-base/7"><a href="/help-desk">Help Desk</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/blog">Blog</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/refer-a-friend">Refer a Friend</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/bulk-orders">Bulk Orders</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/rate-now">Rate Now</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/prices">Prices</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Help Desk</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Blog</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Refer a Friend</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Bulk Orders</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="https://search.google.com/local/writereview?placeid=ChIJ51Oc6-hP4DsRBegzWls0Dow" target="_blank">Rate Now</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Prices</a></li>
                     </ul>
                 </div>
 
                 <div className="w-full md:w-1/6 text-center md:text-left">
                     <h2 className="text-2xl mb-3">Best Online Shop For</h2>
                     <ul className="text-sm space-y-2 mt-7">
-                        <li className="cursor-pointer text-base/7"><a href="/acrylic">Acrylic Photo</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/clear-acrylic">Clear Acrylic Photo</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/fridge-magnets">Fridge Magnets</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/acrylic-wall-clock">Acylic Wall Clock</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="/collage-acrylic-photo">Collage Acylic Photo</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Acrylic Photo</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Clear Acrylic Photo</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Fridge Magnets</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Acylic Wall Clock</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="#">Collage Acylic Photo</a></li>
                     </ul>
                 </div>
             </div>
@@ -57,8 +57,8 @@ const Footer = () => {
                 <div className="flex flex-col md:flex-row items-center space-x-6">
                     <p>Design & Develop by<a href="https://sughosh.dev/" className="font-bold text-[#FFC107]" target="_blank"> Sughosh Technolab.</a></p>
                     <div className="flex space-x-6 text-gray-600">
-                        <a href="/privacy" className="cursor-pointer">Privacy</a>
-                        <a href="/terms-of-use" className="cursor-pointer">Terms of use</a>
+                        <a href="#" className="cursor-pointer">Privacy</a>
+                        <a href="#" className="cursor-pointer">Terms of use</a>
                     </div>
                 </div>
 
