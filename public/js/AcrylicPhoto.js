@@ -53,7 +53,7 @@ fileInput.addEventListener('change', function (e) {
         reader.readAsDataURL(file);
         // downloadBtn.style.display = "block";
         shareBtn.style.display = "block";
-        cartBtn.style.display = "block";
+        // cartBtn.style.display = "block";
     }
 });
 
@@ -484,122 +484,122 @@ function getImageDetails() {
     return imageDetails;
 };
 
-function shareImage() {
-    return new Promise((resolve, reject) => {
-        html2canvas(imageContainer, { backgroundColor: null }).then((canvas) => {
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    alert("Error: Failed to generate image!");
-                    reject("Failed to generate image");
-                    return;
-                }
-
-                const formData = new FormData();
-                const now = new Date();
-                const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0]; // Format: YYYY-MM-DDTHH-MM-SS
-                const fileName = `customized-image-${formattedDate}.png`;
-
-                const imageData = getImageDetails();
-                formData.append('image', blob, fileName);
-                formData.append('details', JSON.stringify(imageData));
-                const subject = `Acrylic Premium Photo (${imageData.size || "default"})`;
-                formData.append('subject', JSON.stringify(subject));
-
-                resolve(formData);
-            });
-        }).catch(error => reject(error));
-    });
-}
-
 // function shareImage() {
 //     return new Promise((resolve, reject) => {
-//         // Create a clone of the container with all styles
-//         const clone = imageContainer.cloneNode(true);
-//         clone.style.visibility = 'hidden';
-//         clone.style.position = 'absolute';
-//         clone.style.top = '0';
-//         clone.style.left = '0';
-//         document.body.appendChild(clone);
-
-//         // Copy all computed styles from original to clone
-//         const originalElements = imageContainer.querySelectorAll('*');
-//         const clonedElements = clone.querySelectorAll('*');
-
-//         originalElements.forEach((original, index) => {
-//             if (clonedElements[index]) {
-//                 const computedStyle = window.getComputedStyle(original);
-//                 Array.from(computedStyle).forEach(prop => {
-//                     clonedElements[index].style.setProperty(
-//                         prop,
-//                         computedStyle.getPropertyValue(prop),
-//                         computedStyle.getPropertyPriority(prop)
-//                     );
-
-//                     // Special handling for text elements
-//                     if (original.classList.contains('text-box')) {
-//                         const rect = original.getBoundingClientRect();
-//                         const parentRect = imageContainer.getBoundingClientRect();
-
-//                         clonedElements[index].style.position = 'absolute';
-//                         clonedElements[index].style.left = `${rect.left - parentRect.left}px`;
-//                         clonedElements[index].style.top = `${rect.top - parentRect.top}px`;
-//                         clonedElements[index].style.transform = original.style.transform || '';
-//                         clonedElements[index].style.zIndex = '1000';
-//                     }
-
-//                     // Handle the main preview image
-//                     if (original.id === 'previewImage') {
-//                         clonedElements[index].style.transform = original.style.transform;
-//                     }
-//                 }
-//                 )
-//             }
-//         });
-
-//         // Force layout recalculation
-//         clone.offsetHeight;
-
-//         html2canvas(clone, {
-//             backgroundColor: null,
-//             scale: 2,
-//             allowTaint: true,
-//             useCORS: true,
-//             logging: false,
-//             onclone: (document, element) => {
-//                 // Make sure all elements are visible
-//                 element.querySelectorAll('*').forEach(el => {
-//                     el.style.visibility = 'visible';
-//                     el.style.display = 'block';
-//                 });
-//             }
-//         }).then(canvas => {
-//             document.body.removeChild(clone);
-
-//             canvas.toBlob(blob => {
+//         html2canvas(imageContainer, { backgroundColor: null }).then((canvas) => {
+//             canvas.toBlob((blob) => {
 //                 if (!blob) {
+//                     alert("Error: Failed to generate image!");
 //                     reject("Failed to generate image");
 //                     return;
 //                 }
 
 //                 const formData = new FormData();
 //                 const now = new Date();
-//                 const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+//                 const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0]; // Format: YYYY-MM-DDTHH-MM-SS
 //                 const fileName = `customized-image-${formattedDate}.png`;
 
 //                 const imageData = getImageDetails();
 //                 formData.append('image', blob, fileName);
 //                 formData.append('details', JSON.stringify(imageData));
-//                 const subject = `Acrylic Photo Order - ${formattedDate}`;
+//                 const subject = `Acrylic Premium Photo (${imageData.size || "default"})`;
 //                 formData.append('subject', JSON.stringify(subject));
 
 //                 resolve(formData);
 //             });
-//         }).catch(error => {
-//             document.body.removeChild(clone);
-//             reject(error);
-//         });
+//         }).catch(error => reject(error));
 //     });
 // }
+
+function shareImage() {
+    return new Promise((resolve, reject) => {
+        // Create a clone of the container with all styles
+        const clone = imageContainer.cloneNode(true);
+        clone.style.visibility = 'hidden';
+        clone.style.position = 'absolute';
+        clone.style.top = '0';
+        clone.style.left = '0';
+        document.body.appendChild(clone);
+
+        // Copy all computed styles from original to clone
+        const originalElements = imageContainer.querySelectorAll('*');
+        const clonedElements = clone.querySelectorAll('*');
+
+        originalElements.forEach((original, index) => {
+            if (clonedElements[index]) {
+                const computedStyle = window.getComputedStyle(original);
+                Array.from(computedStyle).forEach(prop => {
+                    clonedElements[index].style.setProperty(
+                        prop,
+                        computedStyle.getPropertyValue(prop),
+                        computedStyle.getPropertyPriority(prop)
+                    );
+
+                    // Special handling for text elements
+                    if (original.classList.contains('text-box')) {
+                        const rect = original.getBoundingClientRect();
+                        const parentRect = imageContainer.getBoundingClientRect();
+
+                        clonedElements[index].style.position = 'absolute';
+                        clonedElements[index].style.left = `${rect.left - parentRect.left}px`;
+                        clonedElements[index].style.top = `${rect.top - parentRect.top}px`;
+                        clonedElements[index].style.transform = original.style.transform || '';
+                        clonedElements[index].style.zIndex = '1000';
+                    }
+
+                    // Handle the main preview image
+                    if (original.id === 'previewImage') {
+                        clonedElements[index].style.transform = original.style.transform;
+                    }
+                }
+                )
+            }
+        });
+
+        // Force layout recalculation
+        clone.offsetHeight;
+
+        html2canvas(clone, {
+            backgroundColor: null,
+            scale: 2,
+            allowTaint: true,
+            useCORS: true,
+            logging: false,
+            onclone: (document, element) => {
+                // Make sure all elements are visible
+                element.querySelectorAll('*').forEach(el => {
+                    el.style.visibility = 'visible';
+                    el.style.display = 'block';
+                });
+            }
+        }).then(canvas => {
+            document.body.removeChild(clone);
+
+            canvas.toBlob(blob => {
+                if (!blob) {
+                    reject("Failed to generate image");
+                    return;
+                }
+
+                const formData = new FormData();
+                const now = new Date();
+                const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+                const fileName = `customized-image-${formattedDate}.png`;
+
+                const imageData = getImageDetails();
+                formData.append('image', blob, fileName);
+                formData.append('details', JSON.stringify(imageData));
+                const subject = `Acrylic Photo Order - ${formattedDate}`;
+                formData.append('subject', JSON.stringify(subject));
+
+                resolve(formData);
+            });
+        }).catch(error => {
+            document.body.removeChild(clone);
+            reject(error);
+        });
+    });
+}
 
 window.closeBgModal = closeBgModal;
 window.closeTextModal = closeTextModal;

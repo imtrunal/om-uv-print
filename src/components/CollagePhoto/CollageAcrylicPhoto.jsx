@@ -12,6 +12,7 @@ import axios from "axios";
 import useCartStore from "../../manage/CartStore";
 import { ImSpinner2 } from "react-icons/im";
 import html2canvas from "html2canvas";
+import domtoimage from 'dom-to-image-more';
 
 const collageLayouts = {
 
@@ -84,7 +85,92 @@ const CollageAcrylicPhoto = () => {
     //         };
     //     };
     // }, [collageType]);
-    
+
+
+    function copyComputedStyles(source, target) {
+        const computedStyle = getComputedStyle(source);
+        for (let key of computedStyle) {
+            target.style[key] = computedStyle.getPropertyValue(key);
+        }
+
+        for (let i = 0; i < source.children.length; i++) {
+            copyComputedStyles(source.children[i], target.children[i]);
+        }
+    }
+
+    async function shareImage() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const imageContainer = document.querySelector('.acol-collage-frame');
+                if (!imageContainer) {
+                    alert("Error: Image container not found!");
+                    return reject("Image container not found");
+                }
+
+                await new Promise(r => setTimeout(r, 300));
+
+                const clone = imageContainer.cloneNode(true);
+                copyComputedStyles(imageContainer, clone);
+                document.body.appendChild(clone);
+
+                // Hide clone off-screen
+                clone.style.position = 'absolute';
+                clone.style.top = '-9999px';
+                clone.style.left = '-9999px';
+                clone.style.margin = '0';
+                clone.style.padding = '0';
+                clone.style.boxSizing = 'border-box';
+                clone.style.background = 'white';
+                clone.style.transform = 'none';
+                clone.style.zoom = '1';
+
+                const width = imageContainer.offsetWidth;
+                const height = imageContainer.offsetHeight;
+                clone.style.width = `${width}px`;
+                clone.style.height = `${height}px`;
+
+                await document.fonts.ready;
+                await new Promise(res => requestAnimationFrame(res)); // layout settle
+
+                const blob = await domtoimage.toBlob(clone, {
+                    width,
+                    height,
+                    style: {
+                        margin: '0',
+                        padding: '0',
+                        boxSizing: 'border-box',
+                        transform: 'none',
+                        zoom: '1',
+                        background: 'transparent',
+                    },
+                });
+
+                document.body.removeChild(clone);
+
+                if (!blob) {
+                    alert("Error: Failed to generate image!");
+                    return reject("Failed to generate image");
+                }
+
+                const formData = new FormData();
+                const now = new Date();
+                const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0]; // Format: YYYY-MM-DDTHH-MM-SS
+                const fileName = `customized-image-${formattedDate}.png`;
+
+                const imageData = getImageDetails();
+                formData.append('image', blob, fileName);
+                formData.append('details', JSON.stringify(imageData));
+                const subject = `Collage Acrylic Photo (${imageData.size || "default"})`;
+                formData.append('subject', JSON.stringify(subject));
+                resolve(formData);
+            } catch (error) {
+                console.error("Image generation failed:", error);
+                reject(error);
+            }
+        });
+    }
+
+
     useEffect(() => {
         const textInput = document.getElementById('acol-textInput');
         const addTextBtn = document.getElementById('acol-addTextBtn');
@@ -102,7 +188,7 @@ const CollageAcrylicPhoto = () => {
         const zoomRange = document.getElementById('acol-zoomRange');
         const BASE_URL = window.BASE_URL;
         const allTextData = [];
-        
+
         let uploadedImagesCount = 0;
         let totalImages = document.querySelectorAll(".acol-small-img, .acol-big-img").length;
         let activeTextBox = null;
@@ -110,12 +196,12 @@ const CollageAcrylicPhoto = () => {
         let scale = 1;
         let rotation = 0;
         let currentX = 0, currentY = 0;
-    
+
         // Event handlers
         const handleSlotClick = (slot, input) => {
             if (!input.disabled) input.click();
         };
-    
+
         const handleFileInputChange = function (input, previewImage, placeholder) {
             const file = input.files[0];
             if (file) {
@@ -131,15 +217,15 @@ const CollageAcrylicPhoto = () => {
                 reader.readAsDataURL(file);
             }
         };
-    
+
         const handlePreviewImageClick = (previewImage) => {
             setActiveImage(previewImage);
         };
-    
+
         const handleAddTextClick = function () {
             textModal.style.display = 'flex';
             fontFamilyOptions.style.display = 'block';
-    
+
             const textColor = document.getElementById('acol-textColor').value;
             const newTextBox = document.createElement('div');
             newTextBox.className = 'acol-text-box';
@@ -149,13 +235,13 @@ const CollageAcrylicPhoto = () => {
             newTextBox.style.whiteSpace = 'pre-wrap';
             newTextBox.style.overflow = 'hidden';
             newTextBox.style.maxWidth = '100%';
-    
+
             collagePhoto.appendChild(newTextBox);
             attachHandles(newTextBox);
             makeDraggable(newTextBox, { resize: 'acol-resize-handle', rotate: 'acol-rotate-handle' });
             activeTextBox = newTextBox;
         };
-    
+
         const handleDeleteTextClick = function () {
             if (activeTextBox) {
                 activeTextBox.remove();
@@ -166,21 +252,21 @@ const CollageAcrylicPhoto = () => {
             fontFamilyOptions.style.display = 'none';
             document.getElementById('acol-textColor').value = "#000000";
         };
-    
-        const handleSizeBtnClick = function(btn) {
-            return function() {
+
+        const handleSizeBtnClick = function (btn) {
+            return function () {
                 allSizeBtn.forEach(button => button.classList.remove('acol-active'));
                 btn.classList.add('acol-active');
             };
         };
-    
-        const handleThicknessBtnClick = function(btn) {
-            return function() {
+
+        const handleThicknessBtnClick = function (btn) {
+            return function () {
                 allThicknessBtn.forEach(button => button.classList.remove('acol-active'));
                 btn.classList.add('acol-active');
             };
         };
-    
+
         const handleIminusClick = function () {
             if (activeTextBox) {
                 const currentFontSize = parseInt(window.getComputedStyle(activeTextBox).fontSize);
@@ -188,7 +274,7 @@ const CollageAcrylicPhoto = () => {
                 attachHandles(activeTextBox);
             }
         };
-    
+
         const handleIplusClick = function () {
             if (activeTextBox) {
                 const currentFontSize = parseInt(window.getComputedStyle(activeTextBox).fontSize);
@@ -196,38 +282,38 @@ const CollageAcrylicPhoto = () => {
                 attachHandles(activeTextBox);
             }
         };
-    
+
         const handleResetClick = () => {
             location.reload();
         };
-    
+
         const handleZoomRangeInput = function () {
             scale = parseFloat(zoomRange.value);
             updateImagePosition();
         };
-    
+
         // Initialize image slots
         const slotCleanupFunctions = [];
         document.querySelectorAll(".acol-small-img, .acol-big-img").forEach((slot) => {
             const input = slot.querySelector("input");
             const placeholder = slot.querySelector("p");
             const previewImage = slot.querySelector("img");
-    
+
             const slotClickHandler = () => handleSlotClick(slot, input);
             const fileInputHandler = () => handleFileInputChange(input, previewImage, placeholder);
             const previewClickHandler = () => handlePreviewImageClick(previewImage);
-    
+
             slot.addEventListener("click", slotClickHandler);
             input.addEventListener("change", fileInputHandler);
             previewImage.addEventListener("click", previewClickHandler);
-    
+
             slotCleanupFunctions.push(() => {
                 slot.removeEventListener("click", slotClickHandler);
                 input.removeEventListener("change", fileInputHandler);
                 previewImage.removeEventListener("click", previewClickHandler);
             });
         });
-    
+
         // Add other event listeners
         addTextBtn.addEventListener('click', handleAddTextClick);
         deleteTextBtn.addEventListener('click', handleDeleteTextClick);
@@ -235,7 +321,7 @@ const CollageAcrylicPhoto = () => {
         iplus.addEventListener('click', handleIplusClick);
         resetBtn.addEventListener('click', handleResetClick);
         zoomRange.addEventListener('input', handleZoomRangeInput);
-    
+
         // Add size and thickness button handlers
         const sizeBtnCleanupFunctions = [];
         allSizeBtn.forEach(btn => {
@@ -243,46 +329,46 @@ const CollageAcrylicPhoto = () => {
             btn.addEventListener('click', handler);
             sizeBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
         });
-    
+
         const thicknessBtnCleanupFunctions = [];
         allThicknessBtn.forEach(btn => {
             const handler = handleThicknessBtnClick(btn);
             btn.addEventListener('click', handler);
             thicknessBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
         });
-    
+
         // Helper functions (same as before)
         function incrementUploadedImages() {
             uploadedImagesCount++;
             if (totalImages === uploadedImagesCount) {
                 shareBtn.style.display = "block";
-                cartBtn.style.display = 'block';
+                // cartBtn.style.display = 'block';
             }
         }
-    
+
         function setActiveImage(imageElement) {
             removeExistingHandles();
             makeDraggable(imageElement, { resize: 'acol-resize', rotate: 'acol-rotate' });
             addRotateHandle(imageElement);
             activeImage = imageElement;
-            
+
             if (!imageElement.dataset.scale) imageElement.dataset.scale = 1;
             if (!imageElement.dataset.rotation) imageElement.dataset.rotation = 0;
             if (!imageElement.dataset.x) imageElement.dataset.x = 0;
             if (!imageElement.dataset.y) imageElement.dataset.y = 0;
-    
+
             scale = parseFloat(imageElement.dataset.scale);
             rotation = parseFloat(imageElement.dataset.rotation);
             currentX = parseFloat(imageElement.dataset.x);
             currentY = parseFloat(imageElement.dataset.y);
-    
+
             updateImagePosition();
         }
-    
+
         function removeExistingHandles() {
             document.querySelectorAll(".acol-resize, .acol-rotate").forEach((handle) => handle.remove());
         }
-    
+
         function updateImagePosition() {
             if (activeImage) {
                 activeImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale}) rotate(${rotation}deg)`;
@@ -292,119 +378,119 @@ const CollageAcrylicPhoto = () => {
                 activeImage.dataset.y = currentY;
             }
         }
-    
+
         function addRotateHandle(imageElement) {
             const rotateHandle = document.createElement('div');
             rotateHandle.className = 'acol-rotate';
             rotateHandle.innerHTML = '&#8635;';
-    
+
             collagePhoto.style.position = 'relative';
             collagePhoto.appendChild(rotateHandle);
-    
+
             const rotateMouseDownHandler = function (e) {
                 e.stopPropagation();
                 const rect = imageElement.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
-    
+
                 function rotate(e) {
                     const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
                     rotation = (angle * (180 / Math.PI) + 90) % 360;
                     updateImagePosition();
                 }
-    
+
                 function stopRotating() {
                     document.removeEventListener('mousemove', rotate);
                     document.removeEventListener('mouseup', stopRotating);
                 }
-    
+
                 document.addEventListener('mousemove', rotate);
                 document.addEventListener('mouseup', stopRotating);
             };
-    
+
             rotateHandle.addEventListener('mousedown', rotateMouseDownHandler);
-    
+
             return () => {
                 rotateHandle.removeEventListener('mousedown', rotateMouseDownHandler);
                 collagePhoto.removeChild(rotateHandle);
             };
         }
-    
+
         function makeDraggable(element, handle) {
             let isDragging = false;
             let offsetX = 0, offsetY = 0, startX, startY;
             let rotation = 0;
-    
+
             const elementClickHandler = function () {
                 const resizeHandle = document.querySelector(`.${handle.resize}`);
                 const rotateHandle = document.querySelector(`.${handle.rotate}`);
-    
+
                 if (resizeHandle) resizeHandle.style.display = 'block';
                 if (rotateHandle) rotateHandle.style.display = 'block';
-    
+
                 element.style.border = '2px dashed #248EE6';
             };
-    
+
             const elementMouseDownHandler = function (e) {
                 const resizeHandle = document.querySelector(`.${handle.resize}`);
                 const rotateHandle = document.querySelector(`.${handle.rotate}`);
-    
+
                 if (resizeHandle) resizeHandle.style.display = 'block';
                 if (rotateHandle) rotateHandle.style.display = 'block';
-    
+
                 isDragging = true;
                 startX = e.clientX - offsetX;
                 startY = e.clientY - offsetY;
                 element.style.cursor = 'grabbing';
-    
+
                 const transform = window.getComputedStyle(element).transform;
                 if (transform !== 'none') {
                     const matrix = new DOMMatrix(transform);
                     rotation = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
                 }
             };
-    
+
             const documentMouseMoveHandler = function (e) {
                 if (!isDragging) return;
-    
+
                 offsetX = e.clientX - startX;
                 offsetY = e.clientY - startY;
-    
+
                 element.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale}) rotate(${rotation}deg)`;
             };
-    
+
             const documentMouseUpHandler = function () {
                 if (isDragging) {
                     isDragging = false;
                     element.style.cursor = 'move';
                     currentX = offsetX;
                     currentY = offsetY;
-    
+
                     if (activeImage) {
                         activeImage.dataset.x = currentX;
                         activeImage.dataset.y = currentY;
                     }
                 }
             };
-    
+
             const documentMouseDownHandler = function (e) {
                 if (!element.contains(e.target)) {
                     element.style.border = 'none';
-    
+
                     const resizeHandle = document.querySelector(`.${handle.resize}`);
                     const rotateHandle = document.querySelector(`.${handle.rotate}`);
-    
+
                     if (resizeHandle) resizeHandle.style.display = 'none';
                     if (rotateHandle) rotateHandle.style.display = 'none';
                 }
             };
-    
+
             element.addEventListener('click', elementClickHandler);
             element.addEventListener('mousedown', elementMouseDownHandler);
             document.addEventListener('mousemove', documentMouseMoveHandler);
             document.addEventListener('mouseup', documentMouseUpHandler);
             document.addEventListener('mousedown', documentMouseDownHandler);
-    
+
             return () => {
                 element.removeEventListener('click', elementClickHandler);
                 element.removeEventListener('mousedown', elementMouseDownHandler);
@@ -413,18 +499,18 @@ const CollageAcrylicPhoto = () => {
                 document.removeEventListener('mousedown', documentMouseDownHandler);
             };
         }
-    
+
         function updatePreview() {
             if (activeTextBox) {
                 const text = document.getElementById('acol-textInput').value || 'New Custom Text';
                 const textColor = document.getElementById('acol-textColor').value;
-    
+
                 activeTextBox.innerText = text;
                 activeTextBox.style.color = textColor;
                 attachHandles(activeTextBox);
             }
         }
-    
+
         function attachHandles(element) {
             if (!element.querySelector('.acol-resize-handle')) {
                 const resizeHandle = document.createElement('div');
@@ -436,40 +522,40 @@ const CollageAcrylicPhoto = () => {
                 resizeHandle.style.cursor = 'crosshair';
                 resizeHandle.innerText = '+';
                 resizeHandle.style.display = 'none';
-    
+
                 element.appendChild(resizeHandle);
-    
+
                 const resizeMouseDownHandler = function (e) {
                     e.stopPropagation();
                     const initialFontSize = parseFloat(window.getComputedStyle(element).fontSize);
                     const initialMouseX = e.clientX;
-    
+
                     function resize(e) {
                         const scaleFactor = 0.2;
                         const newSize = initialFontSize + (e.clientX - initialMouseX) * scaleFactor;
-    
+
                         if (newSize > 10) {
                             element.style.fontSize = newSize + 'px';
                         }
                     }
-    
+
                     function stopResizing() {
                         document.removeEventListener('mousemove', resize);
                         document.removeEventListener('mouseup', stopResizing);
                     }
-    
+
                     document.addEventListener('mousemove', resize);
                     document.addEventListener('mouseup', stopResizing);
                 };
-    
+
                 resizeHandle.addEventListener('mousedown', resizeMouseDownHandler);
-    
+
                 return () => {
                     resizeHandle.removeEventListener('mousedown', resizeMouseDownHandler);
                     element.removeChild(resizeHandle);
                 };
             }
-    
+
             if (!element.querySelector('.acol-rotate-handle')) {
                 const rotateHandle = document.createElement('div');
                 rotateHandle.className = 'acol-rotate-handle';
@@ -481,46 +567,46 @@ const CollageAcrylicPhoto = () => {
                 rotateHandle.style.fontSize = '24px';
                 rotateHandle.innerHTML = '&#8635;';
                 rotateHandle.style.display = 'none';
-    
+
                 element.appendChild(rotateHandle);
-    
+
                 const rotateMouseDownHandler = function (e) {
                     e.stopPropagation();
                     const rect = element.getBoundingClientRect();
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
-    
+
                     function rotate(e) {
                         const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
                         const degree = (angle * (180 / Math.PI) + 90) % 360;
                         element.style.transform = `translate(-50%, -50%) rotate(${degree}deg)`;
                     }
-    
+
                     function stopRotating() {
                         document.removeEventListener('mousemove', rotate);
                         document.removeEventListener('mouseup', stopRotating);
                     }
-    
+
                     document.addEventListener('mousemove', rotate);
                     document.addEventListener('mouseup', stopRotating);
                 };
-    
+
                 rotateHandle.addEventListener('mousedown', rotateMouseDownHandler);
-    
+
                 return () => {
                     rotateHandle.removeEventListener('mousedown', rotateMouseDownHandler);
                     element.removeChild(rotateHandle);
                 };
             }
         }
-    
+
         function changeFontFamily() {
             const selectedFont = document.getElementById('acol-fontStyleSelect').value;
             if (activeTextBox) {
                 activeTextBox.style.fontFamily = selectedFont;
             }
         }
-    
+
         function getImageDetails() {
             const imageContainers = document.querySelectorAll('.acol-small-img');
             const selectedSize = document.querySelector('.acol-size-btn.acol-active');
@@ -529,7 +615,7 @@ const CollageAcrylicPhoto = () => {
                 ? selectedSize.dataset.ratio
                 : "default";
             let imagesData = [];
-    
+
             imageContainers.forEach(container => {
                 const imageElement = container.querySelector('.acol-previewImage');
                 const fileInput = container.querySelector('input[type="file"]');
@@ -542,12 +628,12 @@ const CollageAcrylicPhoto = () => {
                 };
                 imagesData.push(imageDetails);
             });
-            
+
             const textElements = document.querySelector('.acol-text-box');
             const text = document.getElementById('acol-textInput').value || 'New Custom Text';
             const textColor = document.getElementById('acol-textColor').value;
             const selectedFont = document.getElementById('acol-fontStyleSelect').value;
-    
+
             const imageDetails = {
                 name: `Acrylic Collage (${size})`,
                 images: imagesData,
@@ -561,106 +647,105 @@ const CollageAcrylicPhoto = () => {
                     style: selectedFont
                 }] : []
             };
-    
+
             return imageDetails;
         }
-    
-        function shareImage() {
-            return new Promise((resolve, reject) => {
-                html2canvas(collagePhoto, { backgroundColor: null }).then((canvas) => {
-                    canvas.toBlob((blob) => {
-                        if (!blob) {
-                            alert("Error: Failed to generate image!");
-                            reject("Failed to generate image");
-                            return;
-                        }
-    
-                        const formData = new FormData();
-                        const now = new Date();
-                        const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
-                        const fileName = `customized-image-${formattedDate}.png`;
-    
-                        const imageData = getImageDetails();
-                        formData.append('image', blob, fileName);
-                        formData.append('details', JSON.stringify(imageData));
-                        const subject = `Collage Acrylic Photo (${imageData.size || "default"})`;
-                        formData.append('subject', JSON.stringify(subject));
-                        resolve(formData);
-                    });
-                }).catch(error => reject(error));
-            });
-        }
-    
+
+        // function shareImage() {
+        //     return new Promise((resolve, reject) => {
+        //         html2canvas(collagePhoto, { backgroundColor: null }).then((canvas) => {
+        //             canvas.toBlob((blob) => {
+        //                 if (!blob) {
+        //                     alert("Error: Failed to generate image!");
+        //                     reject("Failed to generate image");
+        //                     return;
+        //                 }
+
+        //                 const formData = new FormData();
+        //                 const now = new Date();
+        //                 const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+        //                 const fileName = `customized-image-${formattedDate}.png`;
+
+        //                 const imageData = getImageDetails();
+        //                 formData.append('image', blob, fileName);
+        //                 formData.append('details', JSON.stringify(imageData));
+        //                 const subject = `Collage Acrylic Photo (${imageData.size || "default"})`;
+        //                 formData.append('subject', JSON.stringify(subject));
+        //                 resolve(formData);
+        //             });
+        //         }).catch(error => reject(error));
+        //     });
+        // }
+
         window.updatePreview = updatePreview;
         window.changeFontFamily = changeFontFamily;
         window.getImageDetails = getImageDetails;
-        window.shareImage = shareImage;
-    
+        // window.shareImage = shareImage;
+
         // Cleanup function
         return () => {
             // Remove event listeners with null checks
             if (addTextBtn && addTextBtn.removeEventListener) {
-              addTextBtn.removeEventListener('click', handleAddTextClick);
+                addTextBtn.removeEventListener('click', handleAddTextClick);
             }
             if (deleteTextBtn && deleteTextBtn.removeEventListener) {
-              deleteTextBtn.removeEventListener('click', handleDeleteTextClick);
+                deleteTextBtn.removeEventListener('click', handleDeleteTextClick);
             }
             if (iminus && iminus.removeEventListener) {
-              iminus.removeEventListener('click', handleIminusClick);
+                iminus.removeEventListener('click', handleIminusClick);
             }
             if (iplus && iplus.removeEventListener) {
-              iplus.removeEventListener('click', handleIplusClick);
+                iplus.removeEventListener('click', handleIplusClick);
             }
             if (resetBtn && resetBtn.removeEventListener) {
-              resetBtn.removeEventListener('click', handleResetClick);
+                resetBtn.removeEventListener('click', handleResetClick);
             }
             if (zoomRange && zoomRange.removeEventListener) {
-              zoomRange.removeEventListener('input', handleZoomRangeInput);
+                zoomRange.removeEventListener('input', handleZoomRangeInput);
             }
-          
+
             // Execute all cleanup functions with validation
             if (slotCleanupFunctions && Array.isArray(slotCleanupFunctions)) {
-              slotCleanupFunctions.forEach(cleanup => {
-                if (typeof cleanup === 'function') {
-                  cleanup();
-                }
-              });
+                slotCleanupFunctions.forEach(cleanup => {
+                    if (typeof cleanup === 'function') {
+                        cleanup();
+                    }
+                });
             }
             if (sizeBtnCleanupFunctions && Array.isArray(sizeBtnCleanupFunctions)) {
-              sizeBtnCleanupFunctions.forEach(cleanup => {
-                if (typeof cleanup === 'function') {
-                  cleanup();
-                }
-              });
+                sizeBtnCleanupFunctions.forEach(cleanup => {
+                    if (typeof cleanup === 'function') {
+                        cleanup();
+                    }
+                });
             }
             if (thicknessBtnCleanupFunctions && Array.isArray(thicknessBtnCleanupFunctions)) {
-              thicknessBtnCleanupFunctions.forEach(cleanup => {
-                if (typeof cleanup === 'function') {
-                  cleanup();
-                }
-              });
+                thicknessBtnCleanupFunctions.forEach(cleanup => {
+                    if (typeof cleanup === 'function') {
+                        cleanup();
+                    }
+                });
             }
-          
+
             // Remove window functions safely
             const windowProperties = ['updatePreview', 'changeFontFamily', 'getImageDetails', 'shareImage'];
             windowProperties.forEach(prop => {
-              if (window[prop] !== undefined) {
-                try {
-                  delete window[prop];
-                } catch (e) {
-                  console.warn(`Could not delete window.${prop}`, e);
+                if (window[prop] !== undefined) {
+                    try {
+                        delete window[prop];
+                    } catch (e) {
+                        console.warn(`Could not delete window.${prop}`, e);
+                    }
                 }
-              }
             });
-          };
-    }, []); // Empty dependency array means this runs once on mount
-
+        };
+    }, []);
     if (!layout) return <h2>Invalid collage type</h2>;
 
     const handleAddToCart = async () => {
         setCartLoading(true);
         try {
-            const formData = await window.shareImage();
+            const formData = await shareImage();
             console.log("FormData:", [...formData.entries()]);
 
             const token = localStorage.getItem("token");
@@ -705,7 +790,7 @@ const CollageAcrylicPhoto = () => {
     //     setLoading(true);
     //     const promise = new Promise(async (resolve, reject) => {
     //         try {
-    //             const formData = await window.shareImage();
+    //             const formData = await shareImage();
     //             console.log("FormData:", [...formData.entries()]);
 
     //             const token = localStorage.getItem("token");
@@ -747,8 +832,36 @@ const CollageAcrylicPhoto = () => {
     // };
 
     const handleShare = async () => {
-        const formData = await window.shareImage();
-        console.log("FormData:", [...formData.entries()]);
+        setLoading(true);
+        const formData = await shareImage();
+        let image;
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error("User is not authenticated");
+            toast.error("User is not authenticated.");
+            setLoading(false);
+            return;
+        }
+
+        const headers = {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+        };
+
+        const response = await axios.post(
+            `${import.meta.env.VITE_BACKEND_URL}/cart/uploadImage`,
+            formData,
+            { headers }
+        );
+
+        if (response.data?.success) {
+            image = response.data.data;
+            setLoading(false);
+        } else {
+            setLoading(false);
+            toast.error("Failed to create product!");
+        }
+
         const subject = JSON.parse(formData.get("subject"));
         const details = JSON.parse(formData.get("details"));
         console.log(subject, details);
@@ -769,14 +882,15 @@ const CollageAcrylicPhoto = () => {
             ).join('\n\n')
             : null;
 
-        let message = `✨ *Check out this ${subject}* ✨\n\n`;
+        let message = `✨ *Check New Order for ${subject}* ✨\n\n`;
 
         if (name) message += `📌 *Product Name:* ${name}\n`;
         if (type) message += `📦 *Type:* ${type}\n`;
         if (collageType) message += `🖼️ *collageType:* ${collageType}\n`;
         if (size) message += `📏 *Size:* ${size}\n`;
         if (thickness) message += `📐 *Thickness:* ${thickness}\n`;
-        if (price) message += `💰 *Price:* ₹${price}\n`;
+        // if (price) message += `💰 *Price:* ₹${price}\n`;
+        if (image) message += `\n📸 *Image:* ${image}\n`;
 
         if (formattedText) {
             message += `\n📋 *Added Text:*\n${formattedText}`;

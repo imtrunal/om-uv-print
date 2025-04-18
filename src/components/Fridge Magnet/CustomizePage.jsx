@@ -9,6 +9,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { ImSpinner2 } from "react-icons/im";
 import html2canvas from "html2canvas";
+import domtoimage from 'dom-to-image-more';
 
 
 const CustomizePage = () => {
@@ -71,7 +72,88 @@ const CustomizePage = () => {
   //     }
   //   };
   // }, []);
+  function copyComputedStyles(source, target) {
+    const computedStyle = getComputedStyle(source);
+    for (let key of computedStyle) {
+      target.style[key] = computedStyle.getPropertyValue(key);
+    }
 
+    for (let i = 0; i < source.children.length; i++) {
+      copyComputedStyles(source.children[i], target.children[i]);
+    }
+  }
+
+  async function shareImage() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const imageContainer = document.getElementById('uploadBox');
+        if (!imageContainer) {
+          alert("Error: Image container not found!");
+          return reject("Image container not found");
+        }
+
+        await new Promise(r => setTimeout(r, 300));
+
+        const clone = imageContainer.cloneNode(true);
+        copyComputedStyles(imageContainer, clone);
+        document.body.appendChild(clone);
+
+        // Hide clone off-screen
+        clone.style.position = 'absolute';
+        clone.style.top = '-9999px';
+        clone.style.left = '-9999px';
+        clone.style.margin = '0';
+        clone.style.padding = '0';
+        clone.style.boxSizing = 'border-box';
+        clone.style.background = 'white';
+        clone.style.transform = 'none';
+        clone.style.zoom = '1';
+
+        const width = imageContainer.offsetWidth;
+        const height = imageContainer.offsetHeight;
+        clone.style.width = `${width}px`;
+        clone.style.height = `${height}px`;
+
+        await document.fonts.ready;
+        await new Promise(res => requestAnimationFrame(res)); // layout settle
+
+        const blob = await domtoimage.toBlob(clone, {
+          width,
+          height,
+          style: {
+            margin: '0',
+            padding: '0',
+            boxSizing: 'border-box',
+            transform: 'none',
+            zoom: '1',
+            background: 'transparent',
+          },
+        });
+
+        document.body.removeChild(clone);
+
+        if (!blob) {
+          alert("Error: Failed to generate image!");
+          return reject("Failed to generate image");
+        }
+
+        const formData = new FormData();
+        const now = new Date();
+        const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0]; // Format: YYYY-MM-DDTHH-MM-SS
+        const fileName = `customized-image-${formattedDate}.png`;
+
+        const imageData = getImageDetails();
+        formData.append('image', blob, fileName);
+        formData.append('details', JSON.stringify(imageData));
+        const subject = `Acrylic Fridge Magnet (${imageData.size || "default"})`;
+        formData.append('subject', JSON.stringify(subject));
+        resolve(formData);
+      } catch (error) {
+        console.error("Image generation failed:", error);
+        reject(error);
+      }
+    });
+  }
 
   useEffect(() => {
     const uploadBox = document.getElementById('uploadBox');
@@ -119,7 +201,7 @@ const CustomizePage = () => {
           initializeImageFeatures(previewImage);
           addTextBtn.style.display = 'block';
           shareBtn.style.display = 'block';
-          cartBtn.style.display = 'block';
+          // cartBtn.style.display = 'block';
         };
         reader.readAsDataURL(file);
       }
@@ -467,31 +549,31 @@ const CustomizePage = () => {
       return imageDetails;
     }
 
-    function shareImage() {
-      return new Promise((resolve, reject) => {
-        html2canvas(uploadBox, { backgroundColor: null }).then((canvas) => {
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              alert("Error: Failed to generate image!");
-              reject("Failed to generate image");
-              return;
-            }
+    // function shareImage() {
+    //   return new Promise((resolve, reject) => {
+    //     html2canvas(uploadBox, { backgroundColor: null }).then((canvas) => {
+    //       canvas.toBlob((blob) => {
+    //         if (!blob) {
+    //           alert("Error: Failed to generate image!");
+    //           reject("Failed to generate image");
+    //           return;
+    //         }
 
-            const formData = new FormData();
-            const now = new Date();
-            const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
-            const fileName = `customized-image-${formattedDate}.png`;
+    //         const formData = new FormData();
+    //         const now = new Date();
+    //         const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+    //         const fileName = `customized-image-${formattedDate}.png`;
 
-            const imageData = getImageDetails();
-            formData.append('image', blob, fileName);
-            formData.append('details', JSON.stringify(imageData));
-            const subject = `Acrylic Fridge Magnet (${imageData.size || "default"})`;
-            formData.append('subject', JSON.stringify(subject));
-            resolve(formData);
-          });
-        }).catch(error => reject(error));
-      });
-    }
+    //         const imageData = getImageDetails();
+    //         formData.append('image', blob, fileName);
+    //         formData.append('details', JSON.stringify(imageData));
+    //         const subject = `Acrylic Fridge Magnet (${imageData.size || "default"})`;
+    //         formData.append('subject', JSON.stringify(subject));
+    //         resolve(formData);
+    //       });
+    //     }).catch(error => reject(error));
+    //   });
+    // }
 
     // Add event listeners
     uploadBox.addEventListener('click', handleUploadBoxClick);
@@ -506,7 +588,7 @@ const CustomizePage = () => {
 
     // Expose functions to window
     window.getImageDetails = getImageDetails;
-    window.shareImage = shareImage;
+    // window.shareImage = shareImage;
 
     // Return cleanup function
     return () => {
@@ -526,26 +608,26 @@ const CustomizePage = () => {
       if (addTextBtn && addTextBtn.removeEventListener) {
         addTextBtn.removeEventListener('click', handleAddTextClick);
       }
-      
+
       const addTextModalBtn = document.getElementById('afm-addTextModalBtn');
       if (addTextModalBtn && addTextModalBtn.removeEventListener) {
         addTextModalBtn.removeEventListener('click', handleAddTextModalClick);
       }
-    
+
       // Remove size button handlers
       sizeButtonClickHandlers.forEach(({ btn, handler }) => {
         if (btn && btn.removeEventListener) {
           btn.removeEventListener('click', handler);
         }
       });
-    
+
       // Remove thickness button handlers
       thicknessButtonClickHandlers.forEach(({ btn, handler }) => {
         if (btn && btn.removeEventListener) {
           btn.removeEventListener('click', handler);
         }
       });
-    
+
       // Execute all cleanup functions
       if (cleanupFunctions && Array.isArray(cleanupFunctions)) {
         cleanupFunctions.forEach(cleanup => {
@@ -554,7 +636,7 @@ const CustomizePage = () => {
           }
         });
       }
-    
+
       // Remove window functions safely
       if (window.getImageDetails) {
         try {
@@ -665,8 +747,36 @@ const CustomizePage = () => {
   // };
 
   const handleShare = async () => {
-    const formData = await window.shareImage();
-    console.log("FormData:", [...formData.entries()]);
+    setLoading(true);
+    const formData = await shareImage();
+    let image;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("User is not authenticated");
+      toast.error("User is not authenticated.");
+      setLoading(false);
+      return;
+    }
+
+    const headers = {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    };
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/cart/uploadImage`,
+      formData,
+      { headers }
+    );
+
+    if (response.data?.success) {
+      image = response.data.data;
+      setLoading(false);
+    } else {
+      setLoading(false);
+      toast.error("Failed to create product!");
+    }
+
     const subject = JSON.parse(formData.get("subject"));
     const details = JSON.parse(formData.get("details"));
     console.log(subject, details);
@@ -686,14 +796,16 @@ const CustomizePage = () => {
       ).join('\n\n')
       : null;
 
-    let message = `✨ *Check out this ${subject}* ✨\n\n`;
+    let message = `✨ *Check New Order for ${subject}* ✨\n\n`;
 
     if (name) message += `📌 *Product Name:* ${name}\n`;
     if (type) message += `📦 *Type:* ${type}\n`;
     if (shape) message += `🔵 *Shape:* ${shape}\n`;
     if (size) message += `📏 *Size:* ${size}\n`;
     if (thickness) message += `📐 *Thickness:* ${thickness}\n`;
-    if (price) message += `💰 *Price:* ₹${price}\n`;
+    // if (price) message += `💰 *Price:* ₹${price}\n`;
+    if (image) message += `\n📸 *Image:* ${image}\n`;
+
 
     if (formattedText) {
       message += `\n📋 *Added Text:*\n${formattedText}`;

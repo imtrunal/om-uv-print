@@ -10,12 +10,98 @@ import useCartStore from "../manage/CartStore";
 import { toast } from "sonner";
 import axios from "axios";
 import { ImSpinner2 } from "react-icons/im";
+import domtoimage from 'dom-to-image-more';
 
 const ClockCustomizer = () => {
     const [loading, setLoading] = useState(false);
     const [cartLoading, setCartLoading] = useState(false);
 
     const { addCart } = useCartStore();
+
+    function copyComputedStyles(source, target) {
+        const computedStyle = getComputedStyle(source);
+        for (let key of computedStyle) {
+            target.style[key] = computedStyle.getPropertyValue(key);
+        }
+
+        for (let i = 0; i < source.children.length; i++) {
+            copyComputedStyles(source.children[i], target.children[i]);
+        }
+    }
+
+    async function shareImage() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const imageContainer = document.querySelector('.image-container');
+                if (!imageContainer) {
+                    alert("Error: Image container not found!");
+                    return reject("Image container not found");
+                }
+
+                await new Promise(r => setTimeout(r, 300)); // wait for any animation or layout to finish
+
+                const clone = imageContainer.cloneNode(true);
+                copyComputedStyles(imageContainer, clone);
+                document.body.appendChild(clone);
+
+                // Hide clone off-screen
+                clone.style.position = 'absolute';
+                clone.style.top = '-9999px';
+                clone.style.left = '-9999px';
+                clone.style.margin = '0';
+                clone.style.padding = '0';
+                clone.style.boxSizing = 'border-box';
+                clone.style.background = 'white';
+                clone.style.transform = 'none';
+                clone.style.zoom = '1';
+
+                const width = imageContainer.offsetWidth;
+                const height = imageContainer.offsetHeight;
+                clone.style.width = `${width}px`;
+                clone.style.height = `${height}px`;
+
+                await document.fonts.ready;
+                await new Promise(res => requestAnimationFrame(res)); // layout settle
+
+                const blob = await domtoimage.toBlob(clone, {
+                    width,
+                    height,
+                    style: {
+                        margin: '0',
+                        padding: '0',
+                        boxSizing: 'border-box',
+                        transform: 'none',
+                        zoom: '1',
+                        background: 'transparent',
+                    },
+                });
+
+                document.body.removeChild(clone);
+
+                if (!blob) {
+                    alert("Error: Failed to generate image!");
+                    return reject("Failed to generate image");
+                }
+
+                const formData = new FormData();
+                const now = new Date();
+                const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+                const fileName = `customized-image-${formattedDate}.png`;
+
+                const imageData = getImageDetails();
+                formData.append('image', blob, fileName);
+                formData.append('details', JSON.stringify(imageData));
+                const subject = `Acrylic Clock Order - ${formattedDate}`;
+                formData.append('subject', JSON.stringify(subject));
+
+                resolve(formData);
+            } catch (error) {
+                console.error("Image generation failed:", error);
+                reject(error);
+            }
+        });
+    }
+
 
     useEffect(() => {
         const newPage = JSON.parse(sessionStorage.getItem("newPage") || "false");
@@ -52,7 +138,7 @@ const ClockCustomizer = () => {
             document.querySelectorAll(".clock-hand, .clock-center").forEach(el => {
                 el.classList.remove("hidden");
             });
-        }, 300);
+        }, 1000);
     }
     const handleAddToCart = async () => {
         setCartLoading(true);
@@ -101,50 +187,115 @@ const ClockCustomizer = () => {
         });
     };
 
+    // const handleShare = async () => {
+    //     setLoading(true);
+    //     const promise = new Promise(async (resolve, reject) => {
+    //         try {
+    //             handleClockHands();
+    //             const formData = await window.shareImage();
+    //             console.log("FormData:", [...formData.entries()]);
+
+    //             const token = localStorage.getItem("token");
+    //             if (!token) {
+    //                 console.error("User is not authenticated");
+    //                 reject("User is not authenticated.");
+    //                 return;
+    //             }
+
+    //             const headers = {
+    //                 "Content-Type": "multipart/form-data",
+    //                 Authorization: `Bearer ${token}`,
+    //             };
+
+    //             const response = await axios.post(
+    //                 `${import.meta.env.VITE_BACKEND_URL}/send-email`,
+    //                 formData,
+    //                 { headers }
+    //             );
+
+    //             if (response.data?.success) {
+    //                 resolve("Product share successfully!");
+    //                 setLoading(false);
+    //             } else {
+    //                 reject("Failed to share product.");
+    //             }
+    //         } catch (error) {
+    //             console.error("Error sharing product:", error);
+    //             reject("Failed to share product. Please try again.");
+    //         }
+    //     });
+
+    //     toast.promise(promise, {
+    //         loading: "Sharing product...",
+    //         success: (message) => message,
+    //         error: (errMsg) => errMsg,
+    //     });
+
+    // };
+
     const handleShare = async () => {
         setLoading(true);
-        const promise = new Promise(async (resolve, reject) => {
-            try {
-                handleClockHands();
-                const formData = await window.shareImage();
-                console.log("FormData:", [...formData.entries()]);
+        handleClockHands();
+        const formData = await shareImage();
+        let image;
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error("User is not authenticated");
+            toast.error("User is not authenticated.");
+            setLoading(false);
+            return;
+        }
 
-                const token = localStorage.getItem("token");
-                if (!token) {
-                    console.error("User is not authenticated");
-                    reject("User is not authenticated.");
-                    return;
-                }
+        const headers = {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+        };
 
-                const headers = {
-                    "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${token}`,
-                };
+        const response = await axios.post(
+            `${import.meta.env.VITE_BACKEND_URL}/cart/uploadImage`,
+            formData,
+            { headers }
+        );
 
-                const response = await axios.post(
-                    `${import.meta.env.VITE_BACKEND_URL}/send-email`,
-                    formData,
-                    { headers }
-                );
+        if (response.data?.success) {
+            image = response.data.data;
+            setLoading(false);
+        } else {
+            setLoading(false);
+            toast.error("Failed to create product!");
+        }
+        const subject = JSON.parse(formData.get("subject"));
+        const details = JSON.parse(formData.get("details"));
 
-                if (response.data?.success) {
-                    resolve("Product share successfully!");
-                    setLoading(false);
-                } else {
-                    reject("Failed to share product.");
-                }
-            } catch (error) {
-                console.error("Error sharing product:", error);
-                reject("Failed to share product. Please try again.");
-            }
-        });
+        const {
+            name,
+            type,
+            size,
+            shape,
+            price,
+            addedText
+        } = details;
 
-        toast.promise(promise, {
-            loading: "Sharing product...",
-            success: (message) => message,
-            error: (errMsg) => errMsg,
-        });
+        const formattedText = addedText.length
+            ? addedText.map(({ text, color, style }, i) =>
+                `▪️ *${i + 1}.* "${text}"\n  🎨 Color: ${color}\n  🖋 Font: ${style}`
+            ).join('\n\n')
+            : null;
 
+        let message = `✨ *Check New Order for ${subject}* ✨\n\n`;
+
+        if (name) message += `📌 *Product Name:* ${name}\n`;
+        if (type) message += `📦 *Type:* ${type}\n`;
+        if (shape) message += `🔵 *Shape:* ${shape}\n`;
+        if (size) message += `📏 *Size:* ${size}\n`;
+        if (image) message += `\n📸 *Image:* ${image}\n`;
+        // if (price) message += `💰 *Price:* ₹${price}\n`;
+
+        if (formattedText) {
+            message += `\n📋 *Added Text:*\n${formattedText}`;
+        }
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, "_blank");
     };
     return (
         <div className="ac-container">
@@ -257,7 +408,7 @@ const ClockCustomizer = () => {
 
             {/* Text Modal */}
             <div
-            className="z-50"
+                className="z-50"
                 id="textModal"
                 style={{
                     display: "none",
@@ -283,7 +434,7 @@ const ClockCustomizer = () => {
                     <h3>Customize Text</h3>
                     <label htmlFor="modalTextInput">Enter Text:</label>
                     <input
-                    className="border border-black p-1"
+                        className="border border-black p-1"
                         type="text"
                         id="modalTextInput"
                         placeholder="Enter text"

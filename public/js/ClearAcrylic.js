@@ -45,7 +45,7 @@ fileInput.addEventListener('change', async function (e) {
             previewImage.style.transform = 'translate(0px, 0px) scale(1)';
             await removeBackgroundAPI(file);
             shareBtn.style.display = 'block';
-            cartBtn.style.display = 'block';
+            // cartBtn.style.display = 'block';
         };
         reader.readAsDataURL(file);
     }
@@ -419,38 +419,38 @@ function getImageDetails() {
 //     });
 // });
 
-function shareImage() {
-    return new Promise((resolve, reject) => {
-        html2canvas(imageContainer, {
-            backgroundColor: null,
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: true
-        }).then((canvas) => {
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    alert("Error: Failed to generate image!");
-                    reject("Failed to generate image");
-                    return;
-                }
+// function shareImage() {
+//     return new Promise((resolve, reject) => {
+//         html2canvas(imageContainer, {
+//             backgroundColor: null,
+//             scale: 2,
+//             useCORS: true,
+//             allowTaint: true,
+//             logging: true
+//         }).then((canvas) => {
+//             canvas.toBlob((blob) => {
+//                 if (!blob) {
+//                     alert("Error: Failed to generate image!");
+//                     reject("Failed to generate image");
+//                     return;
+//                 }
 
-                const formData = new FormData();
-                const now = new Date();
-                const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
-                const fileName = `customized-image-${formattedDate}.png`;
-                const imageData = getImageDetails();
-                formData.append('image', blob, fileName);
-                formData.append('details', JSON.stringify(imageData));
-                const subject = `Clear Acrylic Photo (${imageData.size || "default"})`;
-                formData.append('subject', JSON.stringify(subject));
+//                 const formData = new FormData();
+//                 const now = new Date();
+//                 const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+//                 const fileName = `customized-image-${formattedDate}.png`;
+//                 const imageData = getImageDetails();
+//                 formData.append('image', blob, fileName);
+//                 formData.append('details', JSON.stringify(imageData));
+//                 const subject = `Clear Acrylic Photo (${imageData.size || "default"})`;
+//                 formData.append('subject', JSON.stringify(subject));
                 
-                resolve(formData);
-            });
-        }).catch(error => reject(error));
-    });
-}
+//                 resolve(formData);
+//             });
+//         }).catch(error => reject(error));
+//     });
+// }
 window.updatePreview = updatePreview;
 window.getImageDetails = getImageDetails;
-window.shareImage = shareImage;
+// window.shareImage = shareImage;
 

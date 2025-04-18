@@ -52,7 +52,7 @@ fileInput.addEventListener('change', function (e) {
         reader.readAsDataURL(file);
         zoomRange.value = 1;
         shareBtn.style.display = 'block';
-        cartBtn.style.display = 'block';
+        // cartBtn.style.display = 'block';
     }
 
 });
@@ -581,6 +581,7 @@ function getImageDetails() {
     const fileInput = document.getElementById('fileInput');
     const selectedSize = document.querySelector('.size-btn.active');
     const textElements = document.querySelectorAll('.text-box');
+    const selectedShape = document.querySelector('.shape-btn.active');
 
     if (!previewImage || !previewImage.src) {
         console.error("No image uploaded.");
@@ -627,6 +628,7 @@ function getImageDetails() {
         name: `Acrylic Clock (${size})`,
         price: 799,
         size: size,
+        shape: selectedShape ? selectedShape.dataset.shape : 'squre',
         addedText: allTextData.length ? allTextData : "No text added"
     };
 

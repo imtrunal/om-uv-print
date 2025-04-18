@@ -9,11 +9,103 @@ import axios from "axios";
 import useCartStore from "../manage/CartStore";
 import { ImSpinner2 } from "react-icons/im";
 import Footer from './../components/Layouts/Footer';
+import domtoimage from 'dom-to-image-more';
 const AcrylicPhoto = () => {
   const [loading, setLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
 
   const { addCart } = useCartStore(); // Use the hook
+
+
+
+  function copyComputedStyles(source, target) {
+    const computedStyle = getComputedStyle(source);
+    for (let key of computedStyle) {
+      target.style[key] = computedStyle.getPropertyValue(key);
+    }
+  
+    for (let i = 0; i < source.children.length; i++) {
+      copyComputedStyles(source.children[i], target.children[i]);
+    }
+  }
+  
+  async function shareImage() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const imageContainer = document.querySelector('.ap-image-container');
+        if (!imageContainer) {
+          alert("Error: Image container not found!");
+          return reject("Image container not found");
+        }
+  
+        await new Promise(r => setTimeout(r, 300)); // wait for any animation or layout to finish
+  
+        const clone = imageContainer.cloneNode(true);
+        copyComputedStyles(imageContainer, clone);
+        document.body.appendChild(clone);
+  
+        // Hide clone off-screen
+        clone.style.position = 'absolute';
+        clone.style.top = '-9999px';
+        clone.style.left = '-9999px';
+        clone.style.margin = '0';
+        clone.style.padding = '0';
+        clone.style.boxSizing = 'border-box';
+        clone.style.background = 'white';
+        clone.style.transform = 'none';
+        clone.style.zoom = '1';
+  
+        const width = imageContainer.offsetWidth;
+        const height = imageContainer.offsetHeight;
+        clone.style.width = `${width}px`;
+        clone.style.height = `${height}px`;
+  
+        await document.fonts.ready;
+        await new Promise(res => requestAnimationFrame(res)); // layout settle
+  
+        const blob = await domtoimage.toBlob(clone, {
+          width,
+          height,
+          style: {
+            margin: '0',
+            padding: '0',
+            boxSizing: 'border-box',
+            transform: 'none',
+            zoom: '1',
+            background: 'white',
+          },
+        });
+  
+        document.body.removeChild(clone);
+  
+        if (!blob) {
+          alert("Error: Failed to generate image!");
+          return reject("Failed to generate image");
+        }
+  
+        const formData = new FormData();
+        const now = new Date();
+        const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
+        const fileName = `customized-image-${formattedDate}.png`;
+  
+        const imageData = window.getImageDetails?.() || {};
+        formData.append('image', blob, fileName);
+        formData.append('details', JSON.stringify(imageData));
+  
+        const subject = `Acrylic Premium Photo (${imageData.size || "default"})`;
+        formData.append('subject', JSON.stringify(subject));
+  
+        resolve(formData);
+      } catch (error) {
+        console.error("Image generation failed:", error);
+        reject(error);
+      }
+    });
+  }
+  
+
+  
+
 
   useEffect(() => {
     const newPage = JSON.parse(sessionStorage.getItem("newPage") || "false");
@@ -36,6 +128,8 @@ const AcrylicPhoto = () => {
       scriptMain.type = "module";
       document.body.appendChild(scriptMain);
 
+
+      
       return () => {
         document.body.removeChild(scriptMain);
         document.body.removeChild(scriptHtml2Canvas);
@@ -69,6 +163,8 @@ const AcrylicPhoto = () => {
 
       if (response.data?.success) {
         const newCartItem = response.data.data;
+        console.log(response.data.data.image);
+
         addCart({
           id: newCartItem._id,
           name: newCartItem.name,
@@ -133,8 +229,35 @@ const AcrylicPhoto = () => {
   // };
 
   const handleShare = async () => {
-    const formData = await window.shareImage();
+    setLoading(true);
+    const formData = await shareImage();
+    let image;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("User is not authenticated");
+      toast.error("User is not authenticated.");
+      setLoading(false);
+      return;
+    }
 
+    const headers = {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    };
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/cart/uploadImage`,
+      formData,
+      { headers }
+    );
+
+    if (response.data?.success) {
+      image = response.data.data;
+      setLoading(false);
+    } else {
+      setLoading(false);
+      toast.error("Failed to create product!");
+    }
     const subject = JSON.parse(formData.get("subject"));
     const details = JSON.parse(formData.get("details"));
 
@@ -154,14 +277,15 @@ const AcrylicPhoto = () => {
       ).join('\n\n')
       : null;
 
-    let message = `✨ *Check out this ${subject}* ✨\n\n`;
+    let message = `✨ *Check New Order for ${subject}* ✨\n\n`;
 
     if (name) message += `📌 *Product Name:* ${name}\n`;
     if (type) message += `📦 *Type:* ${type}\n`;
     if (shape) message += `🔵 *Shape:* ${shape}\n`;
     if (size) message += `📏 *Size:* ${size}\n`;
     if (border) message += `🖌️ *Border:* ${border.split("solid")[1]?.trim()}\n`;
-    if (price) message += `💰 *Price:* ₹${price}\n`;
+    if (image) message += `\n📸 *Image:* ${image}\n`;
+    // if (price) message += `💰 *Price:* ₹${price}\n`;
 
     if (formattedText) {
       message += `\n📋 *Added Text:*\n${formattedText}`;
@@ -258,15 +382,17 @@ const AcrylicPhoto = () => {
           <button className="btn2 ap-share" id="shareBtn" onClick={handleShare} disabled={loading}>
             {loading ? <ImSpinner2 className="spin" /> : <FaShareAlt />}
           </button>
+          {
 
-          <button
-            className="btn ap-add-to-cart"
-            id="cartBtn"
-            onClick={handleAddToCart}
-            disabled={cartLoading}
-          >
-            {cartLoading ? <ImSpinner2 className="spin" /> : <MdAddShoppingCart />}
-          </button>
+            <button
+              className="btn ap-add-to-cart"
+              id="cartBtn"
+              onClick={handleAddToCart}
+              disabled={cartLoading}
+            >
+              {cartLoading ? <ImSpinner2 className="spin" /> : <MdAddShoppingCart />}
+            </button>
+          }
           <p>Size:</p>
           {[
             "8x12",
