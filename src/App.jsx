@@ -18,6 +18,7 @@ import MyOrders from "./components/MyOrders";
 import OrderDetails from "./components/OrderDetails";
 import './index.css'
 import Footer from "./components/Layouts/Footer";
+import ComingSoon from "./components/ComingSoon";
 function App() {
   const location = useLocation();
   const isLoginPage = location.pathname === "/";
@@ -36,7 +37,8 @@ function App() {
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/acrylic" element={<ProtectedRoute><Acrylic /></ProtectedRoute>} />
-          <Route path="/clear-acrylic" element={<ProtectedRoute><ClearAcrylic /></ProtectedRoute>} />
+          {/* <Route path="/clear-acrylic" element={<ProtectedRoute><ClearAcrylic /></ProtectedRoute>} /> */}
+          <Route path="/clear-acrylic" element={<ProtectedRoute><ComingSoon /></ProtectedRoute>} />
           <Route path="/fridge-magnets" element={<ProtectedRoute><MainHome /></ProtectedRoute>} />
           <Route path="/fridge-magnets/:shape" element={<ProtectedRoute><CustomizePage /></ProtectedRoute>} />
           <Route path="/acrylic-wall-clock" element={<ProtectedRoute><ClockCustomizer /></ProtectedRoute>} />

@@ -43,7 +43,7 @@ fileInput.addEventListener('change', async function (e) {
             previewImage.src = e.target.result;
             previewImage.style.display = 'block';
             previewImage.style.transform = 'translate(0px, 0px) scale(1)';
-            await removeBackgroundAPI(file);
+            // await removeBackgroundAPI(file);
             shareBtn.style.display = 'block';
             // cartBtn.style.display = 'block';
         };
@@ -143,30 +143,30 @@ allSizeBtn.forEach(btn => {
     });
 });
 
-async function removeBackgroundAPI(file) {
-    const formData = new FormData();
-    formData.append("image", file); // this is the file object, not base64
+// async function removeBackgroundAPI(file) {
+//     const formData = new FormData();
+//     formData.append("image", file); // this is the file object, not base64
 
-    try {
-        const response = await fetch(`${BASE_URL}/change-bg`, {
-            method: 'POST',
-            body: formData, // ✅ don't manually set headers
-        });
+//     try {
+//         const response = await fetch(`${BASE_URL}/change-bg`, {
+//             method: 'POST',
+//             body: formData, // ✅ don't manually set headers
+//         });
 
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`Server error ${response.status}: ${text}`);
-        }
+//         if (!response.ok) {
+//             const text = await response.text();
+//             throw new Error(`Server error ${response.status}: ${text}`);
+//         }
 
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        previewImage.src = imageUrl;
+//         const blob = await response.blob();
+//         const imageUrl = URL.createObjectURL(blob);
+//         previewImage.src = imageUrl;
 
-    } catch (error) {
-        console.error('Error removing background:', error);
-        alert('Failed to remove background');
-    }
-}
+//     } catch (error) {
+//         console.error('Error removing background:', error);
+//         alert('Failed to remove background');
+//     }
+// }
 
 
 addTextBtn.addEventListener('click', function () {
