@@ -44,11 +44,11 @@ const Footer = () => {
                 <div className="w-full md:w-1/6 text-center md:text-left">
                     <h2 className="text-2xl mb-3">Best Online Shop For</h2>
                     <ul className="text-sm space-y-2 mt-7">
-                        <li className="cursor-pointer text-base/7"><a href="#">Acrylic Photo</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="#">Clear Acrylic Photo</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="#">Fridge Magnets</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="#">Acylic Wall Clock</a></li>
-                        <li className="cursor-pointer text-base/7"><a href="#">Collage Acylic Photo</a></li>
+                    <li className="cursor-pointer text-base/7"><a href="/acrylic">Acrylic Photo</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="/clear-acrylic">Clear Acrylic Photo</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="/fridge-magnets">Fridge Magnets</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="/acrylic-wall-clock">Acylic Wall Clock</a></li>
+                        <li className="cursor-pointer text-base/7"><a href="/collage-acrylic-photo">Collage Acylic Photo</a></li>
                     </ul>
                 </div>
             </div>
@@ -68,7 +68,7 @@ const Footer = () => {
                     <a href="https://www.youtube.com/@OM_UV_PRINT_23610" target="_blank"><SiYoutube className="cursor-pointer text-xl" /></a>
                 </div>
             </div>
-        </footer>
+        </footer >
     );
 };
 
