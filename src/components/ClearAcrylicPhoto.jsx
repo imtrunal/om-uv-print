@@ -136,17 +136,17 @@ const ClearAcrylic = () => {
             const formData = await shareImage();
             console.log("FormData:", [...formData.entries()]);
 
-            const token = localStorage.getItem("token");
-            if (!token) {
-                console.error("User is not authenticated");
-                toast.error("User is not authenticated.");
-                setCartLoading(false);
-                return;
-            }
+            // const token = localStorage.getItem("token");
+            // if (!token) {
+            //     console.error("User is not authenticated");
+            //     toast.error("User is not authenticated.");
+            //     setCartLoading(false);
+            //     return;
+            // }
 
             const headers = {
                 "Content-Type": "multipart/form-data",
-                Authorization: `Bearer ${token}`,
+                // Authorization: `Bearer ${token}`,
             };
 
             const response = await axios.post(
@@ -225,17 +225,17 @@ const ClearAcrylic = () => {
 
         setLoading(true);
         let image;
-        const token = localStorage.getItem("token");
-        if (!token) {
-            console.error("User is not authenticated");
-            toast.error("User is not authenticated.");
-            setLoading(false);
-            return;
-        }
+        // const token = localStorage.getItem("token");
+        // if (!token) {
+        //     console.error("User is not authenticated");
+        //     toast.error("User is not authenticated.");
+        //     setLoading(false);
+        //     return;
+        // }
 
         const headers = {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
+            // Authorization: `Bearer ${token}`,
         };
 
         const response = await axios.post(

@@ -663,16 +663,16 @@ const CustomizePage = () => {
       const formData = await window.shareImage();
       console.log("FormData:", [...formData.entries()]);
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("User is not authenticated");
-        toast.error("User is not authenticated.");
-        return;
-      }
+      // const token = localStorage.getItem("token");
+      // if (!token) {
+      //   console.error("User is not authenticated");
+      //   toast.error("User is not authenticated.");
+      //   return;
+      // }
 
       const headers = {
         "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
+        // Authorization: `Bearer ${token}`,
       };
 
       const response = await axios.post(
@@ -750,17 +750,17 @@ const CustomizePage = () => {
     setLoading(true);
     const formData = await shareImage();
     let image;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("User is not authenticated");
-      toast.error("User is not authenticated.");
-      setLoading(false);
-      return;
-    }
+    // const token = localStorage.getItem("token");
+    // if (!token) {
+    //   console.error("User is not authenticated");
+    //   toast.error("User is not authenticated.");
+    //   setLoading(false);
+    //   return;
+    // }
 
     const headers = {
       "Content-Type": "multipart/form-data",
-      Authorization: `Bearer ${token}`,
+      // Authorization: `Bearer ${token}`,
     };
 
     const response = await axios.post(

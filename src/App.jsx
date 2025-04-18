@@ -21,20 +21,20 @@ import Footer from "./components/Layouts/Footer";
 import ComingSoon from "./components/ComingSoon";
 function App() {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/";
-  const token = localStorage.getItem("token");
+  const isLoginPage = location.pathname === "/login";
+  // const token = localStorage.getItem("token");
 
-  if (token && isLoginPage) {
-    return <Navigate to="/home" />;
-  }
+  // if (token && isLoginPage) {
+  //   return <Navigate to="/home" />;
+  // }
   return (
     <>
       <Toaster richColors position="top-center" duration={2000} />
       {!isLoginPage && <Navbar />}
       <div style={!isLoginPage ? { marginTop: "7%" } : {}}>
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          {/* <Route path="/" element={<Login />} /> */}
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/acrylic" element={<ProtectedRoute><Acrylic /></ProtectedRoute>} />
           {/* <Route path="/clear-acrylic" element={<ProtectedRoute><ClearAcrylic /></ProtectedRoute>} /> */}

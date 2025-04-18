@@ -34,47 +34,48 @@ const PayFirst = () => {
 }
 
 const ProtectedRoute = ({ children }) => {
-    const navigate = useNavigate();
-    const API_URL = import.meta.env.VITE_BACKEND_URL;
-    const toastShown = useRef(false);
+    // const navigate = useNavigate();
+    // const API_URL = import.meta.env.VITE_BACKEND_URL;
+    // const toastShown = useRef(false);
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
+    // useEffect(() => {
+    //     const token = localStorage.getItem("token");
 
-        if (!token) {
-            handleSessionExpiry();
-            return;
-        }
+    //     if (!token) {
+    //         handleSessionExpiry();
+    //         return;
+    //     }
 
-        const verifyToken = async () => {
-            try {
-                await axios.get(`${API_URL}/user/auth/verify`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-            } catch (error) {
-                handleSessionExpiry();
-            }
-        };
+    //     const verifyToken = async () => {
+    //         try {
+    //             await axios.get(`${API_URL}/user/auth/verify`, {
+    //                 headers: { Authorization: `Bearer ${token}` },
+    //             });
+    //         } catch (error) {
+    //             handleSessionExpiry();
+    //         }
+    //     };
 
-        verifyToken();
-    }, [navigate, API_URL]);
+    //     verifyToken();
+    // }, [navigate, API_URL]);
 
-    const handleSessionExpiry = () => {
-        if (!toastShown.current) {
-            toastShown.current = true;
-            toast.error("Session expired. Please log in again.");
-        }
-        localStorage.removeItem("token");
-        navigate("/");
-    };
+    // const handleSessionExpiry = () => {
+    //     if (!toastShown.current) {
+    //         toastShown.current = true;
+    //         toast.error("Session expired. Please log in again.");
+    //     }
+    //     localStorage.removeItem("token");
+    //     navigate("/");
+    // };
 
-    const targetTime = new Date(2025, 2, 19, 18, 0, 0).getTime();
-    const currentTime = new Date().getTime();
+    // const targetTime = new Date(2025, 2, 19, 18, 0, 0).getTime();
+    // const currentTime = new Date().getTime();
 
     // if (currentTime >= targetTime) {
     //     return <PayFirst />
     // }
-
+    console.log("Protected Route");
+    
 
     return children;
 };

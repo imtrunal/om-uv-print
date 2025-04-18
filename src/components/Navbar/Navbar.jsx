@@ -67,7 +67,7 @@ function Navbar() {
 
 
   useEffect(() => {
-    fetchCart();
+    // fetchCart();
     const handleScroll = () => {
       setScrolled(window.scrollY > 0);
     };
@@ -158,7 +158,7 @@ function Navbar() {
 
 
           {/* Cart Icon */}
-          <IconButton size="large" onClick={() => setCartOpen(true)}>
+          {/* <IconButton size="large" onClick={() => setCartOpen(true)}>
             <Badge
               badgeContent={carts.length}
               sx={{
@@ -172,12 +172,12 @@ function Navbar() {
             >
               <RiShoppingBag3Fill color="#000787" />
             </Badge>
-          </IconButton>
+          </IconButton> */}
 
           {/* Profile Icon with Dropdown Menu */}
-          <IconButton size="large" sx={{ color: "#000787" }} onClick={handleMenuOpen}>
+          {/* <IconButton size="large" sx={{ color: "#000787" }} onClick={handleMenuOpen}>
             <AccountCircle />
-          </IconButton>
+          </IconButton> */}
 
           <Menu
             anchorEl={anchorEl}
