@@ -30,6 +30,7 @@ const shareBtn = document.getElementById('shareBtn');
 
 const allSizeBtn = document.querySelectorAll('.size-btn');
 const BASE_URL = window.BASE_URL;
+let activeClock = {};
 
 let isDragging = false;
 let currentX = 0;
@@ -70,6 +71,9 @@ allShapeBtn.forEach(btn => {
         if (shape) {
             imageContainer.classList.add(`${shape}-shape`)
             createClockNumbers();
+        }
+        if (activeClock.selectedClock && activeClock.type) {
+            activateClock(activeClock.selectedClock, activeClock.type);
         }
     });
 });
@@ -127,7 +131,7 @@ document.querySelectorAll('.size-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         allSizeBtn.forEach(button => button.classList.remove('active'));
         this.classList.add('active');
-        const ratio = this.dataset.ratio.split('x');
+        const ratio = this.dataset.ratio.split('x');        
         const aspectWidth = ratio[0];
         const aspectHeight = ratio[1];
 
@@ -138,16 +142,12 @@ document.querySelectorAll('.size-btn').forEach(btn => {
         const heightInd = document.getElementById('height');
 
         if (aspectWidth == 11 && aspectHeight == 11) {
-            console.log("!!", width, height);
-
             imageContainer.style.width = '';
             imageContainer.style.height = '';
             widthInd.innerText = `Width 12 inch (30.48 cm)`;
             heightInd.innerText = `Height 9 inch (22.86 cm)`;
         }
         else {
-            console.log('@@', width, height);
-
             imageContainer.style.width = `${Math.round(width)}px`;
             imageContainer.style.height = `${Math.round(height)}px`;
             widthInd.innerText = `Width ${aspectWidth} inch (${aspectWidth * 2.54} cm)`;
@@ -170,7 +170,9 @@ document.querySelectorAll('.size-btn').forEach(btn => {
                 shape.style.height = `${Math.round(height)}px`;
             }
         });
-
+        if (activeClock.selectedClock && activeClock.type) {
+            activateClock(activeClock.selectedClock, activeClock.type);
+        }
     });
 });
 
@@ -530,6 +532,10 @@ createClockNumbers();
 createPreviewClockNumbers();
 
 function activateClock(selectedClock, type) {
+    activeClock = {
+        selectedClock: selectedClock,
+        type: type
+    };
     createClockNumbers(type);
 
     const allClocks = document.querySelectorAll('.style-clock');
