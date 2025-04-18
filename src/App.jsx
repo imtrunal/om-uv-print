@@ -21,7 +21,7 @@ import Footer from "./components/Layouts/Footer";
 import ComingSoon from "./components/ComingSoon";
 function App() {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
+  const isLoginPage = location.pathname === "/";
   // const token = localStorage.getItem("token");
 
   // if (token && isLoginPage) {
@@ -34,7 +34,8 @@ function App() {
       <div style={!isLoginPage ? { marginTop: "7%" } : {}}>
         <Routes>
           {/* <Route path="/" element={<Login />} /> */}
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/acrylic" element={<ProtectedRoute><Acrylic /></ProtectedRoute>} />
           {/* <Route path="/clear-acrylic" element={<ProtectedRoute><ClearAcrylic /></ProtectedRoute>} /> */}
