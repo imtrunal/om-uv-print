@@ -414,9 +414,9 @@ function updateClock() {
     const minuteDeg = minutes * 6;
     const secondDeg = seconds * 6;
 
-    hourHand.style.transform = `rotate(${hourDeg}deg)`;
-    minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
-    secondHand.style.transform = `rotate(${secondDeg}deg)`;
+    if(hourHand) hourHand.style.transform = `rotate(${hourDeg}deg)`;
+    if(minuteHand) minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+    if(secondHand) secondHand.style.transform = `rotate(${secondDeg}deg)`;
 }
 
 function createClockNumbers(type) {

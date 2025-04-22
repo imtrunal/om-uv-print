@@ -358,6 +358,7 @@ const CollageAcrylicPhoto = () => {
             if (!imageElement.dataset.y) imageElement.dataset.y = 0;
 
             scale = parseFloat(imageElement.dataset.scale);
+            zoomRange.value = scale;            
             rotation = parseFloat(imageElement.dataset.rotation);
             currentX = parseFloat(imageElement.dataset.x);
             currentY = parseFloat(imageElement.dataset.y);

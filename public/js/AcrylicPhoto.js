@@ -20,18 +20,12 @@ const previewImage = document.getElementById('previewImage');
 const fileInput = document.getElementById('fileInput');
 const widthInd = document.getElementById('width');
 const heightInd = document.getElementById('height');
-// const downloadBtn = document.getElementById('downloadBtn');
 const shareBtn = document.getElementById('shareBtn');
 const cartBtn = document.getElementById('cartBtn');
-imageContainer.addEventListener('dblclick', dragStart);
-imageContainer.addEventListener('mousemove', drag);
-document.addEventListener('mouseup', dragEnd);
 const zoomRange = document.getElementById('zoomRange');
-let scale = 1;
 const removeBgBtn = document.getElementById('removeBgBtn');
-removeBgBtn.addEventListener('click', openBgModal);
-const allTextData = [];
 
+let scale = 1;
 let file;
 let isDragging = false;
 let currentX = 0;
@@ -40,8 +34,122 @@ let initialX;
 let initialY;
 let xOffset = 0;
 let yOffset = 0;
+let isDraggingImage = false;
+const allTextData = [];
 
-fileInput.addEventListener('change', function (e) {
+// Initialize event listeners
+function initEventListeners() {
+    // Image drag events (only on double click/tap)
+    imageContainer.addEventListener('dblclick', enableImageDrag);
+    imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+
+    // Mouse/touch move and end events
+    document.addEventListener('mousemove', handleDrag);
+    document.addEventListener('mouseup', disableImageDrag);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', disableImageDrag);
+
+    // Other controls
+    zoomRange.addEventListener('input', handleZoom);
+    fileInput.addEventListener('change', handleFileSelect);
+    removeBgBtn.addEventListener('click', openBgModal);
+
+    // Shape buttons
+    document.querySelectorAll('.ap-shape-btn').forEach(btn => {
+        btn.addEventListener('click', handleShapeSelection);
+    });
+
+    // Color buttons
+    document.querySelectorAll('.ap-color-btn').forEach(btn => {
+        btn.addEventListener('click', handleColorSelection);
+    });
+
+    // Size buttons
+    document.querySelectorAll('.ap-size-btn').forEach(btn => {
+        btn.addEventListener('click', handleSizeSelection);
+    });
+
+    // Text controls
+    document.getElementById('addTextBtn').addEventListener('click', function () {
+        document.getElementById('textModal').style.display = 'block';
+    });
+
+    document.getElementById('addTextModalBtn').addEventListener('click', addTextFromModal);
+}
+
+// Enable image dragging (only after double click/tap)
+function enableImageDrag(e) {
+    isDraggingImage = true;
+    if (e.type === 'dblclick') {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+    }
+    imageContainer.style.cursor = 'grabbing';
+}
+
+// Disable image dragging
+function disableImageDrag() {
+    isDraggingImage = false;
+    imageContainer.style.cursor = 'default';
+}
+
+// Handle mouse drag
+function handleDrag(e) {
+    if (isDraggingImage) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        xOffset = currentX;
+        yOffset = currentY;
+        updateImagePosition();
+    }
+}
+
+// Handle touch start
+function handleTouchStart(e) {
+    // Check if this is a double tap (for image dragging)
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const now = new Date().getTime();
+        const previousTouch = imageContainer.dataset.lastTouchTime || 0;
+
+        if (now - previousTouch < 300) { // Double tap detected
+            e.preventDefault();
+            isDraggingImage = true;
+            initialX = touch.clientX - xOffset;
+            initialY = touch.clientY - yOffset;
+            imageContainer.style.cursor = 'grabbing';
+        }
+        imageContainer.dataset.lastTouchTime = now;
+    }
+}
+
+// Handle touch move
+function handleTouchMove(e) {
+    if (isDraggingImage && e.touches.length === 1) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        currentX = touch.clientX - initialX;
+        currentY = touch.clientY - initialY;
+        xOffset = currentX;
+        yOffset = currentY;
+        updateImagePosition();
+    }
+}
+
+// Update image position
+function updateImagePosition() {
+    previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
+}
+
+// Handle zoom
+function handleZoom() {
+    scale = parseFloat(zoomRange.value);
+    updateImagePosition();
+}
+
+// Handle file selection
+function handleFileSelect(e) {
     file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
@@ -49,182 +157,99 @@ fileInput.addEventListener('change', function (e) {
             previewImage.src = e.target.result;
             previewImage.style.display = 'block';
             previewImage.style.transform = 'translate(0px, 0px) scale(1)';
+            xOffset = 0;
+            yOffset = 0;
+            currentX = 0;
+            currentY = 0;
+            scale = 1;
+            zoomRange.value = 1;
         };
         reader.readAsDataURL(file);
-        // downloadBtn.style.display = "block";
         shareBtn.style.display = "block";
-        // cartBtn.style.display = "block";
-    }
-});
-
-document.querySelectorAll('.ap-shape-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        document.querySelectorAll('.ap-shape-btn').forEach(button => button.classList.remove('ap-active'));
-        this.classList.add('ap-active');
-        const shape = this.dataset.shape;
-
-        // Remove previous shape classes
-        imageContainer.classList.remove(
-            'ap-circle-shape', 'ap-square-shape', 'ap-oval-shape', 'ap-rect-shape',
-            'ap-potrait-shape', 'ap-custom-shape', 'ap-custom2-shape', 'ap-custom3-shape', 'ap-custom4-shape'
-        );
-
-        // Add the selected shape class
-        if (shape) {
-            imageContainer.classList.add(`ap-${shape}-shape`);
-        }
-    });
-});
-
-
-document.querySelectorAll('.ap-color-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const borderColor = this.style.border.split("groove ")[1] || "none";
-        imageContainer.style.border = borderColor === "none" ? "none" : `10px solid ${borderColor}`;
-    });
-});
-
-
-function dragStart(e) {
-    if (!isDragging) {
-        isDragging = true;
-
-        if (e.type === 'touchstart') {
-            initialX = e.touches[0].clientX - xOffset;
-            initialY = e.touches[0].clientY - yOffset;
-        } else {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-        }
     }
 }
 
-function drag(e) {
-    if (isDragging) {
-        e.preventDefault();
+// Handle shape selection
+function handleShapeSelection() {
+    document.querySelectorAll('.ap-shape-btn').forEach(button => button.classList.remove('ap-active'));
+    this.classList.add('ap-active');
+    const shape = this.dataset.shape;
 
-        if (e.type === 'touchmove') {
-            currentX = e.touches[0].clientX - initialX;
-            currentY = e.touches[0].clientY - initialY;
-        } else {
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
-        }
+    // Remove previous shape classes
+    imageContainer.classList.remove(
+        'ap-circle-shape', 'ap-square-shape', 'ap-oval-shape', 'ap-rect-shape',
+        'ap-potrait-shape', 'ap-custom-shape', 'ap-custom2-shape', 'ap-custom3-shape', 'ap-custom4-shape'
+    );
 
-        xOffset = currentX;
-        yOffset = currentY;
-
-        updateImagePosition();
+    // Add the selected shape class
+    if (shape) {
+        imageContainer.classList.add(`ap-${shape}-shape`);
     }
 }
 
-function dragEnd() {
-    if (isDragging) {
-        isDragging = false;
+// Handle color selection
+function handleColorSelection() {
+    const borderColor = this.style.border.split("groove ")[1] || "none";
+    imageContainer.style.border = borderColor === "none" ? "none" : `10px solid ${borderColor}`;
+}
+
+// Handle size selection
+function handleSizeSelection() {
+    document.querySelectorAll('.ap-size-btn').forEach(button => button.classList.remove('ap-active'));
+    this.classList.add('ap-active');
+
+    const ratio = this.dataset.ratio.split('x');
+    const aspectWidth = ratio[0];
+    const aspectHeight = ratio[1];
+
+    // Keep fixed width on all screens
+    let width = 500;
+    let height = (width * aspectHeight) / aspectWidth;
+
+    if (aspectWidth === "8" && aspectHeight === "12") {
+        imageContainer.style.width = '';
+        imageContainer.style.height = '';
+        widthInd.innerText = `Width 12 inch (30.48 cm)`;
+        heightInd.innerText = `Height 9 inch (22.86 cm)`;
+    } else {
+        imageContainer.style.width = `${Math.round(width)}px`;
+        imageContainer.style.height = `${Math.round(height)}px`;
+        widthInd.innerText = `Width ${aspectWidth} inch (${aspectWidth * 2.54} cm)`;
+        heightInd.innerText = `Height ${aspectHeight} inch (${aspectHeight * 2.54} cm)`;
     }
-}
 
-function updateImagePosition() {
-    previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
-}
-
-zoomRange.addEventListener('input', function () {
-    scale = parseFloat(zoomRange.value);
-    updateImagePosition();
-});
-
-// downloadBtn.addEventListener('click', () => {
-//     document.querySelectorAll('.resize-handle, .rotate-handle').forEach(handle => {
-//         handle.style.display = 'none';
-//     });
-//     html2canvas(imageContainer, { backgroundColor: null }).then((canvas) => {
-//         const link = document.createElement('a');
-//         link.download = 'customized-image.png';
-//         link.href = canvas.toDataURL('image/png');
-//         link.click();
-//     });
-// });
-
-document.querySelectorAll('.ap-size-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        document.querySelectorAll('.ap-size-btn').forEach(button => button.classList.remove('ap-active'));
-        this.classList.add('ap-active');
-
-        const ratio = this.dataset.ratio.split('x');
-        const aspectWidth = ratio[0];
-        const aspectHeight = ratio[1];
-
-        let width = 500;
-        let height = (450 * aspectHeight) / aspectWidth;
-
-        const widthInd = document.getElementById('width');
-        const heightInd = document.getElementById('height');
-
-        console.log(ratio);
-
-        console.log(aspectWidth, aspectHeight);
-
-        if (aspectWidth === "8" && aspectHeight === "12") {
-            console.log("yes");
-
-            imageContainer.style.width = '';
-            imageContainer.style.height = '';
-            widthInd.innerText = `Width 12 inch (30.48 cm)`;
-            heightInd.innerText = `Height 9 inch (22.86 cm)`;
-        }
-        else {
-            imageContainer.style.width = `${Math.round(width)}px`;
-            imageContainer.style.height = `${Math.round(height)}px`;
-            widthInd.innerText = `Width ${aspectWidth} inch (${aspectWidth * 2.54} cm)`;
-            heightInd.innerText = `Height ${aspectHeight} inch (${aspectHeight * 2.54} cm)`;
-        }
-        document.querySelectorAll('.circle-shape', '.square-shape', '.oval-shape', '.rect-shape', '.potrait-shape', '.custom-shape', '.custom2-shape', '.custom3-shape', '.custom4-shape').forEach(shape => {
-            if (shape.classList.contains('circle-shape')) {
-                console.log("square-shape");
-
-                shape.style.width = `${Math.round(height)}px`;
-                shape.style.height = `${Math.round(height)}px`;
-            } else if (shape.classList.contains('square-shape')) {
-                console.log("square-shape");
-
-                shape.style.width = `${Math.round(width)}px`;
-                shape.style.height = `${Math.round(width)}px`;
-            } else if (shape.classList.contains('rect-shape')) {
-                shape.style.width = `${Math.round(width)}px`;
-                shape.style.height = `${Math.round(width) - 100}px`;
+    // Shape button visibility logic
+    if ((aspectWidth == 11 && aspectHeight == 11) || (aspectWidth == 16 && aspectHeight == 16)) {
+        document.querySelectorAll('.ap-shape-btn').forEach(button => {
+            if (button.classList.contains('oval') || button.classList.contains('potrait')) {
+                button.style.display = 'none';
             } else {
-                shape.style.width = `${Math.round(width)}px`;
-                shape.style.height = `${Math.round(height)}px`;
+                button.style.display = 'inline-block';
             }
         });
-
-        if ((aspectWidth == 11 && aspectHeight == 11) || (aspectWidth == 16 && aspectHeight == 16)) {
-            document.querySelectorAll('.ap-shape-btn').forEach(button => {
-                if (button.classList.contains('oval') || button.classList.contains('potrait')) {
-                    button.style.display = 'none';
-                } else {
-                    button.style.display = 'inline-block';
-                }
-            });
-        }
-        else if (aspectWidth === "default" && aspectHeight === "default") {
-            document.querySelectorAll('.ap-shape-btn').forEach(button => {
+    } else if (aspectWidth === "default" && aspectHeight === "default") {
+        document.querySelectorAll('.ap-shape-btn').forEach(button => {
+            button.style.display = 'inline-block';
+        });
+    } else {
+        document.querySelectorAll('.ap-shape-btn').forEach(button => {
+            if (
+                button.classList.contains('potrait') ||
+                button.classList.contains('rect') ||
+                button.classList.contains('circle') ||
+                button.classList.contains('custom3') ||
+                button.classList.contains('custom4') ||
+                button.classList.contains('custom5')
+            ) {
+                button.style.display = 'none';
+            } else {
                 button.style.display = 'inline-block';
-            });
-        }
-        else {
-            document.querySelectorAll('.ap-shape-btn').forEach(button => {
-                if (button.classList.contains('potrait') || button.classList.contains('rect') || button.classList.contains('circle') || button.classList.contains('custom3') || button.classList.contains('custom4') || button.classList.contains('custom5')) {
-                    button.style.display = 'none';
-                }
-                else {
-                    button.style.display = 'inline-block';
-                }
-            });
-        }
-    });
-});
+            }
+        });
+    }
+}
 
+// Background modal functions
 function openBgModal() {
     const bgGallery = document.getElementById('bgGallery');
     bgGallery.innerHTML = '';
@@ -248,69 +273,55 @@ function closeBgModal() {
     document.getElementById('bgModal').style.display = 'none';
 }
 
-function selectBackground(selectedBgUrl) {
+async function selectBackground(selectedBgUrl) {
     const previewImage = document.getElementById('previewImage');
-
-    changeBackgroundAPI(selectedBgUrl, previewImage.src);
+    await changeBackgroundAPI(selectedBgUrl, previewImage.src);
     closeBgModal();
 }
 
 async function changeBackgroundAPI(backgroundUrl, originalImageUrl) {
-    const imageBlob = await fetch(originalImageUrl)
-        .then(res => res.blob())
-        .catch(error => {
-            console.error('Error fetching image blob:', error);
-            return null;
-        });
+    try {
+        const imageBlob = await fetch(originalImageUrl).then(res => res.blob());
+        const reader = new FileReader();
 
-    if (!imageBlob) {
-        alert('Failed to fetch image blob');
-        return;
-    }
+        reader.onloadend = async () => {
+            const base64String = reader.result.split(',')[1];
+            try {
+                const response = await fetch(`${BASE_URL}/change-bg`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageBlob: base64String,
+                        backgroundUrl: backgroundUrl
+                    })
+                });
 
-    const reader = new FileReader();
+                const data = await response.json();
 
-    reader.onloadend = async () => {
-        const base64String = reader.result.split(',')[1];
-        try {
-            const response = await fetch(`${BASE_URL}/change-bg`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    imageBlob: base64String,
-                    backgroundUrl: backgroundUrl
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                const bufferData = new Uint8Array(data.rbgResultData.data);
-                const imageUrl = URL.createObjectURL(new Blob([bufferData], { type: 'image/png' }));
-                previewImage.src = imageUrl;
-            } else {
-                console.error('Failed to remove background:', data.error);
+                if (data.success) {
+                    const bufferData = new Uint8Array(data.rbgResultData.data);
+                    const imageUrl = URL.createObjectURL(new Blob([bufferData], { type: 'image/png' }));
+                    previewImage.src = imageUrl;
+                } else {
+                    console.error('Failed to remove background:', data.error);
+                    alert('Failed to remove background');
+                }
+            } catch (error) {
+                console.error('Error removing background:', error);
                 alert('Failed to remove background');
             }
-        } catch (error) {
-            console.error('Error removing background:', error);
-            alert('Failed to remove background');
-        }
-    };
-    reader.readAsDataURL(imageBlob);
+        };
+        reader.readAsDataURL(imageBlob);
+    } catch (error) {
+        console.error('Error fetching image blob:', error);
+        alert('Failed to fetch image blob');
+    }
 }
 
-document.getElementById('addTextBtn').addEventListener('click', function () {
-    document.getElementById('textModal').style.display = 'block';
-});
-
-function closeTextModal() {
-    document.getElementById('textModal').style.display = 'none';
-}
-
-document.getElementById('addTextModalBtn').addEventListener('click', function () {
+// Text functions
+function addTextFromModal() {
     const text = document.getElementById('modalTextInput').value;
     const textColor = document.getElementById('textColor').value;
     const fontStyle = document.getElementById('fontStyleSelect').value;
@@ -319,7 +330,6 @@ document.getElementById('addTextModalBtn').addEventListener('click', function ()
         const textBox = document.createElement('div');
         textBox.className = 'text-box';
         textBox.innerText = text;
-
         textBox.style.position = 'absolute';
         textBox.style.fontFamily = fontStyle;
         textBox.style.color = textColor;
@@ -329,95 +339,225 @@ document.getElementById('addTextModalBtn').addEventListener('click', function ()
         textBox.style.transform = 'translate(-50%, -50%)';
         textBox.style.cursor = 'move';
         textBox.style.border = 'none';
-        document.getElementById('imageContainer').appendChild(textBox);
+        textBox.style.zIndex = '1000';
+
+        imageContainer.appendChild(textBox);
 
         allTextData.push({
             text: text,
             color: textColor,
             style: fontStyle,
         });
-        makeDraggable(textBox);
-        makeResizable(textBox);
-        makeRotatable(textBox);
+
+        makeTextDraggable(textBox);
+        makeTextResizable(textBox);
+        makeTextRotatable(textBox);
+
+        // Clear the input
+        document.getElementById('modalTextInput').value = '';
     }
-
     closeTextModal();
-});
+}
 
-function makeDraggable(element) {
+function closeTextModal() {
+    document.getElementById('textModal').style.display = 'none';
+}
+
+function makeTextDraggable(element) {
     let isDragging = false;
     let offsetX, offsetY;
+    let startX, startY;
 
-    element.addEventListener('mousedown', function (e) {
+    // Mouse down event
+    element.addEventListener('mousedown', function(e) {
+        e.stopPropagation();
         isDragging = true;
-        offsetX = e.clientX - element.offsetLeft;
-        offsetY = e.clientY - element.offsetTop;
+        
+        // Get current position
+        const rect = element.getBoundingClientRect();
+        const containerRect = imageContainer.getBoundingClientRect();
+        
+        // Calculate position relative to container
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        // Store initial position relative to container
+        startX = rect.left - containerRect.left;
+        startY = rect.top - containerRect.top;
+        
         element.style.cursor = 'grabbing';
-
         element.style.border = '2px dashed #248EE6';
-        element.querySelector('.resize-handle').style.display = 'block';
-        element.querySelector('.rotate-handle').style.display = 'block';
+        
+        // Show handles
+        const resizeHandle = element.querySelector('.resize-handle');
+        const rotateHandle = element.querySelector('.rotate-handle');
+        if (resizeHandle) resizeHandle.style.display = 'block';
+        if (rotateHandle) rotateHandle.style.display = 'block';
     });
 
-    document.addEventListener('mousemove', function (e) {
-        if (isDragging) {
-            element.style.left = e.clientX - offsetX + 'px';
-            element.style.top = e.clientY - offsetY + 'px';
+    // Touch start event
+    element.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+        if (e.touches.length === 1) {
+            isDragging = true;
+            const touch = e.touches[0];
+            
+            // Get current position
+            const rect = element.getBoundingClientRect();
+            const containerRect = imageContainer.getBoundingClientRect();
+            
+            // Calculate position relative to container
+            offsetX = touch.clientX - rect.left;
+            offsetY = touch.clientY - rect.top;
+            
+            // Store initial position relative to container
+            startX = rect.left - containerRect.left;
+            startY = rect.top - containerRect.top;
+            
+            element.style.cursor = 'grabbing';
+            element.style.border = '2px dashed #248EE6';
+            
+            // Show handles
+            const resizeHandle = element.querySelector('.resize-handle');
+            const rotateHandle = element.querySelector('.rotate-handle');
+            if (resizeHandle) resizeHandle.style.display = 'block';
+            if (rotateHandle) rotateHandle.style.display = 'block';
         }
-    });
+    }, { passive: false });
 
-    document.addEventListener('mouseup', function () {
-        isDragging = false;
-        element.style.cursor = 'move';
-    });
+    // Mouse move event
+    const handleMove = function(e) {
+        if (isDragging) {
+            e.preventDefault();
+            
+            // Calculate new position relative to container
+            const containerRect = imageContainer.getBoundingClientRect();
+            let clientX, clientY;
+            
+            if (e.type === 'mousemove') {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            } else if (e.type === 'touchmove' && e.touches.length === 1) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            
+            // Calculate new position ensuring it stays within container
+            const maxX = containerRect.width - element.offsetWidth;
+            const maxY = containerRect.height - element.offsetHeight;
+            
+            let newX = clientX - containerRect.left - offsetX;
+            let newY = clientY - containerRect.top - offsetY;
+            
+            // Constrain to container bounds
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+            
+            element.style.left = `${newX}px`;
+            element.style.top = `${newY}px`;
+            
+            // Remove any translate transform
+            element.style.transform = element.style.transform.replace(/translate\(.*?\)/, '');
+        }
+    };
 
-    document.addEventListener('mousedown', function (e) {
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+
+    // End dragging
+    const stopDrag = function() {
+        if (isDragging) {
+            isDragging = false;
+            element.style.cursor = 'move';
+        }
+    };
+
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchend', stopDrag);
+
+    // Click outside to deselect
+    document.addEventListener('mousedown', function(e) {
         if (!element.contains(e.target)) {
             element.style.border = 'none';
-            element.querySelector('.resize-handle').style.display = 'none';
-            element.querySelector('.rotate-handle').style.display = 'none';
+            const resizeHandle = element.querySelector('.resize-handle');
+            const rotateHandle = element.querySelector('.rotate-handle');
+            if (resizeHandle) resizeHandle.style.display = 'none';
+            if (rotateHandle) rotateHandle.style.display = 'none';
         }
     });
 }
 
-function makeResizable(element) {
+function makeTextResizable(element) {
     const resizeHandle = document.createElement('div');
     resizeHandle.className = 'resize-handle';
     resizeHandle.style.position = 'absolute';
     resizeHandle.style.right = '-11.3px';
     resizeHandle.style.bottom = '-6.5px';
     resizeHandle.style.fontSize = '24px';
-    resizeHandle.style.cursor = 'crosshair';
+    resizeHandle.style.cursor = 'nwse-resize';
     resizeHandle.innerText = '+';
     resizeHandle.style.display = 'none';
 
     element.appendChild(resizeHandle);
 
+    let isResizing = false;
+    let startSize, startX, startY;
+
     resizeHandle.addEventListener('mousedown', function (e) {
         e.stopPropagation();
-        const initialFontSize = parseFloat(window.getComputedStyle(element).fontSize);
-        const initialMouseX = e.clientX;
+        isResizing = true;
+        startSize = parseFloat(window.getComputedStyle(element).fontSize);
+        startX = e.clientX;
+        startY = e.clientY;
 
-        function resize(e) {
-            const scaleFactor = 0.2;
-            const newSize = initialFontSize + (e.clientX - initialMouseX) * scaleFactor;
-
-            if (newSize > 10) {
-                element.style.fontSize = newSize + 'px';
-            }
-        }
-
-        function stopResizing() {
-            document.removeEventListener('mousemove', resize);
-            document.removeEventListener('mouseup', stopResizing);
-        }
-
-        document.addEventListener('mousemove', resize);
-        document.addEventListener('mouseup', stopResizing);
+        document.addEventListener('mousemove', handleResize);
+        document.addEventListener('mouseup', stopResize);
     });
+
+    resizeHandle.addEventListener('touchstart', function (e) {
+        e.stopPropagation();
+        if (e.touches.length === 1) {
+            isResizing = true;
+            startSize = parseFloat(window.getComputedStyle(element).fontSize);
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+
+            document.addEventListener('touchmove', handleTouchResize, { passive: false });
+            document.addEventListener('touchend', stopResize);
+        }
+    }, { passive: false });
+
+    function handleResize(e) {
+        if (isResizing) {
+            e.preventDefault();
+            const scaleFactor = 0.5;
+            const deltaX = e.clientX - startX;
+            const newSize = Math.max(12, startSize + deltaX * scaleFactor);
+            element.style.fontSize = `${newSize}px`;
+        }
+    }
+
+    function handleTouchResize(e) {
+        if (isResizing && e.touches.length === 1) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - startX;
+            const newSize = Math.max(12, startSize + deltaX * 0.5);
+            element.style.fontSize = `${newSize}px`;
+        }
+    }
+
+    function stopResize() {
+        isResizing = false;
+        document.removeEventListener('mousemove', handleResize);
+        document.removeEventListener('touchmove', handleTouchResize);
+        document.removeEventListener('mouseup', stopResize);
+        document.removeEventListener('touchend', stopResize);
+    }
 }
 
-function makeRotatable(element) {
+function makeTextRotatable(element) {
     const rotateHandle = document.createElement('div');
     rotateHandle.className = 'rotate-handle';
     rotateHandle.style.position = 'absolute';
@@ -431,86 +571,109 @@ function makeRotatable(element) {
 
     element.appendChild(rotateHandle);
 
+    let isRotating = false;
+    let startAngle, centerX, centerY;
+
     rotateHandle.addEventListener('mousedown', function (e) {
         e.stopPropagation();
+        isRotating = true;
         const rect = element.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        centerX = rect.left + rect.width / 2;
+        centerY = rect.top + rect.height / 2;
+        startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
 
-        function rotate(e) {
-            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-            const degree = (angle * (180 / Math.PI) + 90) % 360;
-            element.style.transform = `translate(-50%, -50%) rotate(${degree}deg)`;
+        // Get current rotation
+        const transform = element.style.transform;
+        let currentRotation = 0;
+        const match = transform.match(/rotate\((\d+)deg\)/);
+        if (match) {
+            currentRotation = parseInt(match[1]);
         }
+        startAngle -= currentRotation;
 
-        function stopRotating() {
-            document.removeEventListener('mousemove', rotate);
-            document.removeEventListener('mouseup', stopRotating);
-        }
-
-        document.addEventListener('mousemove', rotate);
-        document.addEventListener('mouseup', stopRotating);
+        document.addEventListener('mousemove', handleRotate);
+        document.addEventListener('mouseup', stopRotate);
     });
+
+    rotateHandle.addEventListener('touchstart', function (e) {
+        e.stopPropagation();
+        if (e.touches.length === 1) {
+            isRotating = true;
+            const rect = element.getBoundingClientRect();
+            const touch = e.touches[0];
+            centerX = rect.left + rect.width / 2;
+            centerY = rect.top + rect.height / 2;
+            startAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+
+            // Get current rotation
+            const transform = element.style.transform;
+            let currentRotation = 0;
+            const match = transform.match(/rotate\((\d+)deg\)/);
+            if (match) {
+                currentRotation = parseInt(match[1]);
+            }
+            startAngle -= currentRotation;
+
+            document.addEventListener('touchmove', handleTouchRotate, { passive: false });
+            document.addEventListener('touchend', stopRotate);
+        }
+    }, { passive: false });
+
+    function handleRotate(e) {
+        if (isRotating) {
+            e.preventDefault();
+            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+            const rotation = angle - startAngle;
+            element.style.transform = element.style.transform.replace(/rotate\(.*?\)/, '') + ` rotate(${rotation}deg)`;
+        }
+    }
+
+    function handleTouchRotate(e) {
+        if (isRotating && e.touches.length === 1) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+            const rotation = angle - startAngle;
+            element.style.transform = element.style.transform.replace(/rotate\(.*?\)/, '') + ` rotate(${rotation}deg)`;
+        }
+    }
+
+    function stopRotate() {
+        isRotating = false;
+        document.removeEventListener('mousemove', handleRotate);
+        document.removeEventListener('touchmove', handleTouchRotate);
+        document.removeEventListener('mouseup', stopRotate);
+        document.removeEventListener('touchend', stopRotate);
+    }
 }
 
-// ==========================================
+// Get image details for sharing
 function getImageDetails() {
-    const imageContainer = document.getElementById('imageContainer');
     const selectedShape = document.querySelector('.ap-shape-btn.ap-active');
     const selectedSize = document.querySelector('.ap-size-btn.ap-active');
-    const textElement = document.querySelector('.text-box');
     const size = selectedSize && selectedSize.dataset.ratio !== "default"
         ? selectedSize.dataset.ratio
         : "default";
-    const imageDetails = {
+
+    return {
         type: 'Acrylic Photo',
-        image: {
+        image: file ? {
             name: file.name,
-            lastModified: file.lastModified,
-            lastModifiedDate: file.lastModifiedDate.toString(),
             size: file.size,
-            type: file.type,
-            webkitRelativePath: file.webkitRelativePath
-        },
+            type: file.type
+        } : null,
         name: `Acrylic Photo (${size})`,
         price: 599,
         width: imageContainer.offsetWidth + 'px',
         height: imageContainer.offsetHeight + 'px',
-        border: imageContainer ? imageContainer.style.border : 'none',
+        border: imageContainer.style.border || 'none',
         shape: selectedShape ? selectedShape.dataset.shape : 'default',
         size: size,
-        addedText: textElement ? allTextData : [],
+        addedText: allTextData,
     };
-    return imageDetails;
-};
+}
 
-// function shareImage() {
-//     return new Promise((resolve, reject) => {
-//         html2canvas(imageContainer, { backgroundColor: null }).then((canvas) => {
-//             canvas.toBlob((blob) => {
-//                 if (!blob) {
-//                     alert("Error: Failed to generate image!");
-//                     reject("Failed to generate image");
-//                     return;
-//                 }
-
-//                 const formData = new FormData();
-//                 const now = new Date();
-//                 const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0]; // Format: YYYY-MM-DDTHH-MM-SS
-//                 const fileName = `customized-image-${formattedDate}.png`;
-
-//                 const imageData = getImageDetails();
-//                 formData.append('image', blob, fileName);
-//                 formData.append('details', JSON.stringify(imageData));
-//                 const subject = `Acrylic Premium Photo (${imageData.size || "default"})`;
-//                 formData.append('subject', JSON.stringify(subject));
-
-//                 resolve(formData);
-//             });
-//         }).catch(error => reject(error));
-//     });
-// }
-
+// Share image function
 function shareImage() {
     return new Promise((resolve, reject) => {
         // Create a clone of the container with all styles
@@ -551,8 +714,7 @@ function shareImage() {
                     if (original.id === 'previewImage') {
                         clonedElements[index].style.transform = original.style.transform;
                     }
-                }
-                )
+                });
             }
         });
 
@@ -601,8 +763,11 @@ function shareImage() {
     });
 }
 
+// Initialize the app
 window.closeBgModal = closeBgModal;
 window.closeTextModal = closeTextModal;
 window.getImageDetails = getImageDetails;
 window.shareImage = shareImage;
 
+// Start the application
+initEventListeners();

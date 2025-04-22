@@ -31,8 +31,8 @@ function App() {
     <>
       <Toaster richColors position="top-center" duration={2000} />
       {!isLoginPage && <Navbar />}
-      <div style={!isLoginPage ? { marginTop: "7%" } : {}}>
-        <Routes>
+      <div className={`${!isLoginPage ? "mt-20 sm:mt-32 md:mt-20" : ""}`}>
+          <Routes>
           {/* <Route path="/" element={<Login />} /> */}
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />

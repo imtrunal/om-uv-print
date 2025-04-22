@@ -23,12 +23,12 @@ const AcrylicPhoto = () => {
     for (let key of computedStyle) {
       target.style[key] = computedStyle.getPropertyValue(key);
     }
-  
+
     for (let i = 0; i < source.children.length; i++) {
       copyComputedStyles(source.children[i], target.children[i]);
     }
   }
-  
+
   async function shareImage() {
     return new Promise(async (resolve, reject) => {
       try {
@@ -37,13 +37,13 @@ const AcrylicPhoto = () => {
           alert("Error: Image container not found!");
           return reject("Image container not found");
         }
-  
+
         await new Promise(r => setTimeout(r, 300)); // wait for any animation or layout to finish
-  
+
         const clone = imageContainer.cloneNode(true);
         copyComputedStyles(imageContainer, clone);
         document.body.appendChild(clone);
-  
+
         // Hide clone off-screen
         clone.style.position = 'absolute';
         clone.style.top = '-9999px';
@@ -54,15 +54,15 @@ const AcrylicPhoto = () => {
         clone.style.background = 'white';
         clone.style.transform = 'none';
         clone.style.zoom = '1';
-  
+
         const width = imageContainer.offsetWidth;
         const height = imageContainer.offsetHeight;
         clone.style.width = `${width}px`;
         clone.style.height = `${height}px`;
-  
+
         await document.fonts.ready;
         await new Promise(res => requestAnimationFrame(res)); // layout settle
-  
+
         const blob = await domtoimage.toBlob(clone, {
           width,
           height,
@@ -75,26 +75,26 @@ const AcrylicPhoto = () => {
             background: 'white',
           },
         });
-  
+
         document.body.removeChild(clone);
-  
+
         if (!blob) {
           alert("Error: Failed to generate image!");
           return reject("Failed to generate image");
         }
-  
+
         const formData = new FormData();
         const now = new Date();
         const formattedDate = now.toISOString().replace(/:/g, '-').split('.')[0];
         const fileName = `customized-image-${formattedDate}.png`;
-  
+
         const imageData = window.getImageDetails?.() || {};
         formData.append('image', blob, fileName);
         formData.append('details', JSON.stringify(imageData));
-  
+
         const subject = `Acrylic Premium Photo (${imageData.size || "default"})`;
         formData.append('subject', JSON.stringify(subject));
-  
+
         resolve(formData);
       } catch (error) {
         console.error("Image generation failed:", error);
@@ -102,9 +102,9 @@ const AcrylicPhoto = () => {
       }
     });
   }
-  
 
-  
+
+
 
 
   useEffect(() => {
@@ -129,7 +129,7 @@ const AcrylicPhoto = () => {
       document.body.appendChild(scriptMain);
 
 
-      
+
       return () => {
         document.body.removeChild(scriptMain);
         document.body.removeChild(scriptHtml2Canvas);
@@ -327,6 +327,7 @@ const AcrylicPhoto = () => {
           <div className="ap-size-indicator ap-height-indicator" id="height">
             Height 9 inch (22.86 cm)
           </div>
+
           <div className="ap-image-container" id="imageContainer">
             <img
               className="ap-preview-image"
@@ -338,7 +339,7 @@ const AcrylicPhoto = () => {
 
           <div className="ap-shape-options">
             {[
-              "default",
+              // "default",
               "square",
               "potrait",
               "rect",
@@ -359,13 +360,16 @@ const AcrylicPhoto = () => {
         </div>
 
         <div className="ap-controls">
+
           <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, image/jpg" hidden />
+
           <button
             className="btn ap-upload"
             onClick={() => document.getElementById("fileInput").click()}
           >
             <FaUpload />
           </button>
+
           <input
             type="range"
             id="zoomRange"
@@ -373,51 +377,52 @@ const AcrylicPhoto = () => {
             max="3"
             step="0.1"
             defaultValue="1"
-            style={{
-              width: "200px",
-              accentColor: "#000787",
-            }}
+            className="zoom-range"
           />
 
           <button className="btn2 ap-share" id="shareBtn" onClick={handleShare} disabled={loading}>
             {loading ? <ImSpinner2 className="spin" /> : <FaShareAlt />}
           </button>
-          {
 
-            <button
-              className="btn ap-add-to-cart"
-              id="cartBtn"
-              onClick={handleAddToCart}
-              disabled={cartLoading}
-            >
-              {cartLoading ? <ImSpinner2 className="spin" /> : <MdAddShoppingCart />}
-            </button>
-          }
-          <p>Size:</p>
-          {[
-            "8x12",
-            "12x15",
-            "12x18",
-            "16x24",
-            "18x24",
-            "20x30",
-            "20x36"
-          ].map((ratio, index) => (
-            <button
-              key={index}
-              className={`ap-size-btn ${index === 0 ? "ap-active" : ""}`}
-              data-ratio={ratio}
-            >
-              {ratio}
-            </button>
-          ))}
+          <button
+            className="btn ap-add-to-cart"
+            id="cartBtn"
+            onClick={handleAddToCart}
+            disabled={cartLoading}
+          >
+            {cartLoading ? <ImSpinner2 className="spin" /> : <MdAddShoppingCart />}
+          </button>
 
-          <button className="btn" id="removeBgBtn" style={{ padding: 3, fontSize: '1rem' }}>
+          <div className="apSizeBtnContainer">
+            <p className="size-label">Size:</p>
+
+            {[
+              "8x12",
+              "12x15",
+              "12x18",
+              "16x24",
+              "18x24",
+              "20x30",
+              "20x36"
+            ].map((ratio, index) => (
+              <button
+                key={index}
+                className={`ap-size-btn ${index === 0 ? "ap-active" : ""}`}
+                data-ratio={ratio}
+              >
+                {ratio}
+              </button>
+            ))}
+          </div>
+
+          <button className="btn" id="removeBgBtn">
             Change Background
           </button>
+
           <button className="btn2" id="addTextBtn">
             <HiPencilSquare />
           </button>
+
         </div>
 
         {/* Background Modal */}
