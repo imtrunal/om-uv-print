@@ -60,7 +60,7 @@
     gap: 20px;
     background-color: #ffffff;
     padding: 20px;
-    touch-action: none;
+    touch-action: pan-y;
     user-select: none;
     align-items: center;
     border-radius: 10px;
@@ -286,4 +286,178 @@
 /* ==============Square CSS =====================*/
 .afm-square .afm-upload-box {
     border-radius: 0;
+}
+
+
+/* ============================================ */
+/* ============================================ */
+/* ============================================ */
+/* ============================================ */
+/* ============================================ */
+
+@media (max-width: 768px) {
+    .afm-container {
+        gap: 10px;
+        width: 95%;
+        margin: 10px auto;
+    }
+
+    .afm-card {
+        padding: 5px;
+    }
+
+    .afm-card a {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    .afm-image-customization-page {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .afm-page-container {
+        flex-direction: column;
+        width: 95%;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .afm-image-customization-page .afm-left,
+    .afm-image-customization-page .afm-right {
+        flex: none;
+        width: 100%;
+        padding: 10px;
+    }
+
+    .afm-upload-box {
+        width: 250px;
+        height: 250px;
+    }
+
+    #afm-placeholderText {
+        font-size: 60px;
+    }
+
+    /* Right Side Adjustments */
+    .afm-row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .afm-size-btn,
+    .afm-thickness-btn {
+        padding: 6px;
+        font-size: 0.8rem;
+        margin: 2px;
+    }
+
+    /* Button Sizes */
+    .afm-upload-btn,
+    #afm-addTextBtn,
+    .afm-download,
+    .afm-share,
+    .afm-add-to-cart {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        margin: 5px 0;
+    }
+
+    /* Text Modal */
+    #afm-textModal {
+        width: 90%;
+        left: 5%;
+    }
+
+    /* Background Gallery */
+    #afm-bgGallery {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+    }
+
+    #afm-bgGallery img {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+/* Very Small Devices (phones, 480px and down) */
+@media (max-width: 480px) {
+    .afm-container {
+        /* grid-template-columns: 1fr; */
+    }
+
+    .afm-upload-box {
+        width: 200px;
+        height: 200px;
+    }
+
+    #afm-placeholderText {
+        font-size: 50px;
+    }
+
+    .afm-size-btn,
+    .afm-thickness-btn {
+        padding: 4px;
+        font-size: 0.7rem;
+    }
+
+    /* Button Sizes */
+    .afm-upload-btn,
+    #afm-addTextBtn,
+    .afm-download,
+    .afm-share,
+    .afm-add-to-cart {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Background Gallery */
+    #afm-bgGallery {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    #afm-bgGallery img {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+/* Tablet Landscape and Portrait */
+@media (min-width: 769px) and (max-width: 1023px) {
+    .afm-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .afm-page-container {
+        width: 90%;
+    }
+
+    .afm-upload-box {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+/* Touch device specific adjustments */
+@media (hover: none) and (pointer: coarse) {
+
+    .afm-resize-handle,
+    .afm-rotate-handle {
+        width: 30px;
+        height: 30px;
+        font-size: 1.5rem;
+    }
+
+    .afm-text-box {
+        min-width: 80px;
+        min-height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .afm-size-btn,
+    .afm-thickness-btn {
+        padding: 10px;
+        margin: 5px;
+    }
 }

@@ -363,52 +363,23 @@ function closeTextModal() {
     document.getElementById('textModal').style.display = 'none';
 }
 
-function makeTextDraggable(element) {
-    let isDragging = false;
-    let offsetX, offsetY;
-    let startX, startY;
+    function makeTextDraggable(element) {
+        let isDragging = false;
+        let offsetX, offsetY;
+        let startX, startY;
 
-    // Mouse down event
-    element.addEventListener('mousedown', function(e) {
-        e.stopPropagation();
-        isDragging = true;
-        
-        // Get current position
-        const rect = element.getBoundingClientRect();
-        const containerRect = imageContainer.getBoundingClientRect();
-        
-        // Calculate position relative to container
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-        
-        // Store initial position relative to container
-        startX = rect.left - containerRect.left;
-        startY = rect.top - containerRect.top;
-        
-        element.style.cursor = 'grabbing';
-        element.style.border = '2px dashed #248EE6';
-        
-        // Show handles
-        const resizeHandle = element.querySelector('.resize-handle');
-        const rotateHandle = element.querySelector('.rotate-handle');
-        if (resizeHandle) resizeHandle.style.display = 'block';
-        if (rotateHandle) rotateHandle.style.display = 'block';
-    });
-
-    // Touch start event
-    element.addEventListener('touchstart', function(e) {
-        e.stopPropagation();
-        if (e.touches.length === 1) {
+        // Mouse down event
+        element.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
             isDragging = true;
-            const touch = e.touches[0];
             
             // Get current position
             const rect = element.getBoundingClientRect();
             const containerRect = imageContainer.getBoundingClientRect();
             
             // Calculate position relative to container
-            offsetX = touch.clientX - rect.left;
-            offsetY = touch.clientY - rect.top;
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
             
             // Store initial position relative to container
             startX = rect.left - containerRect.left;
@@ -422,188 +393,194 @@ function makeTextDraggable(element) {
             const rotateHandle = element.querySelector('.rotate-handle');
             if (resizeHandle) resizeHandle.style.display = 'block';
             if (rotateHandle) rotateHandle.style.display = 'block';
-        }
-    }, { passive: false });
+        });
 
-    // Mouse move event
-    const handleMove = function(e) {
-        if (isDragging) {
-            e.preventDefault();
-            
-            // Calculate new position relative to container
-            const containerRect = imageContainer.getBoundingClientRect();
-            let clientX, clientY;
-            
-            if (e.type === 'mousemove') {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            } else if (e.type === 'touchmove' && e.touches.length === 1) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
+        // Touch start event
+        element.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+            if (e.touches.length === 1) {
+                isDragging = true;
+                const touch = e.touches[0];
+                
+                // Get current position
+                const rect = element.getBoundingClientRect();
+                const containerRect = imageContainer.getBoundingClientRect();
+                
+                // Calculate position relative to container
+                offsetX = touch.clientX - rect.left;
+                offsetY = touch.clientY - rect.top;
+                
+                // Store initial position relative to container
+                startX = rect.left - containerRect.left;
+                startY = rect.top - containerRect.top;
+                
+                element.style.cursor = 'grabbing';
+                element.style.border = '2px dashed #248EE6';
+                
+                // Show handles
+                const resizeHandle = element.querySelector('.resize-handle');
+                const rotateHandle = element.querySelector('.rotate-handle');
+                if (resizeHandle) resizeHandle.style.display = 'block';
+                if (rotateHandle) rotateHandle.style.display = 'block';
             }
-            
-            // Calculate new position ensuring it stays within container
-            const maxX = containerRect.width - element.offsetWidth;
-            const maxY = containerRect.height - element.offsetHeight;
-            
-            let newX = clientX - containerRect.left - offsetX;
-            let newY = clientY - containerRect.top - offsetY;
-            
-            // Constrain to container bounds
-            newX = Math.max(0, Math.min(newX, maxX));
-            newY = Math.max(0, Math.min(newY, maxY));
-            
-            element.style.left = `${newX}px`;
-            element.style.top = `${newY}px`;
-            
-            // Remove any translate transform
-            element.style.transform = element.style.transform.replace(/translate\(.*?\)/, '');
-        }
-    };
+        }, { passive: false });
 
-    document.addEventListener('mousemove', handleMove);
-    document.addEventListener('touchmove', handleMove, { passive: false });
+        // Mouse move event
+        const handleMove = function(e) {
+            if (isDragging) {
+                e.preventDefault();
+                
+                // Calculate new position relative to container
+                const containerRect = imageContainer.getBoundingClientRect();
+                let clientX, clientY;
+                
+                if (e.type === 'mousemove') {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                } else if (e.type === 'touchmove' && e.touches.length === 1) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+                
+                // Calculate new position ensuring it stays within container
+                const maxX = containerRect.width - element.offsetWidth;
+                const maxY = containerRect.height - element.offsetHeight;
+                
+                let newX = clientX - containerRect.left - offsetX;
+                let newY = clientY - containerRect.top - offsetY;
+                
+                // Constrain to container bounds
+                newX = Math.max(0, Math.min(newX, maxX));
+                newY = Math.max(0, Math.min(newY, maxY));
+                
+                element.style.left = `${newX}px`;
+                element.style.top = `${newY}px`;
+                
+                // Remove any translate transform
+                element.style.transform = element.style.transform.replace(/translate\(.*?\)/, '');
+            }
+        };
 
-    // End dragging
-    const stopDrag = function() {
-        if (isDragging) {
-            isDragging = false;
-            element.style.cursor = 'move';
-        }
-    };
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('touchmove', handleMove, { passive: false });
 
-    document.addEventListener('mouseup', stopDrag);
-    document.addEventListener('touchend', stopDrag);
+        // End dragging
+        const stopDrag = function() {
+            if (isDragging) {
+                isDragging = false;
+                element.style.cursor = 'move';
+            }
+        };
 
-    // Click outside to deselect
-    document.addEventListener('mousedown', function(e) {
-        if (!element.contains(e.target)) {
-            element.style.border = 'none';
-            const resizeHandle = element.querySelector('.resize-handle');
-            const rotateHandle = element.querySelector('.rotate-handle');
-            if (resizeHandle) resizeHandle.style.display = 'none';
-            if (rotateHandle) rotateHandle.style.display = 'none';
-        }
-    });
-}
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
 
-function makeTextResizable(element) {
-    const resizeHandle = document.createElement('div');
-    resizeHandle.className = 'resize-handle';
-    resizeHandle.style.position = 'absolute';
-    resizeHandle.style.right = '-11.3px';
-    resizeHandle.style.bottom = '-6.5px';
-    resizeHandle.style.fontSize = '24px';
-    resizeHandle.style.cursor = 'nwse-resize';
-    resizeHandle.innerText = '+';
-    resizeHandle.style.display = 'none';
+        // Click outside to deselect
+        document.addEventListener('mousedown', function(e) {
+            if (!element.contains(e.target)) {
+                element.style.border = 'none';
+                const resizeHandle = element.querySelector('.resize-handle');
+                const rotateHandle = element.querySelector('.rotate-handle');
+                if (resizeHandle) resizeHandle.style.display = 'none';
+                if (rotateHandle) rotateHandle.style.display = 'none';
+            }
+        });
+    }
 
-    element.appendChild(resizeHandle);
+    function makeTextResizable(element) {
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'resize-handle';
+        resizeHandle.style.position = 'absolute';
+        resizeHandle.style.right = '-11.3px';
+        resizeHandle.style.bottom = '-6.5px';
+        resizeHandle.style.fontSize = '24px';
+        resizeHandle.style.cursor = 'nwse-resize';
+        resizeHandle.innerText = '+';
+        resizeHandle.style.display = 'none';
 
-    let isResizing = false;
-    let startSize, startX, startY;
+        element.appendChild(resizeHandle);
 
-    resizeHandle.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
-        isResizing = true;
-        startSize = parseFloat(window.getComputedStyle(element).fontSize);
-        startX = e.clientX;
-        startY = e.clientY;
+        let isResizing = false;
+        let startSize, startX, startY;
 
-        document.addEventListener('mousemove', handleResize);
-        document.addEventListener('mouseup', stopResize);
-    });
-
-    resizeHandle.addEventListener('touchstart', function (e) {
-        e.stopPropagation();
-        if (e.touches.length === 1) {
+        resizeHandle.addEventListener('mousedown', function (e) {
+            e.stopPropagation();
             isResizing = true;
             startSize = parseFloat(window.getComputedStyle(element).fontSize);
-            const touch = e.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
+            startX = e.clientX;
+            startY = e.clientY;
 
-            document.addEventListener('touchmove', handleTouchResize, { passive: false });
-            document.addEventListener('touchend', stopResize);
+            document.addEventListener('mousemove', handleResize);
+            document.addEventListener('mouseup', stopResize);
+        });
+
+        resizeHandle.addEventListener('touchstart', function (e) {
+            e.stopPropagation();
+            if (e.touches.length === 1) {
+                isResizing = true;
+                startSize = parseFloat(window.getComputedStyle(element).fontSize);
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                document.addEventListener('touchmove', handleTouchResize, { passive: false });
+                document.addEventListener('touchend', stopResize);
+            }
+        }, { passive: false });
+
+        function handleResize(e) {
+            if (isResizing) {
+                e.preventDefault();
+                const scaleFactor = 0.5;
+                const deltaX = e.clientX - startX;
+                const newSize = Math.max(12, startSize + deltaX * scaleFactor);
+                element.style.fontSize = `${newSize}px`;
+            }
         }
-    }, { passive: false });
 
-    function handleResize(e) {
-        if (isResizing) {
-            e.preventDefault();
-            const scaleFactor = 0.5;
-            const deltaX = e.clientX - startX;
-            const newSize = Math.max(12, startSize + deltaX * scaleFactor);
-            element.style.fontSize = `${newSize}px`;
+        function handleTouchResize(e) {
+            if (isResizing && e.touches.length === 1) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const newSize = Math.max(12, startSize + deltaX * 0.5);
+                element.style.fontSize = `${newSize}px`;
+            }
+        }
+
+        function stopResize() {
+            isResizing = false;
+            document.removeEventListener('mousemove', handleResize);
+            document.removeEventListener('touchmove', handleTouchResize);
+            document.removeEventListener('mouseup', stopResize);
+            document.removeEventListener('touchend', stopResize);
         }
     }
 
-    function handleTouchResize(e) {
-        if (isResizing && e.touches.length === 1) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - startX;
-            const newSize = Math.max(12, startSize + deltaX * 0.5);
-            element.style.fontSize = `${newSize}px`;
-        }
-    }
+    function makeTextRotatable(element) {
+        const rotateHandle = document.createElement('div');
+        rotateHandle.className = 'rotate-handle';
+        rotateHandle.style.position = 'absolute';
+        rotateHandle.style.top = '-30px';
+        rotateHandle.style.left = '50%';
+        rotateHandle.style.transform = 'translateX(-50%)';
+        rotateHandle.style.cursor = 'pointer';
+        rotateHandle.style.fontSize = '24px';
+        rotateHandle.innerHTML = '&#8635;';
+        rotateHandle.style.display = 'none';
 
-    function stopResize() {
-        isResizing = false;
-        document.removeEventListener('mousemove', handleResize);
-        document.removeEventListener('touchmove', handleTouchResize);
-        document.removeEventListener('mouseup', stopResize);
-        document.removeEventListener('touchend', stopResize);
-    }
-}
+        element.appendChild(rotateHandle);
 
-function makeTextRotatable(element) {
-    const rotateHandle = document.createElement('div');
-    rotateHandle.className = 'rotate-handle';
-    rotateHandle.style.position = 'absolute';
-    rotateHandle.style.top = '-30px';
-    rotateHandle.style.left = '50%';
-    rotateHandle.style.transform = 'translateX(-50%)';
-    rotateHandle.style.cursor = 'pointer';
-    rotateHandle.style.fontSize = '24px';
-    rotateHandle.innerHTML = '&#8635;';
-    rotateHandle.style.display = 'none';
+        let isRotating = false;
+        let startAngle, centerX, centerY;
 
-    element.appendChild(rotateHandle);
-
-    let isRotating = false;
-    let startAngle, centerX, centerY;
-
-    rotateHandle.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
-        isRotating = true;
-        const rect = element.getBoundingClientRect();
-        centerX = rect.left + rect.width / 2;
-        centerY = rect.top + rect.height / 2;
-        startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-
-        // Get current rotation
-        const transform = element.style.transform;
-        let currentRotation = 0;
-        const match = transform.match(/rotate\((\d+)deg\)/);
-        if (match) {
-            currentRotation = parseInt(match[1]);
-        }
-        startAngle -= currentRotation;
-
-        document.addEventListener('mousemove', handleRotate);
-        document.addEventListener('mouseup', stopRotate);
-    });
-
-    rotateHandle.addEventListener('touchstart', function (e) {
-        e.stopPropagation();
-        if (e.touches.length === 1) {
+        rotateHandle.addEventListener('mousedown', function (e) {
+            e.stopPropagation();
             isRotating = true;
             const rect = element.getBoundingClientRect();
-            const touch = e.touches[0];
             centerX = rect.left + rect.width / 2;
             centerY = rect.top + rect.height / 2;
-            startAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+            startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
 
             // Get current rotation
             const transform = element.style.transform;
@@ -614,38 +591,61 @@ function makeTextRotatable(element) {
             }
             startAngle -= currentRotation;
 
-            document.addEventListener('touchmove', handleTouchRotate, { passive: false });
-            document.addEventListener('touchend', stopRotate);
-        }
-    }, { passive: false });
+            document.addEventListener('mousemove', handleRotate);
+            document.addEventListener('mouseup', stopRotate);
+        });
 
-    function handleRotate(e) {
-        if (isRotating) {
-            e.preventDefault();
-            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-            const rotation = angle - startAngle;
-            element.style.transform = element.style.transform.replace(/rotate\(.*?\)/, '') + ` rotate(${rotation}deg)`;
+        rotateHandle.addEventListener('touchstart', function (e) {
+            e.stopPropagation();
+            if (e.touches.length === 1) {
+                isRotating = true;
+                const rect = element.getBoundingClientRect();
+                const touch = e.touches[0];
+                centerX = rect.left + rect.width / 2;
+                centerY = rect.top + rect.height / 2;
+                startAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+
+                // Get current rotation
+                const transform = element.style.transform;
+                let currentRotation = 0;
+                const match = transform.match(/rotate\((\d+)deg\)/);
+                if (match) {
+                    currentRotation = parseInt(match[1]);
+                }
+                startAngle -= currentRotation;
+
+                document.addEventListener('touchmove', handleTouchRotate, { passive: false });
+                document.addEventListener('touchend', stopRotate);
+            }
+        }, { passive: false });
+
+        function handleRotate(e) {
+            if (isRotating) {
+                e.preventDefault();
+                const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+                const rotation = angle - startAngle;
+                element.style.transform = element.style.transform.replace(/rotate\(.*?\)/, '') + ` rotate(${rotation}deg)`;
+            }
+        }
+
+        function handleTouchRotate(e) {
+            if (isRotating && e.touches.length === 1) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+                const rotation = angle - startAngle;
+                element.style.transform = element.style.transform.replace(/rotate\(.*?\)/, '') + ` rotate(${rotation}deg)`;
+            }
+        }
+
+        function stopRotate() {
+            isRotating = false;
+            document.removeEventListener('mousemove', handleRotate);
+            document.removeEventListener('touchmove', handleTouchRotate);
+            document.removeEventListener('mouseup', stopRotate);
+            document.removeEventListener('touchend', stopRotate);
         }
     }
-
-    function handleTouchRotate(e) {
-        if (isRotating && e.touches.length === 1) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
-            const rotation = angle - startAngle;
-            element.style.transform = element.style.transform.replace(/rotate\(.*?\)/, '') + ` rotate(${rotation}deg)`;
-        }
-    }
-
-    function stopRotate() {
-        isRotating = false;
-        document.removeEventListener('mousemove', handleRotate);
-        document.removeEventListener('touchmove', handleTouchRotate);
-        document.removeEventListener('mouseup', stopRotate);
-        document.removeEventListener('touchend', stopRotate);
-    }
-}
 
 // Get image details for sharing
 function getImageDetails() {
