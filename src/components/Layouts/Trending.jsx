@@ -12,9 +12,9 @@ function Trending() {
   return (
     <>
       <div className="px-5">
-        <div className="py-[50px] px-[60px] bg-[#EFECEA] rounded-[10px]">
+        <div className="py-[50px] px-5 sm:px-10 md:px-[60px] bg-[#EFECEA] rounded-[10px]">
           <div>
-            <h2 className="text-[#19232e] text-[40px]">What’s Trending!</h2>
+            <h2 className="text-[#19232e] text-2xl sm:text-3xl md:text-[40px]">What’s Trending!</h2>
           </div>
           <div className="flex flex-wrap gap-x-4"></div>
           <div className="py-10">
@@ -35,20 +35,17 @@ function Trending() {
               autoWidth={false}
               mouseTracking
               renderPrevButton={() => (
-                <button className="bg-white/80 absolute -left-6 top-36 rounded-full p-0 size-12 ring-1 flex items-center justify-center">
+                <button className="bg-white/80 absolute -left-4 sm:-left-6 top-28 sm:top-36 rounded-full p-0 size-10 sm:size-12 ring-1 flex items-center justify-center">
                   <MdOutlineArrowBackIos size={20} />
                 </button>
               )}
               renderNextButton={() => (
-                <button className="bg-white/80 absolute -right-6 top-36 rounded-full p-0 size-12 ring-1 flex items-center justify-center">
+                <button className="bg-white/80 absolute -right-4 sm:-right-6 top-28 sm:top-36 rounded-full p-0 size-10 sm:size-12 ring-1 flex items-center justify-center">
                   <MdOutlineArrowForwardIos size={20} />
                 </button>
               )}
               items={trendPhoto.map((item, index) => (
-                <div
-                  key={index}
-                  className="size-[325px] rounded-lg relative group"
-                >
+                <div key={index} className="w-[280px] sm:w-[300px] md:size-[325px] rounded-lg relative group">
                   <div className="size-full overflow-hidden rounded-lg">
                     <img
                       src={item.image}

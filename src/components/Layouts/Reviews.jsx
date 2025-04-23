@@ -15,7 +15,7 @@ function Reviews() {
       <div>
         <div className="w-[90%] mx-auto py-20">
           <div>
-            <h2 className="text-[#19232e] text-[40px]">
+            <h2 className="text-[#19232e] text-2xl sm:text-3xl md:text-[40px]">
               What our customers are saying
             </h2>
           </div>
@@ -36,14 +36,13 @@ function Reviews() {
               animationType="fadeout"
               infinite
               touchTracking={false}
-              //   disableDotsControls
               responsive={{
-                0: { items: 1, slidesToSlide: 1 }, // Mobile: 1 item
-                600: { items: 2, slidesToSlide: 2 }, // Tablet: 2 items
-                1024: { items: 3, slidesToSlide: 3 }, // Small Desktop: 3 items
-                1280: { items: 5, slidesToSlide: 5 }, // Large Desktop: 5 items
+                0: { items: 1, slidesToSlide: 1 },
+                600: { items: 2, slidesToSlide: 2 },
+                1024: { items: 3, slidesToSlide: 3 },
+                1280: { items: 5, slidesToSlide: 5 },
               }}
-              autoWidth={false} // Ensures correct spacing
+              autoWidth={false}
               mouseTracking
               renderPrevButton={() => (
                 <button className="absolute -left-6 top-48 rounded-full p-0 size-12 ring-1 flex items-center justify-center">
@@ -56,12 +55,9 @@ function Reviews() {
                 </button>
               )}
               items={reviews.map((review, index) => (
-                <div
-                  key={index}
-                  className="w-[259px] h-[271px] bg-[#EFECEA] rounded-lg px-5 relative overflow-visible"
-                >
+                <div key={index} className="w-[259px] h-[271px] bg-[#EFECEA] rounded-lg px-5 relative overflow-visible">
                   <div className="mt-20 flex">
-                    <div className={`size-20 rounded-full flex items-center justify-center text-white font-semibold text-4xl capitalize absolute top-0  -translate-y-1/2 ${index % 2 == 0 ? "bg-[#048e1d]" : "bg-[#000787]"}`}>
+                    <div className={`size-20 rounded-full flex items-center justify-center text-white font-semibold text-4xl capitalize absolute top-0 -translate-y-1/2 ${index % 2 == 0 ? "bg-[#048e1d]" : "bg-[#000787]"}`}>
                       {review.name.charAt(0)}
                     </div>
                   </div>
@@ -92,29 +88,34 @@ function Reviews() {
           </div>
         </div>
       </div>
+
+
       <div className="bg-[#111827] -mb-5 border-b">
-        <div className="w-[90%] mx-auto py-20">
-          <div className="flex">
-            <div className="w-[60%] h-[446px]">
+        <div className="w-[90%] mx-auto py-10 md:py-20">
+          <div className="flex flex-col lg:flex-row gap-y-10 lg:gap-y-0">
+            <div className="w-full lg:w-[60%] h-[300px] sm:h-[400px] lg:h-[446px]">
               <iframe
                 src="https://www.youtube.com/embed/x4MYLy_9_zg?rel=0&autoplay=1&mute=1"
                 frameBorder="0"
                 className="w-full h-full rounded-lg"
+                allowFullScreen
               ></iframe>
             </div>
-            <div className="w-[40%] pl-20 pt-10 flex flex-col gap-y-5">
-              <h2 className="text-white text-[32px] font-semibold">
+            <div className="w-full lg:w-[40%] lg:pl-20 pt-5 lg:pt-10 flex flex-col gap-y-5">
+              <h2 className="text-white text-2xl sm:text-3xl lg:text-[32px] font-semibold">
                 Print, Preserve & Cherish
               </h2>
               <p className="text-sm text-white leading-5 font-semibold">
                 Explore specially curated personalized Gifts, tasteful Décor and
                 meaningful keepsakes with us. Let our range of specially curated
                 personalized goodies tell your life’s story and elevate your art
-                of <br /> gifting. Now capture life’s fondest memories & make
+                of <br className="hidden sm:block" /> gifting. Now capture life’s fondest memories & make
                 them live forever. Experience the Zoomin promise today!
               </p>
-              <Button onClick={() => window.scrollTo({ top: 10, behavior: 'smooth' })}
-                className="bg-[#048e1d] text-white font-semibold rounded-md px-10 py-6 w-fit">
+              <Button
+                onClick={() => window.scrollTo({ top: 10, behavior: 'smooth' })}
+                className="bg-[#048e1d] text-white font-semibold rounded-md px-6 py-4 w-fit text-sm sm:text-base"
+              >
                 Shop Now
                 <MdArrowOutward size={20} />
               </Button>
@@ -122,6 +123,7 @@ function Reviews() {
           </div>
         </div>
       </div>
+
     </>
   );
 }
