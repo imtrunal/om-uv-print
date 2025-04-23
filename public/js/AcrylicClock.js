@@ -131,7 +131,7 @@ document.querySelectorAll('.size-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         allSizeBtn.forEach(button => button.classList.remove('active'));
         this.classList.add('active');
-        const ratio = this.dataset.ratio.split('x');        
+        const ratio = this.dataset.ratio.split('x');
         const aspectWidth = ratio[0];
         const aspectHeight = ratio[1];
 
@@ -414,9 +414,9 @@ function updateClock() {
     const minuteDeg = minutes * 6;
     const secondDeg = seconds * 6;
 
-    if(hourHand) hourHand.style.transform = `rotate(${hourDeg}deg)`;
-    if(minuteHand) minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
-    if(secondHand) secondHand.style.transform = `rotate(${secondDeg}deg)`;
+    if (hourHand) hourHand.style.transform = `rotate(${hourDeg}deg)`;
+    if (minuteHand) minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+    if (secondHand) secondHand.style.transform = `rotate(${secondDeg}deg)`;
 }
 
 function createClockNumbers(type) {
@@ -445,10 +445,24 @@ function createClockNumbers(type) {
     if (containerWidth == 500 && containerHeight == 450) {
         centerX = containerWidth / 2.5;
         centerY = containerHeight / 2.6;
+        radius += 5
         if (imageContainer.classList.contains('custom2-shape')) {
             radius += 8;
             centerX += 24;
             centerY += 15;
+        }
+    }
+    
+    if (containerWidth == 260 && containerHeight == 260) {
+        centerX = containerWidth / 2.18;
+        centerY = containerHeight / 2.3;
+        radius += 9;
+        
+        if (imageContainer.classList.contains('custom2-shape')) {
+            console.log("Custom 2 shape activated");
+            radius += 9;
+            centerX += 12;
+            centerY += 8.5;
         }
     }
     for (let i = 1; i <= 12; i++) {
@@ -635,9 +649,9 @@ function getImageDetails() {
         price: 799,
         size: size,
         shape: selectedShape ? selectedShape.dataset.shape : 'squre',
-        addedText: allTextData.length ? allTextData : "No text added"
+        addedText: allTextData.length ? allTextData : ""
     };
-
+    
     return imageDetails;
 }
 
@@ -673,3 +687,4 @@ window.activateClock = activateClock;
 window.updatePreview = updatePreview;
 window.getImageDetails = getImageDetails;
 window.shareImage = shareImage;
+window.addEventListener('resize', () => createClockNumbers("default"));

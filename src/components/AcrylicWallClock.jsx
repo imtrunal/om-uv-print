@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { ImSpinner2 } from "react-icons/im";
 import domtoimage from 'dom-to-image-more';
+import AnalogClock from 'react-analog-clock';
 
 const ClockCustomizer = () => {
     const [loading, setLoading] = useState(false);
@@ -275,8 +276,9 @@ const ClockCustomizer = () => {
             price,
             addedText
         } = details;
-
-        const formattedText = addedText.length
+        console.log(addedText);
+        
+        const formattedText = addedText.length !== 0
             ? addedText.map(({ text, color, style }, i) =>
                 `▪️ *${i + 1}.* "${text}"\n  🎨 Color: ${color}\n  🖋 Font: ${style}`
             ).join('\n\n')
@@ -357,17 +359,19 @@ const ClockCustomizer = () => {
                     {cartLoading ? <ImSpinner2 className="spin" /> : <MdAddShoppingCart />}
 
                 </button>
-                <p>Size:</p>
-                {[
-                    "11x11",
-                    "16x16",
-                ].map((size, index) => {
-                    return (
-                        <button key={index} className={`size-btn ${index == 0 ? 'active' : ''}`} data-ratio={size}>
-                            {size}
-                        </button>
-                    )
-                })}
+                <div className="size-options">
+                    <p>Size:</p>
+                    {[
+                        "11x11",
+                        "16x16",
+                    ].map((size, index) => {
+                        return (
+                            <button key={index} className={`size-btn ${index == 0 ? 'active' : ''}`} data-ratio={size}>
+                                {size}
+                            </button>
+                        )
+                    })}
+                </div>
                 <button className="upload-btn" id="removeBgBtn">
                     Change Background
                 </button>
