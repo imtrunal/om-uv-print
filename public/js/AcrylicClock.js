@@ -420,51 +420,74 @@ function updateClock() {
 }
 
 function createClockNumbers(type) {
+    const clockNumbers = document.querySelectorAll('.clock-number');
     const clockFace = document.querySelector('.clock-face');
-    const imageContainer = document.querySelector('.image-container');
 
-    clockFace.querySelectorAll('.clock-number').forEach(n => n.remove());
+    clockNumbers.forEach(number => number.remove());
 
-    const rect = imageContainer.getBoundingClientRect();
-    const containerWidth = rect.width;
-    const containerHeight = rect.height;
+    const containerWidth = imageContainer.offsetWidth;
+    const containerHeight = imageContainer.offsetHeight;
 
-    const centerX = containerWidth / 2;
-    const centerY = containerHeight / 2;
-    let radius = Math.min(containerWidth, containerHeight) / 2 * 0.85;
+    let radius = Math.min(containerWidth, containerHeight) / 2 - 20;
+    let centerX = containerWidth / 2.5;
+    let centerY = containerHeight / 2.6;
 
-    if (imageContainer.classList.contains('custom2-shape')) {
-        radius *= 0.92;
-    }
-
-    const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
     const limitedNumbers = [12, 3, 6, 9];
+    const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+    const useLimitedNumbers = type;
 
+    clockNumbers.forEach(number => number.remove());
+    if (imageContainer.classList.contains('custom2-shape')) {
+        radius -= 20;
+        centerX += 10;
+        centerY += 15;
+    }
+    if (containerWidth == 500 && containerHeight == 450) {
+        centerX = containerWidth / 2.5;
+        centerY = containerHeight / 2.6;
+        radius += 5
+        if (imageContainer.classList.contains('custom2-shape')) {
+            radius += 8;
+            centerX += 24;
+            centerY += 15;
+        }
+    }
+    
+    if (containerWidth == 260 && containerHeight == 260) {
+        centerX = containerWidth / 2.18;
+        centerY = containerHeight / 2.3;
+        radius += 9;
+        
+        if (imageContainer.classList.contains('custom2-shape')) {
+            console.log("Custom 2 shape activated");
+            radius += 9;
+            centerX += 12;
+            centerY += 8.5;
+        }
+    }
     for (let i = 1; i <= 12; i++) {
-        // Skip if limited type and this number isn't allowed
-        if (type === 'limited' && !limitedNumbers.includes(i)) continue;
+        const clockNumber = document.createElement('div');
+        clockNumber.classList.add('clock-number');
 
-        const el = document.createElement('div');
-        el.className = 'clock-number';
-
-        // Handle types
-        if (type === 'roman') {
-            el.textContent = romanNumerals[i - 1];
-        } else {
-            el.textContent = i;
+        if (useLimitedNumbers === "limited" && !limitedNumbers.includes(i)) {
+            continue;
+        }
+        if (useLimitedNumbers === "roman" && !romanNumerals.includes(i - 1)) {
+            clockNumber.textContent = romanNumerals[i - 1];
+        }
+        else {
+            clockNumber.textContent = i;
         }
 
-        const angle = (i * 30) - 90;
-        const rad = angle * Math.PI / 180;
-        const x = centerX + radius * Math.cos(rad);
-        const y = centerY + radius * Math.sin(rad);
+        const angle = (i - 3) * 30;
+        const x = centerX + radius * Math.cos(angle * Math.PI / 180);
+        const y = centerY + radius * Math.sin(angle * Math.PI / 180);
 
-        el.style.position = 'absolute';
-        el.style.left = `${x}px`;
-        el.style.top = `${y}px`;
-        el.style.transform = 'translate(-50%, -50%)';
+        clockNumber.style.position = 'absolute';
+        clockNumber.style.left = `${x - 10}px`;
+        clockNumber.style.top = `${y - 10}px`;
 
-        clockFace.appendChild(el);
+        clockFace.appendChild(clockNumber);
     }
 }
 
@@ -629,7 +652,7 @@ function getImageDetails() {
         shape: selectedShape ? selectedShape.dataset.shape : 'squre',
         addedText: allTextData.length ? allTextData : ""
     };
-    
+
     return imageDetails;
 }
 
