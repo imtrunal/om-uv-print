@@ -5,13 +5,11 @@ import { FaUpload } from "react-icons/fa6";
 import { FaShareAlt } from "react-icons/fa";
 import { HiPencilSquare } from "react-icons/hi2";
 import { MdAddShoppingCart } from "react-icons/md";
-import { handleShare } from "../utils/ShareService";
 import useCartStore from "../manage/CartStore";
 import { toast } from "sonner";
 import axios from "axios";
 import { ImSpinner2 } from "react-icons/im";
 import domtoimage from 'dom-to-image-more';
-import AnalogClock from 'react-analog-clock';
 
 const ClockCustomizer = () => {
     const [loading, setLoading] = useState(false);
