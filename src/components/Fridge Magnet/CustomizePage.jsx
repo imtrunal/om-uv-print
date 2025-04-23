@@ -208,7 +208,6 @@ const CustomizePage = () => {
           addTextBtn.style.display = 'block';
           shareBtn.style.display = 'block';
           
-          // NEW: Reset position when new image is loaded
           currentX = 0;
           currentY = 0;
           xOffset = 0;
