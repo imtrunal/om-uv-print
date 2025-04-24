@@ -312,7 +312,7 @@ const AcrylicPhoto = () => {
           ].map((style, index) => (
             <button
               key={index}
-              className="ap-color-btn"
+              className={`ap-color-btn ${index === 1 ? "" : ""}`}
               style={{ border: `5px groove ${style}` }}
             >
               <FaImage />
