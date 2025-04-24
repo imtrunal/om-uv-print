@@ -37,7 +37,7 @@ const ClockCustomizer = () => {
                     return reject("Image container not found");
                 }
 
-                await new Promise(r => setTimeout(r, 300)); // wait for any animation or layout to finish
+                await new Promise(r => setTimeout(r, 300));
 
                 const clone = imageContainer.cloneNode(true);
                 copyComputedStyles(imageContainer, clone);
@@ -275,7 +275,7 @@ const ClockCustomizer = () => {
             addedText
         } = details;
         console.log(addedText);
-        
+
         const formattedText = addedText.length !== 0
             ? addedText.map(({ text, color, style }, i) =>
                 `▪️ *${i + 1}.* "${text}"\n  🎨 Color: ${color}\n  🖋 Font: ${style}`

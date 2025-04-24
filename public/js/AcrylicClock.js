@@ -22,8 +22,11 @@ const zoomRange = document.getElementById('zoomRange');
 const removeBgBtn = document.getElementById('removeBgBtn');
 removeBgBtn.addEventListener('click', openBgModal);
 imageContainer.addEventListener('dblclick', dragStart);
+imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
 imageContainer.addEventListener('mousemove', drag);
+imageContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
 document.addEventListener('mouseup', dragEnd);
+document.addEventListener('touchend', dragEnd)
 const allShapeBtn = document.querySelectorAll('.shape-btn');
 const cartBtn = document.getElementById('cartBtn');
 const shareBtn = document.getElementById('shareBtn');
@@ -31,6 +34,7 @@ const shareBtn = document.getElementById('shareBtn');
 const allSizeBtn = document.querySelectorAll('.size-btn');
 const BASE_URL = window.BASE_URL;
 let activeClock = {};
+let clockNumbersStyle;
 
 let isDragging = false;
 let currentX = 0;
@@ -78,45 +82,102 @@ allShapeBtn.forEach(btn => {
     });
 });
 
-
 function dragStart(e) {
     if (!isDragging) {
         isDragging = true;
-
-        if (e.type === 'touchstart') {
-            initialX = e.touches[0].clientX - xOffset;
-            initialY = e.touches[0].clientY - yOffset;
-        } else {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-        }
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
     }
+}
+
+function handleTouchStart(e) {
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const now = new Date().getTime();
+        const previousTouch = imageContainer.dataset.lastTouchTime || 0;
+
+        if (now - previousTouch < 300) { // Double tap detected
+            if (!isDragging) {
+                isDragging = true;
+                const touch = e.touches[0];
+                initialX = touch.clientX - xOffset;
+                initialY = touch.clientY - yOffset;
+                e.preventDefault(); // Prevent scrolling
+            }
+        }
+        imageContainer.dataset.lastTouchTime = now;
+    }
+    
 }
 
 function drag(e) {
     if (isDragging) {
         e.preventDefault();
-
-        if (e.type === 'touchmove') {
-            currentX = e.touches[0].clientX - initialX;
-            currentY = e.touches[0].clientY - initialY;
-        } else {
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
-        }
-
-        xOffset = currentX;
-        yOffset = currentY;
-
-        updateImagePosition();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        updatePosition();
     }
+}
+
+function handleTouchMove(e) {
+    if (isDragging) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        currentX = touch.clientX - initialX;
+        currentY = touch.clientY - initialY;
+        updatePosition();
+    }
+}
+
+function updatePosition() {
+    xOffset = currentX;
+    yOffset = currentY;
+    updateImagePosition();
 }
 
 function dragEnd() {
-    if (isDragging) {
-        isDragging = false;
-    }
+    isDragging = false;
 }
+
+
+// function dragStart(e) {
+//     if (!isDragging) {
+//         isDragging = true;
+
+//         if (e.type === 'touchstart') {
+//             initialX = e.touches[0].clientX - xOffset;
+//             initialY = e.touches[0].clientY - yOffset;
+//         } else {
+//             initialX = e.clientX - xOffset;
+//             initialY = e.clientY - yOffset;
+//         }
+//     }
+// }
+
+// function drag(e) {
+//     if (isDragging) {
+//         e.preventDefault();
+
+//         if (e.type === 'touchmove') {
+//             currentX = e.touches[0].clientX - initialX;
+//             currentY = e.touches[0].clientY - initialY;
+//         } else {
+//             currentX = e.clientX - initialX;
+//             currentY = e.clientY - initialY;
+//         }
+
+//         xOffset = currentX;
+//         yOffset = currentY;
+
+//         updateImagePosition();
+//     }
+// }
+
+// function dragEnd() {
+//     if (isDragging) {
+//         isDragging = false;
+//     }
+// }
 
 function updateImagePosition() {
     previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
@@ -295,36 +356,64 @@ function makeDraggable(element) {
     let isDragging = false;
     let offsetX, offsetY;
 
-    element.addEventListener('mousedown', function (e) {
+    // Mouse event handlers
+    const handleMouseDown = (e) => {
         isDragging = true;
         offsetX = e.clientX - element.offsetLeft;
         offsetY = e.clientY - element.offsetTop;
         element.style.cursor = 'grabbing';
-
         element.style.border = '2px dashed #248EE6';
         element.querySelector('.resize-handle').style.display = 'block';
         element.querySelector('.rotate-handle').style.display = 'block';
-    });
+    };
 
-    document.addEventListener('mousemove', function (e) {
+    // Touch event handlers
+    const handleTouchStart = (e) => {
+        isDragging = true;
+        const touch = e.touches[0];
+        offsetX = touch.clientX - element.offsetLeft;
+        offsetY = touch.clientY - element.offsetTop;
+        element.style.cursor = 'grabbing';
+        element.style.border = '2px dashed #248EE6';
+        element.querySelector('.resize-handle').style.display = 'block';
+        element.querySelector('.rotate-handle').style.display = 'block';
+    };
+
+    const handleMove = (clientX, clientY) => {
         if (isDragging) {
-            element.style.left = e.clientX - offsetX + 'px';
-            element.style.top = e.clientY - offsetY + 'px';
+            element.style.left = clientX - offsetX + 'px';
+            element.style.top = clientY - offsetY + 'px';
         }
-    });
+    };
 
-    document.addEventListener('mouseup', function () {
+    const handleMouseMove = (e) => handleMove(e.clientX, e.clientY);
+    const handleTouchMove = (e) => handleMove(e.touches[0].clientX, e.touches[0].clientY);
+
+    const handleEnd = () => {
         isDragging = false;
         element.style.cursor = 'move';
-    });
+    };
 
-    document.addEventListener('mousedown', function (e) {
+    const handleOutsideClick = (e) => {
         if (!element.contains(e.target)) {
             element.style.border = 'none';
             element.querySelector('.resize-handle').style.display = 'none';
             element.querySelector('.rotate-handle').style.display = 'none';
         }
-    });
+    };
+
+    // Add event listeners for both mouse and touch
+    element.addEventListener('mousedown', handleMouseDown);
+    element.addEventListener('touchstart', handleTouchStart, { passive: false });
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchend', handleEnd);
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
 }
 
 function makeResizable(element) {
@@ -340,28 +429,43 @@ function makeResizable(element) {
 
     element.appendChild(resizeHandle);
 
-    resizeHandle.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
+    const handleResizeStart = (clientX) => {
         const initialFontSize = parseFloat(window.getComputedStyle(element).fontSize);
-        const initialMouseX = e.clientX;
+        const initialMouseX = clientX;
 
-        function resize(e) {
+        const handleResize = (e) => {
+            const currentX = e.clientX || e.touches[0].clientX;
             const scaleFactor = 0.2;
-            const newSize = initialFontSize + (e.clientX - initialMouseX) * scaleFactor;
+            const newSize = initialFontSize + (currentX - initialMouseX) * scaleFactor;
 
             if (newSize > 10) {
                 element.style.fontSize = newSize + 'px';
             }
-        }
+        };
 
-        function stopResizing() {
-            document.removeEventListener('mousemove', resize);
+        const stopResizing = () => {
+            document.removeEventListener('mousemove', handleResize);
+            document.removeEventListener('touchmove', handleResize);
             document.removeEventListener('mouseup', stopResizing);
-        }
+            document.removeEventListener('touchend', stopResizing);
+        };
 
-        document.addEventListener('mousemove', resize);
+        document.addEventListener('mousemove', handleResize);
+        document.addEventListener('touchmove', handleResize, { passive: false });
         document.addEventListener('mouseup', stopResizing);
+        document.addEventListener('touchend', stopResizing);
+    };
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        handleResizeStart(e.clientX);
     });
+
+    resizeHandle.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handleResizeStart(e.touches[0].clientX);
+    }, { passive: false });
 }
 
 function makeRotatable(element) {
@@ -378,26 +482,42 @@ function makeRotatable(element) {
 
     element.appendChild(rotateHandle);
 
-    rotateHandle.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
+    const handleRotateStart = (clientX, clientY) => {
         const rect = element.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
 
-        function rotate(e) {
-            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-            const degree = (angle * (180 / Math.PI) + 90) % 360;
+        const handleRotate = (e) => {
+            const currentX = e.clientX || e.touches[0].clientX;
+            const currentY = e.clientY || e.touches[0].clientY;
+            const angle = Math.atan2(currentY - centerY, currentX - centerX);
+            const degree = (angle * (180 / Math.PI) + 90 % 360);
             element.style.transform = `translate(-50%, -50%) rotate(${degree}deg)`;
-        }
+        };
 
-        function stopRotating() {
-            document.removeEventListener('mousemove', rotate);
+        const stopRotating = () => {
+            document.removeEventListener('mousemove', handleRotate);
+            document.removeEventListener('touchmove', handleRotate);
             document.removeEventListener('mouseup', stopRotating);
-        }
+            document.removeEventListener('touchend', stopRotating);
+        };
 
-        document.addEventListener('mousemove', rotate);
+        document.addEventListener('mousemove', handleRotate);
+        document.addEventListener('touchmove', handleRotate, { passive: false });
         document.addEventListener('mouseup', stopRotating);
+        document.addEventListener('touchend', stopRotating);
+    };
+
+    rotateHandle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        handleRotateStart(e.clientX, e.clientY);
     });
+
+    rotateHandle.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handleRotateStart(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
 }
 
 function updateClock() {
@@ -452,12 +572,12 @@ function createClockNumbers(type) {
             centerY += 15;
         }
     }
-    
+
     if (containerWidth == 260 && containerHeight == 260) {
         centerX = containerWidth / 2.18;
         centerY = containerHeight / 2.3;
         radius += 9;
-        
+
         if (imageContainer.classList.contains('custom2-shape')) {
             console.log("Custom 2 shape activated");
             radius += 9;
@@ -569,9 +689,13 @@ function activateClock(selectedClock, type) {
         { color: "white", fontFamily: "Arial", fontWeight: "bold" },
         { color: "white", fontFamily: "Wendy One", fontWeight: "bold" }
     ];
-
     const mainClockNumbers = document.querySelectorAll('.clock-number');
 
+    clockNumbersStyle = {
+        color: fontStyles[index].color,
+        fontFamily: fontStyles[index].fontFamily,
+        fontWeight: fontStyles[index].fontWeight
+    }
     if (fontStyles[index]) {
         mainClockNumbers.forEach(number => {
             number.style.color = fontStyles[index].color;
@@ -603,6 +727,7 @@ function getImageDetails() {
     const selectedSize = document.querySelector('.size-btn.active');
     const textElements = document.querySelectorAll('.text-box');
     const selectedShape = document.querySelector('.shape-btn.active');
+    console.log(clockNumbersStyle);
 
     if (!previewImage || !previewImage.src) {
         console.error("No image uploaded.");

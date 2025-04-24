@@ -207,7 +207,7 @@ const CustomizePage = () => {
           initializeImageFeatures(previewImage);
           addTextBtn.style.display = 'block';
           shareBtn.style.display = 'block';
-          
+
           currentX = 0;
           currentY = 0;
           xOffset = 0;
@@ -241,12 +241,16 @@ const CustomizePage = () => {
       uploadBox.style.cursor = 'default';
     };
 
-    const handleTouchStart = (e) => {
+
+
+    function handleTouchStart(e) {
       if (e.touches.length === 1) {
-        const now = Date.now();
-        if (now - lastTouchTime < 300) { // Double tap detected
-          // Only enable image drag if not touching a text element
-          if (!e.target.closest('.afm-text-box')) {
+        const touch = e.touches[0];
+        const now = new Date().getTime();
+        const previousTouch = uploadBox.dataset.lastTouchTime || 0;
+
+        if (now - previousTouch < 300) {
+          if (!isDragging) {
             e.preventDefault();
             isDraggingImage = true;
             const touch = e.touches[0];
@@ -255,16 +259,17 @@ const CustomizePage = () => {
             uploadBox.style.cursor = 'grabbing';
           }
         }
-        lastTouchTime = now;
+        uploadBox.dataset.lastTouchTime = now;
       }
-    };
+
+    }
 
     const handleDrag = (e) => {
       if (isDraggingImage) {
         e.preventDefault();
         const clientX = e.clientX || (e.touches && e.touches[0].clientX);
         const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        
+
         currentX = clientX - initialX;
         currentY = clientY - initialY;
         xOffset = currentX;
@@ -333,10 +338,10 @@ const CustomizePage = () => {
       element.addEventListener('mousedown', function (e) {
         e.stopPropagation();
         e.preventDefault();
-        
+
         // Only start dragging if not clicking on a resize or rotate handle
-        if (!e.target.classList.contains('afm-resize-handle') && 
-            !e.target.classList.contains('afm-rotate-handle')) {
+        if (!e.target.classList.contains('afm-resize-handle') &&
+          !e.target.classList.contains('afm-rotate-handle')) {
           isDragging = true;
 
           // Add highlight to selected text
@@ -379,10 +384,10 @@ const CustomizePage = () => {
         if (e.touches.length === 1) {
           const touch = e.touches[0];
           const target = document.elementFromPoint(touch.clientX, touch.clientY);
-          
+
           // Only start dragging if not touching a resize or rotate handle
-          if (!target.classList.contains('afm-resize-handle') && 
-              !target.classList.contains('afm-rotate-handle')) {
+          if (!target.classList.contains('afm-resize-handle') &&
+            !target.classList.contains('afm-rotate-handle')) {
             isDragging = true;
 
             // Get current position
@@ -724,10 +729,10 @@ const CustomizePage = () => {
       const handleMouseDown = function (e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const clientX = e.clientX || (e.touches && e.touches[0].clientX);
         const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        
+
         isDragging = true;
         offsetX = clientX - element.offsetLeft;
         offsetY = clientY - element.offsetTop;
@@ -750,7 +755,7 @@ const CustomizePage = () => {
           e.preventDefault();
           const clientX = e.clientX || (e.touches && e.touches[0].clientX);
           const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-          
+
           element.style.left = clientX - offsetX + 'px';
           element.style.top = clientY - offsetY + 'px';
         }
@@ -885,7 +890,7 @@ const CustomizePage = () => {
             e.preventDefault();
             const clientX = e.clientX || (e.touches && e.touches[0].clientX);
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            
+
             const dx = clientX - centerX;
             const dy = clientY - centerY;
             const angle = Math.atan2(dy, dx) * (180 / Math.PI);
