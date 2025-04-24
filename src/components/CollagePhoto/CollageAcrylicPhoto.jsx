@@ -237,9 +237,9 @@ const CollageAcrylicPhoto = () => {
             newTextBox.className = 'acol-text-box';
             newTextBox.innerText = 'New Custom Text';
             newTextBox.style.color = textColor;
-            newTextBox.style.wordBreak = 'break-word';
-            newTextBox.style.whiteSpace = 'pre-wrap';
-            newTextBox.style.overflow = 'hidden';
+            // newTextBox.style.wordBreak = 'break-word';
+            // newTextBox.style.whiteSpace = 'pre-wrap';
+            // newTextBox.style.overflow = 'hidden';
             newTextBox.style.maxWidth = '100%';
     
             collagePhoto.appendChild(newTextBox);
