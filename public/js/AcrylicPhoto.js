@@ -197,7 +197,12 @@ function handleColorSelection() {
 function handleSizeSelection() {
     document.querySelectorAll('.ap-size-btn').forEach(button => button.classList.remove('ap-active'));
     this.classList.add('ap-active');
+    const isMobile = window.innerWidth <= 768; // Common mobile breakpoint
 
+    // If mobile, don't change any dimensions or indicators
+    if (isMobile) {
+        return;
+    }
     const ratio = this.dataset.ratio.split('x');
     const aspectWidth = ratio[0];
     const aspectHeight = ratio[1];

@@ -113,7 +113,7 @@ function Reviews() {
                 them live forever. Experience the Zoomin promise today!
               </p>
               <Button
-                onClick={() => window.scrollTo({ top: 10, behavior: 'smooth' })}
+                onPress={() => window.scrollTo({ top: 10, behavior: 'smooth' })}
                 className="bg-[#048e1d] text-white font-semibold rounded-md px-6 py-4 w-fit text-sm sm:text-base"
               >
                 Shop Now

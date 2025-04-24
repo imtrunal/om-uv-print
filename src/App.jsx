@@ -19,6 +19,7 @@ import OrderDetails from "./components/OrderDetails";
 import './index.css'
 import Footer from "./components/Layouts/Footer";
 import ComingSoon from "./components/ComingSoon";
+
 function App() {
   const location = useLocation();
   const isLoginPage = location.pathname === "/";

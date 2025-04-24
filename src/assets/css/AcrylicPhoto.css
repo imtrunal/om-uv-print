@@ -343,7 +343,8 @@ body {
 #removeBgBtn {
     display: none;
 }
-.apSizeBtnContainer{
+
+.apSizeBtnContainer {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -506,10 +507,7 @@ body {
     .ap-height-indicator {
         left: -20px;
     }
-}
 
-/* For very small screens (below 400px) */
-@media only screen and (max-width: 400px) {
     .ap-image-container {
         margin-top: 1.5rem;
         max-width: 250px;
@@ -584,9 +582,12 @@ body {
     .ap-controls {
         flex-direction: column;
     }
-    .apSizeBtnContainer{
+
+    .apSizeBtnContainer {
         display: flex;
         flex-wrap: wrap;
     }
-
 }
+
+/* For very small screens (below 400px) */
+@media only screen and (max-width: 400px) {}

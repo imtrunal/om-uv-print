@@ -107,7 +107,7 @@ function handleTouchStart(e) {
         }
         imageContainer.dataset.lastTouchTime = now;
     }
-    
+
 }
 
 function drag(e) {
@@ -192,6 +192,11 @@ document.querySelectorAll('.size-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         allSizeBtn.forEach(button => button.classList.remove('active'));
         this.classList.add('active');
+        const isMobile = window.innerWidth <= 768; 
+
+        if (isMobile) {
+            return;
+        }
         const ratio = this.dataset.ratio.split('x');
         const aspectWidth = ratio[0];
         const aspectHeight = ratio[1];
