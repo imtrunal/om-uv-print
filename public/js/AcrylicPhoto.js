@@ -203,10 +203,10 @@ function handleSizeSelection() {
     const ratio = this.dataset.ratio.split('x');
     const aspectWidth = parseInt(ratio[0]);
     const aspectHeight = parseInt(ratio[1]);
+    console.log(aspectHeight === 36);
 
-    // Scale factor to convert inches to pixels (adjust this value as needed)
-    const pixelsPerInch = 20; // 20px = 1 inch in preview
-    
+    const pixelsPerInch = aspectWidth === 20 ? 15 : 20;
+
     // Calculate dimensions based on real-world size
     let width = aspectWidth * pixelsPerInch;
     let height = aspectHeight * pixelsPerInch;
@@ -215,7 +215,7 @@ function handleSizeSelection() {
     imageContainer.style.width = `${Math.round(width)}px`;
     imageContainer.style.height = `${Math.round(height)}px`;
     imageContainer.style.aspectRatio = `${aspectWidth}/${aspectHeight}`;
-    
+
     // Update indicators
     widthInd.innerText = `Width ${aspectWidth} inch (${(aspectWidth * 2.54).toFixed(2)} cm)`;
     heightInd.innerText = `Height ${aspectHeight} inch (${(aspectHeight * 2.54).toFixed(2)} cm)`;
