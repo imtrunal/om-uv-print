@@ -384,12 +384,11 @@ body {
     }
 
     .ap-image-container {
-        margin-top: 0.5rem;
-        width: 100%;
-        max-width: 250px;
-        max-height: 250px;
-        aspect-ratio: 12/9;
-        flex-direction: column;
+        margin-top: 1rem;
+        width: 200px;
+        height: 350px;
+        position: relative;
+        aspect-ratio: 8/12;
     }
 
     .ap-size-buttons {

@@ -198,14 +198,13 @@ function handleSizeSelection() {
     this.classList.add('ap-active');
     const isMobile = window.innerWidth <= 768;
 
-    if (isMobile) return;
+    // if (isMobile) return;
 
     const ratio = this.dataset.ratio.split('x');
     const aspectWidth = parseInt(ratio[0]);
     const aspectHeight = parseInt(ratio[1]);
-    console.log(aspectHeight === 36);
 
-    const pixelsPerInch = aspectWidth === 20 ? 15 : 20;
+    const pixelsPerInch = isMobile ? aspectWidth >= 20 ? 10 : 15 : aspectWidth >= 20 ? 15 : 20;
 
     // Calculate dimensions based on real-world size
     let width = aspectWidth * pixelsPerInch;
