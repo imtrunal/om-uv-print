@@ -197,45 +197,46 @@ document.querySelectorAll('.size-btn').forEach(btn => {
         if (isMobile) {
             return;
         }
-        const ratio = this.dataset.ratio.split('x');
-        const aspectWidth = ratio[0];
-        const aspectHeight = ratio[1];
+        
+        // const ratio = this.dataset.ratio.split('x');
+        // const aspectWidth = ratio[0];
+        // const aspectHeight = ratio[1];
 
-        let width = 500;
-        let height = (450 * aspectHeight) / aspectWidth;
+        // let width = 500;
+        // let height = (450 * aspectHeight) / aspectWidth;
 
-        const widthInd = document.getElementById('width');
-        const heightInd = document.getElementById('height');
+        // const widthInd = document.getElementById('width');
+        // const heightInd = document.getElementById('height');
 
-        if (aspectWidth == 11 && aspectHeight == 11) {
-            imageContainer.style.width = '';
-            imageContainer.style.height = '';
-            widthInd.innerText = `Width 12 inch (30.48 cm)`;
-            heightInd.innerText = `Height 9 inch (22.86 cm)`;
-        }
-        else {
-            imageContainer.style.width = `${Math.round(width)}px`;
-            imageContainer.style.height = `${Math.round(height)}px`;
-            widthInd.innerText = `Width ${aspectWidth} inch (${aspectWidth * 2.54} cm)`;
-            heightInd.innerText = `Height ${aspectHeight} inch (${aspectHeight * 2.54} cm)`;
-        }
-        createClockNumbers();
-        document.querySelectorAll('.circle-shape', '.square-shape', '.custom-shape', '.custom2-shape', '.custom3-shape', '.custom4-shape').forEach(shape => {
-            if (shape.classList.contains('circle-shape')) {
-                shape.style.width = `${Math.round(height)}px`;
-                shape.style.height = `${Math.round(height)}px`;
-            } else if (shape.classList.contains('square-shape')) {
+        // if (aspectWidth == 11 && aspectHeight == 11) {
+        //     imageContainer.style.width = '';
+        //     imageContainer.style.height = '';
+        //     widthInd.innerText = `Width 12 inch (30.48 cm)`;
+        //     heightInd.innerText = `Height 9 inch (22.86 cm)`;
+        // }
+        // else {
+        //     imageContainer.style.width = `${Math.round(width)}px`;
+        //     imageContainer.style.height = `${Math.round(height)}px`;
+        //     widthInd.innerText = `Width ${aspectWidth} inch (${aspectWidth * 2.54} cm)`;
+        //     heightInd.innerText = `Height ${aspectHeight} inch (${aspectHeight * 2.54} cm)`;
+        // }
+        // createClockNumbers();
+        // document.querySelectorAll('.circle-shape', '.square-shape', '.custom-shape', '.custom2-shape', '.custom3-shape', '.custom4-shape').forEach(shape => {
+        //     if (shape.classList.contains('circle-shape')) {
+        //         shape.style.width = `${Math.round(height)}px`;
+        //         shape.style.height = `${Math.round(height)}px`;
+        //     } else if (shape.classList.contains('square-shape')) {
 
-                shape.style.width = `${Math.round(width)}px`;
-                shape.style.height = `${Math.round(width)}px`;
-            } else if (shape.classList.contains('rect-shape')) {
-                shape.style.width = `${Math.round(width)}px`;
-                shape.style.height = `${Math.round(width) - 100}px`;
-            } else {
-                shape.style.width = `${Math.round(width)}px`;
-                shape.style.height = `${Math.round(height)}px`;
-            }
-        });
+        //         shape.style.width = `${Math.round(width)}px`;
+        //         shape.style.height = `${Math.round(width)}px`;
+        //     } else if (shape.classList.contains('rect-shape')) {
+        //         shape.style.width = `${Math.round(width)}px`;
+        //         shape.style.height = `${Math.round(width) - 100}px`;
+        //     } else {
+        //         shape.style.width = `${Math.round(width)}px`;
+        //         shape.style.height = `${Math.round(height)}px`;
+        //     }
+        // });
         if (activeClock.selectedClock && activeClock.type) {
             activateClock(activeClock.selectedClock, activeClock.type);
         }
