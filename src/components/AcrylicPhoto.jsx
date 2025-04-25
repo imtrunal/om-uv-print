@@ -322,10 +322,10 @@ const AcrylicPhoto = () => {
 
         <div className="ap-preview-container">
           <div className="ap-size-indicator ap-width-indicator" id="width">
-            Width 12 inch (30.48 cm)
+            Width 8 inch (30.48 cm)
           </div>
           <div className="ap-size-indicator ap-height-indicator" id="height">
-            Height 9 inch (22.86 cm)
+            Height 12 inch (22.86 cm)
           </div>
 
           <div className="ap-image-container" id="imageContainer">
@@ -340,7 +340,7 @@ const AcrylicPhoto = () => {
           <div className="ap-shape-options">
             {[
               // "default",
-              "square",
+              // "square",
               "potrait",
               "rect",
               "circle",
@@ -403,6 +403,7 @@ const AcrylicPhoto = () => {
               "16x24",
               "18x24",
               "20x30",
+              "16x12",
               "20x36"
             ].map((ratio, index) => (
               <button

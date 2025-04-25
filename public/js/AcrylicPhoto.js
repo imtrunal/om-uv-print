@@ -40,7 +40,7 @@ const allTextData = [];
 // Initialize event listeners
 function initEventListeners() {
     // Image drag events (only on double click/tap)
-    imageContainer.addEventListener('dblclick', enableImageDrag);
+    imageContainer.addEventListener('mousedown', enableImageDrag);
     imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
 
     // Mouse/touch move and end events
@@ -77,32 +77,30 @@ function initEventListeners() {
     document.getElementById('addTextModalBtn').addEventListener('click', addTextFromModal);
 }
 
-// Enable image dragging (only after double click/tap)
+
 function enableImageDrag(e) {
-    isDraggingImage = true;
-    if (e.type === 'dblclick') {
+    if (e.button === 0) {
+
+        isDraggingImage = true;
         initialX = e.clientX - xOffset;
         initialY = e.clientY - yOffset;
+        imageContainer.style.cursor = 'grabbing';
     }
-    imageContainer.style.cursor = 'grabbing';
 }
 
-// Disable image dragging
 function disableImageDrag() {
     isDraggingImage = false;
     imageContainer.style.cursor = 'default';
 }
 
-// Handle mouse drag
 function handleDrag(e) {
-    if (isDraggingImage) {
-        e.preventDefault();
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-        xOffset = currentX;
-        yOffset = currentY;
-        updateImagePosition();
-    }
+    if (!isDraggingImage) return;
+    e.preventDefault();
+    currentX = e.clientX - initialX;
+    currentY = e.clientY - initialY;
+    xOffset = currentX;
+    yOffset = currentY;
+    updateImagePosition();
 }
 
 // Handle touch start
@@ -137,7 +135,9 @@ function handleTouchMove(e) {
     }
 }
 
-// Update image position
+// previewImage.style.transformOrigin = 'top left';
+
+// Update position and scale
 function updateImagePosition() {
     previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
 }
@@ -193,66 +193,98 @@ function handleColorSelection() {
     imageContainer.style.border = borderColor === "none" ? "none" : `10px solid ${borderColor}`;
 }
 
-// Handle size selection
 function handleSizeSelection() {
     document.querySelectorAll('.ap-size-btn').forEach(button => button.classList.remove('ap-active'));
     this.classList.add('ap-active');
-    const isMobile = window.innerWidth <= 768; // Common mobile breakpoint
+    const isMobile = window.innerWidth <= 768;
 
-    // If mobile, don't change any dimensions or indicators
-    if (isMobile) {
-        return;
-    }
+    if (isMobile) return;
+
     const ratio = this.dataset.ratio.split('x');
-    const aspectWidth = ratio[0];
-    const aspectHeight = ratio[1];
+    const aspectWidth = parseInt(ratio[0]);
+    const aspectHeight = parseInt(ratio[1]);
 
-    // Keep fixed width on all screens
-    let width = 500;
-    let height = (width * aspectHeight) / aspectWidth;
+    // Scale factor to convert inches to pixels (adjust this value as needed)
+    const pixelsPerInch = 20; // 20px = 1 inch in preview
+    
+    // Calculate dimensions based on real-world size
+    let width = aspectWidth * pixelsPerInch;
+    let height = aspectHeight * pixelsPerInch;
 
-    if (aspectWidth === "8" && aspectHeight === "12") {
-        imageContainer.style.width = '';
-        imageContainer.style.height = '';
-        widthInd.innerText = `Width 12 inch (30.48 cm)`;
-        heightInd.innerText = `Height 9 inch (22.86 cm)`;
-    } else {
-        imageContainer.style.width = `${Math.round(width)}px`;
-        imageContainer.style.height = `${Math.round(height)}px`;
-        widthInd.innerText = `Width ${aspectWidth} inch (${aspectWidth * 2.54} cm)`;
-        heightInd.innerText = `Height ${aspectHeight} inch (${aspectHeight * 2.54} cm)`;
-    }
-
-    // Shape button visibility logic
-    if ((aspectWidth == 11 && aspectHeight == 11) || (aspectWidth == 16 && aspectHeight == 16)) {
-        document.querySelectorAll('.ap-shape-btn').forEach(button => {
-            if (button.classList.contains('oval') || button.classList.contains('potrait')) {
-                button.style.display = 'none';
-            } else {
-                button.style.display = 'inline-block';
-            }
-        });
-    } else if (aspectWidth === "default" && aspectHeight === "default") {
-        document.querySelectorAll('.ap-shape-btn').forEach(button => {
-            button.style.display = 'inline-block';
-        });
-    } else {
-        document.querySelectorAll('.ap-shape-btn').forEach(button => {
-            if (
-                button.classList.contains('potrait') ||
-                button.classList.contains('rect') ||
-                button.classList.contains('circle') ||
-                button.classList.contains('custom3') ||
-                button.classList.contains('custom4') ||
-                button.classList.contains('custom5')
-            ) {
-                button.style.display = 'none';
-            } else {
-                button.style.display = 'inline-block';
-            }
-        });
-    }
+    // Apply dimensions
+    imageContainer.style.width = `${Math.round(width)}px`;
+    imageContainer.style.height = `${Math.round(height)}px`;
+    imageContainer.style.aspectRatio = `${aspectWidth}/${aspectHeight}`;
+    
+    // Update indicators
+    widthInd.innerText = `Width ${aspectWidth} inch (${(aspectWidth * 2.54).toFixed(2)} cm)`;
+    heightInd.innerText = `Height ${aspectHeight} inch (${(aspectHeight * 2.54).toFixed(2)} cm)`;
 }
+
+// Handle size selection
+// function handleSizeSelection() {
+//     document.querySelectorAll('.ap-size-btn').forEach(button => button.classList.remove('ap-active'));
+//     this.classList.add('ap-active');
+//     const isMobile = window.innerWidth <= 768; // Common mobile breakpoint
+
+//     // If mobile, don't change any dimensions or indicators
+//     if (isMobile) {
+//         return;
+//     }
+//     const ratio = this.dataset.ratio.split('x');
+//     const aspectWidth = ratio[0];
+//     const aspectHeight = ratio[1];
+
+//     // Keep fixed width on all screens
+//     let width = 300;
+//     let height = (width * aspectHeight) / aspectWidth;
+
+//     // if (aspectWidth === "8" && aspectHeight === "12") {
+//     //     imageContainer.style.width = '';
+//     //     imageContainer.style.height = '';
+//     //     widthInd.innerText = `Width 12 inch (30.48 cm)`;
+//     //     heightInd.innerText = `Height 8 inch (22.86 cm)`;
+//     // } else {
+//     imageContainer.style.width = `${Math.round(width)}px`;
+//     imageContainer.style.height = `${Math.round(height)}px`;
+//     widthInd.innerText = `Width ${aspectWidth} inch (${aspectWidth * 2.54} cm)`;
+//     heightInd.innerText = `Height ${aspectHeight} inch (${aspectHeight * 2.54} cm)`;
+//     // }
+
+//     // Shape button visibility logic
+//     // if ((aspectWidth == 11 && aspectHeight == 11) || (aspectWidth == 16 && aspectHeight == 16)) {
+//     //     document.querySelectorAll('.ap-shape-btn').forEach(button => {
+//     //         if (button.classList.contains('oval') || button.classList.contains('potrait')) {
+//     //             button.style.display = 'none';
+//     //         } else {
+//     //             button.style.display = 'inline-block';
+//     //         }
+//     //     });
+//     // } else if (aspectWidth === "default" && aspectHeight === "default") {
+//     //     document.querySelectorAll('.ap-shape-btn').forEach(button => {
+//     //         button.style.display = 'inline-block';
+//     //     });
+//     // } else {
+//     //     document.querySelectorAll('.ap-shape-btn').forEach(button => {
+//     //         if (
+//     //             button.classList.contains('potrait') ||
+//     //             button.classList.contains('rect') ||
+//     //             button.classList.contains('circle') ||
+//     //             button.classList.contains('custom3') ||
+//     //             button.classList.contains('custom4') ||
+//     //             button.classList.contains('custom5')
+//     //         ) {
+//     //             button.style.display = 'none';
+//     //         } else {
+//     //             button.style.display = 'inline-block';
+//     //         }
+//     //     });
+//     // }
+// }
+
+window.addEventListener('load', function () {
+    document.querySelector('.ap-size-btn.ap-active').click();
+});
 
 // Background modal functions
 function openBgModal() {
