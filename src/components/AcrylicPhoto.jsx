@@ -322,10 +322,10 @@ const AcrylicPhoto = () => {
 
         <div className="ap-preview-container">
           <div className="ap-size-indicator ap-width-indicator" id="width">
-            Width 8 inch (30.48 cm)
+            {/* Width 8 inch (30.48 cm) */}
           </div>
           <div className="ap-size-indicator ap-height-indicator" id="height">
-            Height 12 inch (22.86 cm)
+            {/* Height 12 inch (22.86 cm) */}
           </div>
 
           <div className="ap-image-container" id="imageContainer">

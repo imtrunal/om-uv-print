@@ -1,3 +1,4 @@
+
 const backgroundUrls = [
     "https://static.remove.bg/backgrounds/product/art-artistic-background-1279813-size-156.jpg",
     "https://static.remove.bg/backgrounds/person/Nature/background-clouds-colors-726330-size-156.jpg",
