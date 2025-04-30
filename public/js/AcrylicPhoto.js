@@ -322,10 +322,9 @@ const widthInd = document.getElementById('width');
 const heightInd = document.getElementById('height');
 const shareBtn = document.getElementById('shareBtn');
 const cartBtn = document.getElementById('cartBtn');
-// const zoomRange = document.getElementById('zoomRange');
 const removeBgBtn = document.getElementById('removeBgBtn');
 const imgPre = document.querySelector('.img-pre');
-const handles = document.querySelector(".handles")
+const handles = document.querySelector(".handles");
 
 let scale = 1;
 let rotation = 0;
@@ -346,6 +345,8 @@ let initialY;
 let xOffset = 0;
 let yOffset = 0;
 let isDraggingImage = false;
+let initialTouchDistance = 0;
+let initialTouchScale = 1;
 
 // Transformation functions
 function updateTransform() {
@@ -411,18 +412,17 @@ function updateHandles() {
 // Event handlers
 function initEventListeners() {
     previewImage.addEventListener('click', (e) => {
-        console.log("H");
-
         e.stopPropagation();
         handles.style.display = "block";
     });
 
     document.addEventListener('click', (e) => {
         if (!previewImage.contains(e.target)) {
-            handles.style.display = "none"
+            handles.style.display = "none";
         }
     });
 
+    // Mouse events for dragging
     transformWrapper.addEventListener('mousedown', (e) => {
         if (e.button !== 0 || e.target.classList.contains('ap-handle')) return;
         isDragging = true;
@@ -447,6 +447,73 @@ function initEventListeners() {
         }
     });
 
+    // Touch events for dragging
+    transformWrapper.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        handles.style.display = "block";
+        if (e.touches.length !== 1 || e.target.classList.contains('ap-handle')) return;
+        isDragging = true;
+        const touch = e.touches[0];
+        startX = touch.clientX - offsetX;
+        startY = touch.clientY - offsetY;
+        transformWrapper.style.cursor = 'grabbing';
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches.length === 1) {
+            const touch = e.touches[0];
+            offsetX = touch.clientX - startX;
+            offsetY = touch.clientY - startY;
+            updateTransform();
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+        if (isDragging) {
+            isDragging = false;
+            transformWrapper.style.cursor = 'grab';
+        }
+    });
+
+    // Pinch to zoom
+    transformWrapper.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            initialTouchDistance = Math.sqrt(
+                Math.pow(touch2.clientX - touch1.clientX, 2) +
+                Math.pow(touch2.clientY - touch1.clientY, 2)
+            );
+            initialTouchScale = scale;
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && !isDragging && !isResizing && !isRotating) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const currentDistance = Math.sqrt(
+                Math.pow(touch2.clientX - touch1.clientX, 2) +
+                Math.pow(touch2.clientY - touch1.clientY, 2)
+            );
+
+            if (initialTouchDistance > 0) {
+                scale = initialTouchScale * (currentDistance / initialTouchDistance);
+                scale = Math.max(0.1, Math.min(scale, 5)); // Limit scale between 0.1 and 5
+                updateTransform();
+            }
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+        initialTouchDistance = 0;
+    });
+
+    // Handle events for resize and rotate
     document.querySelectorAll('.ap-handle').forEach(handle => {
         handle.addEventListener('mousedown', e => {
             e.preventDefault();
@@ -478,11 +545,45 @@ function initEventListeners() {
             document.addEventListener('mousemove', onHandleMove);
             document.addEventListener('mouseup', onHandleUp);
         });
+
+        handle.addEventListener('touchstart', e => {
+            if (e.touches.length !== 1) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const editorRect = imageContainer.getBoundingClientRect();
+            const wrapperRect = transformWrapper.getBoundingClientRect();
+            const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+            const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+            const touch = e.touches[0];
+
+            if (handle.classList.contains('rotate')) {
+                isRotating = true;
+                initialAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI) - rotation;
+            } else {
+                isResizing = true;
+                initialScale = scale;
+                const handleX = wrapperRect.left +
+                    (handle.classList.contains('tl') || handle.classList.contains('bl') ? 0 : wrapperRect.width);
+                const handleY = wrapperRect.top +
+                    (handle.classList.contains('tl') || handle.classList.contains('tr') ? 0 : wrapperRect.height);
+                initialDistance = Math.sqrt(
+                    Math.pow(handleX - centerX, 2) +
+                    Math.pow(handleY - centerY, 2)
+                );
+            }
+
+            startX = touch.clientX;
+            startY = touch.clientY;
+            document.addEventListener('touchmove', onTouchHandleMove, { passive: false });
+            document.addEventListener('touchend', onHandleUp);
+        });
     });
 
     // Existing controls
-    // zoomRange.addEventListener('input', handleZoom);
     fileInput.addEventListener('change', handleFileSelect);
+
     removeBgBtn.addEventListener('click', openBgModal);
     document.querySelectorAll('.ap-shape-btn').forEach(btn => {
         btn.addEventListener('click', handleShapeSelection);
@@ -513,7 +614,6 @@ function onHandleMove(e) {
 
         const scaleFactor = currentDistance / initialDistance;
         scale = Math.max(0.1, initialScale * scaleFactor);
-        // zoomRange.value = scale;
     }
 
     if (isRotating) {
@@ -529,19 +629,47 @@ function onHandleMove(e) {
     updateTransform();
 }
 
+function onTouchHandleMove(e) {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+
+    if (isResizing) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        const currentDistance = Math.sqrt(
+            Math.pow(touch.clientX - centerX, 2) +
+            Math.pow(touch.clientY - centerY, 2)
+        );
+
+        const scaleFactor = currentDistance / initialDistance;
+        scale = Math.max(0.1, initialScale * scaleFactor);
+    }
+
+    if (isRotating) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+        rotation = angle - initialAngle;
+    }
+
+    updateTransform();
+    e.preventDefault();
+}
+
 function onHandleUp() {
     isResizing = false;
     isRotating = false;
     document.removeEventListener('mousemove', onHandleMove);
+    document.removeEventListener('touchmove', onTouchHandleMove);
     document.removeEventListener('mouseup', onHandleUp);
+    document.removeEventListener('touchend', onHandleUp);
 }
-
-
-// Handle zoom
-// function handleZoom() {
-//     scale = parseFloat(zoomRange.value);
-//     updateImagePosition();
-// }
 
 // Handle file selection
 function handleFileSelect(e) {
@@ -557,8 +685,7 @@ function handleFileSelect(e) {
             currentX = 0;
             currentY = 0;
             scale = 1;
-            // zoomRange.value = 1;
-            updateImagePosition();
+            updateTransform();
         };
         reader.readAsDataURL(file);
         shareBtn.style.display = "block";
