@@ -10,6 +10,7 @@ import useCartStore from "../manage/CartStore";
 import { ImSpinner2 } from "react-icons/im";
 import Footer from './../components/Layouts/Footer';
 import domtoimage from 'dom-to-image-more';
+import TransformableImageBox from "./TransformableImageBox";
 const AcrylicPhoto = () => {
   const [loading, setLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
@@ -323,7 +324,8 @@ const AcrylicPhoto = () => {
           </div>
 
           <div className="ap-image-container" id="imageContainer">
-            <div className="img-pre">
+            <TransformableImageBox src="/assets/10 FRAM Copy.jpg" alt = "10 FRAM Copy" imageClass = "ap-preview-image" imageId = "previewImage"/>
+            {/* <div className="img-pre">
               <div className="transform-wrapper" id="transformWrapper">
                 <img className="ap-preview-image" id="previewImage" src="/assets/10 FRAM Copy.jpg" alt="" />
               </div>
@@ -331,17 +333,17 @@ const AcrylicPhoto = () => {
 
             <div className="handles">
               <svg className="handle-lines" style={{ overflow: 'visible' }}>
-                <line id="line-tl-tr" stroke="blue" strokeWidth="1" />
-                <line id="line-tr-br" stroke="blue" strokeWidth="1" />
-                <line id="line-br-bl" stroke="blue" strokeWidth="1" />
-                <line id="line-bl-tl" stroke="blue" strokeWidth="1" />
+                <line id="line-tl-tr" stroke="#00caff" strokeWidth="1" />
+                <line id="line-tr-br" stroke="#00caff" strokeWidth="1" />
+                <line id="line-br-bl" stroke="#00caff" strokeWidth="1" />
+                <line id="line-bl-tl" stroke="#00caff" strokeWidth="1" />
               </svg>
               <div className="ap-handle tl"></div>
               <div className="ap-handle tr"></div>
               <div className="ap-handle bl"></div>
               <div className="ap-handle br"></div>
               <div className="ap-handle rotate"></div>
-            </div>
+            </div> */}
             {/* <div className="ap-bounding-box">
               <div className="ap-handle tl" data-handle="tl"></div>
               <div className="ap-handle tr" data-handle="tr"></div>
@@ -392,7 +394,7 @@ const AcrylicPhoto = () => {
             <FaUpload />
           </button>
 
-          <input
+          {/* <input
             type="range"
             id="zoomRange"
             min="0.5"
@@ -400,7 +402,7 @@ const AcrylicPhoto = () => {
             step="0.1"
             defaultValue="1"
             className="zoom-range"
-          />
+          /> */}
 
           <button className="btn2 ap-share" id="shareBtn" onClick={handleShare} disabled={loading}>
             {loading ? <ImSpinner2 className="spin" /> : <FaShareAlt />}

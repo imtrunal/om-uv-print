@@ -322,8 +322,10 @@ const widthInd = document.getElementById('width');
 const heightInd = document.getElementById('height');
 const shareBtn = document.getElementById('shareBtn');
 const cartBtn = document.getElementById('cartBtn');
-const zoomRange = document.getElementById('zoomRange');
+// const zoomRange = document.getElementById('zoomRange');
 const removeBgBtn = document.getElementById('removeBgBtn');
+const imgPre = document.querySelector('.img-pre');
+const handles = document.querySelector(".handles")
 
 let scale = 1;
 let rotation = 0;
@@ -337,6 +339,13 @@ let initialScale = 1;
 let initialDistance = 0;
 let file;
 let allTextData = [];
+let currentX = 0;
+let currentY = 0;
+let initialX;
+let initialY;
+let xOffset = 0;
+let yOffset = 0;
+let isDraggingImage = false;
 
 // Transformation functions
 function updateTransform() {
@@ -401,14 +410,16 @@ function updateHandles() {
 
 // Event handlers
 function initEventListeners() {
-    imageContainer.addEventListener('click', (e) => {
+    previewImage.addEventListener('click', (e) => {
+        console.log("H");
+
         e.stopPropagation();
-        imageContainer.classList.add('active');
+        handles.style.display = "block";
     });
 
     document.addEventListener('click', (e) => {
-        if (!imageContainer.contains(e.target)) {
-            imageContainer.classList.remove('active');
+        if (!previewImage.contains(e.target)) {
+            handles.style.display = "none"
         }
     });
 
@@ -470,7 +481,7 @@ function initEventListeners() {
     });
 
     // Existing controls
-    zoomRange.addEventListener('input', handleZoom);
+    // zoomRange.addEventListener('input', handleZoom);
     fileInput.addEventListener('change', handleFileSelect);
     removeBgBtn.addEventListener('click', openBgModal);
     document.querySelectorAll('.ap-shape-btn').forEach(btn => {
@@ -502,7 +513,7 @@ function onHandleMove(e) {
 
         const scaleFactor = currentDistance / initialDistance;
         scale = Math.max(0.1, initialScale * scaleFactor);
-        zoomRange.value = scale;
+        // zoomRange.value = scale;
     }
 
     if (isRotating) {
@@ -527,10 +538,10 @@ function onHandleUp() {
 
 
 // Handle zoom
-function handleZoom() {
-    scale = parseFloat(zoomRange.value);
-    updateImagePosition();
-}
+// function handleZoom() {
+//     scale = parseFloat(zoomRange.value);
+//     updateImagePosition();
+// }
 
 // Handle file selection
 function handleFileSelect(e) {
@@ -541,16 +552,22 @@ function handleFileSelect(e) {
             previewImage.src = e.target.result;
             previewImage.style.display = 'block';
             previewImage.style.transform = 'translate(0px, 0px) scale(1)';
-            xOffset = 0;
-            yOffset = 0;
+            offsetX = 0;
+            offsetY = 0;
             currentX = 0;
             currentY = 0;
             scale = 1;
-            zoomRange.value = 1;
+            // zoomRange.value = 1;
+            updateImagePosition();
         };
         reader.readAsDataURL(file);
         shareBtn.style.display = "block";
     }
+}
+
+// Update position and scale
+function updateImagePosition() {
+    previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
 }
 
 // Handle shape selection
@@ -564,11 +581,15 @@ function handleShapeSelection() {
         'ap-circle-shape', 'ap-square-shape', 'ap-oval-shape', 'ap-rect-shape',
         'ap-potrait-shape', 'ap-custom-shape', 'ap-custom2-shape', 'ap-custom3-shape', 'ap-custom4-shape'
     );
+    imgPre.classList.remove(
+        'ap-circle-shape', 'ap-square-shape', 'ap-oval-shape', 'ap-rect-shape',
+        'ap-potrait-shape', 'ap-custom-shape', 'ap-custom2-shape', 'ap-custom3-shape', 'ap-custom4-shape'
+    );
 
     // Add the selected shape class
     if (shape) {
         imageContainer.classList.add(`ap-${shape}-shape`);
-        document.querySelector('.img-pre').classList.add(`ap-${shape}-shape`);
+        imgPre.classList.add(`ap-${shape}-shape`);
         updateHandles();
     }
 }
@@ -577,6 +598,9 @@ function handleShapeSelection() {
 function handleColorSelection() {
     const borderColor = this.style.border.split("groove ")[1] || "none";
     imageContainer.style.border = borderColor === "none" ? "none" : `10px solid ${borderColor}`;
+    handles.style.top = borderColor === "none" ? "0px" : "-10px";
+    handles.style.left = borderColor === "none" ? "0px" : "-10px";
+    updateHandles();
 }
 
 function handleSizeSelection() {
