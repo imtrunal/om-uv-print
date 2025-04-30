@@ -103,10 +103,6 @@ const AcrylicPhoto = () => {
     });
   }
 
-
-
-
-
   useEffect(() => {
     const newPage = JSON.parse(sessionStorage.getItem("newPage") || "false");
 
@@ -322,19 +318,45 @@ const AcrylicPhoto = () => {
 
         <div className="ap-preview-container">
           <div className="ap-size-indicator ap-width-indicator" id="width">
-            {/* Width 8 inch (30.48 cm) */}
           </div>
           <div className="ap-size-indicator ap-height-indicator" id="height">
-            {/* Height 12 inch (22.86 cm) */}
           </div>
 
           <div className="ap-image-container" id="imageContainer">
-            <img
-              className="ap-preview-image"
-              id="previewImage"
-              src="/assets/10 FRAM Copy.jpg"
-              alt="Preview"
-            />
+            <div className="img-pre">
+              <div className="transform-wrapper" id="transformWrapper">
+                <img className="ap-preview-image" id="previewImage" src="/assets/10 FRAM Copy.jpg" alt="" />
+              </div>
+            </div>
+
+            <div className="handles">
+              <svg className="handle-lines" style={{ overflow: 'visible' }}>
+                <line id="line-tl-tr" stroke="blue" strokeWidth="1" />
+                <line id="line-tr-br" stroke="blue" strokeWidth="1" />
+                <line id="line-br-bl" stroke="blue" strokeWidth="1" />
+                <line id="line-bl-tl" stroke="blue" strokeWidth="1" />
+              </svg>
+              <div className="ap-handle tl"></div>
+              <div className="ap-handle tr"></div>
+              <div className="ap-handle bl"></div>
+              <div className="ap-handle br"></div>
+              <div className="ap-handle rotate"></div>
+            </div>
+            {/* <div className="ap-bounding-box">
+              <div className="ap-handle tl" data-handle="tl"></div>
+              <div className="ap-handle tr" data-handle="tr"></div>
+              <div className="ap-handle bl" data-handle="bl"></div>
+              <div className="ap-handle br" data-handle="br"></div>
+              <div className="ap-handle rotate" data-handle="rotate"></div>
+            </div>
+            <div style={{ overflow: "hidden" }}>
+              <img
+                className="ap-preview-image"
+                id="previewImage"
+                src="/assets/10 FRAM Copy.jpg"
+                alt="Preview"
+              />
+            </div> */}
           </div>
 
           <div className="ap-shape-options">
@@ -374,7 +396,7 @@ const AcrylicPhoto = () => {
             type="range"
             id="zoomRange"
             min="0.5"
-            max="3"
+            max="5"
             step="0.1"
             defaultValue="1"
             className="zoom-range"
@@ -426,7 +448,6 @@ const AcrylicPhoto = () => {
 
         </div>
 
-        {/* Background Modal */}
         <div
           id="bgModal"
           style={{
@@ -571,7 +592,6 @@ const AcrylicPhoto = () => {
         </div>
 
       </div>
-
     </>
   );
 };

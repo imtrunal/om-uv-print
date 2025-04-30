@@ -1,4 +1,302 @@
 
+// const backgroundUrls = [
+//     "https://static.remove.bg/backgrounds/product/art-artistic-background-1279813-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/Nature/background-clouds-colors-726330-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/product/antique-backdrop-background-164005-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/car/new/bg3-size-156.png",
+//     "https://static.remove.bg/backgrounds/realestate/background-3104413_1920-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/Autumn/dawn-desktop-wallpaper-environment-2055389-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/Urban/architecture-building-business-2339009-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/new/pride_gradient-size-156.png",
+//     "https://static.remove.bg/backgrounds/realestate/pexels-pixabay-531756-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/new/pexels-zaksheuskaya-1561020-size-156.jpg",
+//     "https://i.pinimg.com/736x/d0/09/52/d00952ba351f7b7f0905a4a9465b6fc8.jpg",
+//     "https://i.pinimg.com/736x/33/92/a6/3392a60bb7a4c4ec72f8bef181a9f556.jpg"
+// ];
+
+// const BASE_URL = window.BASE_URL;
+
+// const imageContainer = document.querySelector('.ap-image-container');
+// const previewImage = document.getElementById('previewImage');
+// const fileInput = document.getElementById('fileInput');
+// const widthInd = document.getElementById('width');
+// const heightInd = document.getElementById('height');
+// const shareBtn = document.getElementById('shareBtn');
+// const cartBtn = document.getElementById('cartBtn');
+// const zoomRange = document.getElementById('zoomRange');
+// const removeBgBtn = document.getElementById('removeBgBtn');
+
+// let scale = 1;
+// let file;
+// let isDragging = false;
+// let currentX = 0;
+// let currentY = 0;
+// let initialX;
+// let initialY;
+// let xOffset = 0;
+// let yOffset = 0;
+// let isDraggingImage = false;
+// const allTextData = [];
+
+
+// function updateHandles() {
+//     const wrapperRect = transformWrapper.getBoundingClientRect();
+//     const editorRect = imageContainer.getBoundingClientRect();
+
+//     const top = wrapperRect.top - editorRect.top;
+//     const left = wrapperRect.left - editorRect.left;
+//     const width = wrapperRect.width;
+//     const height = wrapperRect.height;
+
+//     const tlX = left;
+//     const tlY = top;
+//     const trX = left + width;
+//     const trY = top;
+//     const brX = left + width;
+//     const brY = top + height;
+//     const blX = left;
+//     const blY = top + height;
+
+//     // Position corner handles
+//     document.querySelector('.ap-handle.tl').style.left = `${tlX}px`;
+//     document.querySelector('.ap-handle.tl').style.top = `${tlY}px`;
+
+//     document.querySelector('.ap-handle.tr').style.left = `${trX}px`;
+//     document.querySelector('.ap-handle.tr').style.top = `${trY}px`;
+
+//     document.querySelector('.ap-handle.br').style.left = `${brX}px`;
+//     document.querySelector('.ap-handle.br').style.top = `${brY}px`;
+
+//     document.querySelector('.ap-handle.bl').style.left = `${blX}px`;
+//     document.querySelector('.ap-handle.bl').style.top = `${blY}px`;
+
+//     // Update bounding box lines
+//     document.getElementById('line-tl-tr').setAttribute('x1', tlX);
+//     document.getElementById('line-tl-tr').setAttribute('y1', tlY);
+//     document.getElementById('line-tl-tr').setAttribute('x2', trX);
+//     document.getElementById('line-tl-tr').setAttribute('y2', trY);
+
+//     document.getElementById('line-tr-br').setAttribute('x1', trX);
+//     document.getElementById('line-tr-br').setAttribute('y1', trY);
+//     document.getElementById('line-tr-br').setAttribute('x2', brX);
+//     document.getElementById('line-tr-br').setAttribute('y2', brY);
+
+//     document.getElementById('line-br-bl').setAttribute('x1', brX);
+//     document.getElementById('line-br-bl').setAttribute('y1', brY);
+//     document.getElementById('line-br-bl').setAttribute('x2', blX);
+//     document.getElementById('line-br-bl').setAttribute('y2', blY);
+
+//     document.getElementById('line-bl-tl').setAttribute('x1', blX);
+//     document.getElementById('line-bl-tl').setAttribute('y1', blY);
+//     document.getElementById('line-bl-tl').setAttribute('x2', tlX);
+//     document.getElementById('line-bl-tl').setAttribute('y2', tlY);
+
+//     // Position rotate handle (above the center of the top edge)
+//     document.querySelector('.ap-handle.rotate').style.left = `${(tlX + trX) / 2}px`;
+//     document.querySelector('.ap-handle.rotate').style.top = `${tlY - 40}px`;
+// }
+
+// // Initialize event listeners
+// function initEventListeners() {
+
+//     updateHandles();
+
+
+//     imageContainer.addEventListener('click', function (e) {
+//         e.stopPropagation();
+//         imageContainer.classList.add('active');
+//     });
+
+//     // Add click handler to document
+//     document.addEventListener('click', function (e) {
+//         if (!imageContainer.contains(e.target)) {
+//             imageContainer.classList.remove('active');
+//         }
+//     });
+
+//     // Existing resize handlers
+//     document.querySelectorAll('.ap-handle').forEach(handle => {
+//         handle.addEventListener('mousedown', startResize);
+//     });
+
+
+//     // Image drag events (only on double click/tap)
+//     imageContainer.addEventListener('mousedown', enableImageDrag);
+//     imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+
+//     // Mouse/touch move and end events
+//     document.addEventListener('mousemove', handleDrag);
+//     document.addEventListener('mouseup', disableImageDrag);
+//     document.addEventListener('touchmove', handleTouchMove, { passive: false });
+//     document.addEventListener('touchend', disableImageDrag);
+
+//     // Other controls
+//     zoomRange.addEventListener('input', handleZoom);
+//     fileInput.addEventListener('change', handleFileSelect);
+//     removeBgBtn.addEventListener('click', openBgModal);
+
+//     // Shape buttons
+//     document.querySelectorAll('.ap-shape-btn').forEach(btn => {
+//         btn.addEventListener('click', handleShapeSelection);
+//     });
+
+//     // Color buttons
+//     document.querySelectorAll('.ap-color-btn').forEach(btn => {
+//         btn.addEventListener('click', handleColorSelection);
+//     });
+
+//     // Size buttons
+//     document.querySelectorAll('.ap-size-btn').forEach(btn => {
+//         btn.addEventListener('click', handleSizeSelection);
+//     });
+
+//     // Text controls
+//     document.getElementById('addTextBtn').addEventListener('click', function () {
+//         document.getElementById('textModal').style.display = 'block';
+//     });
+
+//     document.getElementById('addTextModalBtn').addEventListener('click', addTextFromModal);
+
+//     initResizeHandlers();
+// }
+
+// {/* Update JavaScript */ }
+// let isResizing = false;
+// let handleDirection;
+// let startX, startY;
+// let initialScale;
+// let initialDistance;
+// let initialTransform;
+
+// function initResizeHandlers() {
+//     document.querySelectorAll('.ap-handle').forEach(handle => {
+//         handle.addEventListener('mousedown', startResize);
+//     });
+// }
+
+// function startResize(e) {
+//     e.preventDefault();
+//     isResizing = true;
+//     handleDirection = e.target.dataset.handle;
+
+//     const containerRect = imageContainer.getBoundingClientRect();
+//     const centerX = containerRect.left + containerRect.width / 2;
+//     const centerY = containerRect.top + containerRect.height / 2;
+
+//     startX = e.clientX;
+//     startY = e.clientY;
+//     initialScale = scale;
+//     initialDistance = Math.sqrt(
+//         Math.pow(startX - centerX, 2) +
+//         Math.pow(startY - centerY, 2)
+//     );
+
+//     document.addEventListener('mousemove', handleResize);
+//     document.addEventListener('mouseup', stopResize);
+// }
+
+// function handleResize(e) {
+//     if (!isResizing) return;
+
+//     const containerRect = imageContainer.getBoundingClientRect();
+//     const centerX = containerRect.left + containerRect.width / 2;
+//     const centerY = containerRect.top + containerRect.height / 2;
+
+//     const currentDistance = Math.sqrt(
+//         Math.pow(e.clientX - centerX, 2) +
+//         Math.pow(e.clientY - centerY, 2)
+//     );
+
+//     // Calculate scale based on distance from center
+//     const scaleFactor = currentDistance / initialDistance;
+//     scale = initialScale * scaleFactor;
+
+//     // Constrain scale
+//     scale = Math.max(0.1, Math.min(scale, 5));
+//     zoomRange.value = scale;
+
+//     updateImagePosition();
+// }
+
+// function stopResize() {
+//     isResizing = false;
+//     document.removeEventListener('mousemove', handleResize);
+//     document.removeEventListener('mouseup', stopResize);
+// }
+
+
+// function enableImageDrag(e) {
+//     if (e.target.closest('.ap-handle')) return;
+//     if (e.button === 0) {
+
+//         isDraggingImage = true;
+//         initialX = e.clientX - xOffset;
+//         initialY = e.clientY - yOffset;
+//         imageContainer.style.cursor = 'grabbing';
+//     }
+// }
+
+// function disableImageDrag() {
+//     isDraggingImage = false;
+//     imageContainer.style.cursor = 'default';
+// }
+
+// function handleDrag(e) {
+//     if (!isDraggingImage) return;
+//     e.preventDefault();
+//     currentX = e.clientX - initialX;
+//     currentY = e.clientY - initialY;
+//     xOffset = currentX;
+//     yOffset = currentY;
+//     updateImagePosition();
+// }
+
+// // Handle touch start
+// function handleTouchStart(e) {
+//     // Check if this is a double tap (for image dragging)
+//     if (e.touches.length === 1) {
+//         const touch = e.touches[0];
+//         const now = new Date().getTime();
+//         const previousTouch = imageContainer.dataset.lastTouchTime || 0;
+
+//         if (now - previousTouch < 300) { // Double tap detected
+//             e.preventDefault();
+//             isDraggingImage = true;
+//             initialX = touch.clientX - xOffset;
+//             initialY = touch.clientY - yOffset;
+//             imageContainer.style.cursor = 'grabbing';
+//         }
+//         imageContainer.dataset.lastTouchTime = now;
+//     }
+// }
+
+// // Handle touch move
+// function handleTouchMove(e) {
+//     if (isDraggingImage && e.touches.length === 1) {
+//         e.preventDefault();
+//         const touch = e.touches[0];
+//         currentX = touch.clientX - initialX;
+//         currentY = touch.clientY - initialY;
+//         xOffset = currentX;
+//         yOffset = currentY;
+//         updateImagePosition();
+//     }
+// }
+
+// // previewImage.style.transformOrigin = 'top left';
+
+// // Update position and scale
+// function updateImagePosition() {
+//     previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
+// }
+
+
+
+
+
+
+
+
 const backgroundUrls = [
     "https://static.remove.bg/backgrounds/product/art-artistic-background-1279813-size-156.jpg",
     "https://static.remove.bg/backgrounds/person/Nature/background-clouds-colors-726330-size-156.jpg",
@@ -18,6 +316,7 @@ const BASE_URL = window.BASE_URL;
 
 const imageContainer = document.querySelector('.ap-image-container');
 const previewImage = document.getElementById('previewImage');
+const transformWrapper = document.querySelector('.transform-wrapper');
 const fileInput = document.getElementById('fileInput');
 const widthInd = document.getElementById('width');
 const heightInd = document.getElementById('height');
@@ -27,121 +326,205 @@ const zoomRange = document.getElementById('zoomRange');
 const removeBgBtn = document.getElementById('removeBgBtn');
 
 let scale = 1;
-let file;
+let rotation = 0;
+let isResizing = false;
+let isRotating = false;
 let isDragging = false;
-let currentX = 0;
-let currentY = 0;
-let initialX;
-let initialY;
-let xOffset = 0;
-let yOffset = 0;
-let isDraggingImage = false;
-const allTextData = [];
+let startX, startY;
+let offsetX = 0, offsetY = 0;
+let initialAngle = 0;
+let initialScale = 1;
+let initialDistance = 0;
+let file;
+let allTextData = [];
 
-// Initialize event listeners
+// Transformation functions
+function updateTransform() {
+    transformWrapper.style.transform = `
+        translate(${offsetX}px, ${offsetY}px)
+        scale(${scale})
+        rotate(${rotation}deg)
+    `;
+    updateHandles();
+}
+
+function updateHandles() {
+    const wrapperRect = transformWrapper.getBoundingClientRect();
+    const editorRect = imageContainer.getBoundingClientRect();
+
+    const top = wrapperRect.top - editorRect.top;
+    const left = wrapperRect.left - editorRect.left;
+    const width = wrapperRect.width;
+    const height = wrapperRect.height;
+
+    const tlX = left;
+    const tlY = top;
+    const trX = left + width;
+    const trY = top;
+    const brX = left + width;
+    const brY = top + height;
+    const blX = left;
+    const blY = top + height;
+
+    // Position handles
+    document.querySelector('.ap-handle.tl').style.left = `${tlX}px`;
+    document.querySelector('.ap-handle.tl').style.top = `${tlY}px`;
+    document.querySelector('.ap-handle.tr').style.left = `${trX}px`;
+    document.querySelector('.ap-handle.tr').style.top = `${trY}px`;
+    document.querySelector('.ap-handle.br').style.left = `${brX}px`;
+    document.querySelector('.ap-handle.br').style.top = `${brY}px`;
+    document.querySelector('.ap-handle.bl').style.left = `${blX}px`;
+    document.querySelector('.ap-handle.bl').style.top = `${blY}px`;
+
+    // Update bounding lines
+    document.getElementById('line-tl-tr').setAttribute('x1', tlX);
+    document.getElementById('line-tl-tr').setAttribute('y1', tlY);
+    document.getElementById('line-tl-tr').setAttribute('x2', trX);
+    document.getElementById('line-tl-tr').setAttribute('y2', trY);
+    document.getElementById('line-tr-br').setAttribute('x1', trX);
+    document.getElementById('line-tr-br').setAttribute('y1', trY);
+    document.getElementById('line-tr-br').setAttribute('x2', brX);
+    document.getElementById('line-tr-br').setAttribute('y2', brY);
+    document.getElementById('line-br-bl').setAttribute('x1', brX);
+    document.getElementById('line-br-bl').setAttribute('y1', brY);
+    document.getElementById('line-br-bl').setAttribute('x2', blX);
+    document.getElementById('line-br-bl').setAttribute('y2', blY);
+    document.getElementById('line-bl-tl').setAttribute('x1', blX);
+    document.getElementById('line-bl-tl').setAttribute('y1', blY);
+    document.getElementById('line-bl-tl').setAttribute('x2', tlX);
+    document.getElementById('line-bl-tl').setAttribute('y2', tlY);
+
+    // Rotate handle
+    document.querySelector('.ap-handle.rotate').style.left = `${(tlX + trX) / 2}px`;
+    document.querySelector('.ap-handle.rotate').style.top = `${tlY - 40}px`;
+}
+
+// Event handlers
 function initEventListeners() {
-    // Image drag events (only on double click/tap)
-    imageContainer.addEventListener('mousedown', enableImageDrag);
-    imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+    imageContainer.addEventListener('click', (e) => {
+        e.stopPropagation();
+        imageContainer.classList.add('active');
+    });
 
-    // Mouse/touch move and end events
-    document.addEventListener('mousemove', handleDrag);
-    document.addEventListener('mouseup', disableImageDrag);
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', disableImageDrag);
+    document.addEventListener('click', (e) => {
+        if (!imageContainer.contains(e.target)) {
+            imageContainer.classList.remove('active');
+        }
+    });
 
-    // Other controls
+    transformWrapper.addEventListener('mousedown', (e) => {
+        if (e.button !== 0 || e.target.classList.contains('ap-handle')) return;
+        isDragging = true;
+        startX = e.clientX - offsetX;
+        startY = e.clientY - offsetY;
+        transformWrapper.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            updateTransform();
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            transformWrapper.style.cursor = 'grab';
+        }
+    });
+
+    document.querySelectorAll('.ap-handle').forEach(handle => {
+        handle.addEventListener('mousedown', e => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const editorRect = imageContainer.getBoundingClientRect();
+            const wrapperRect = transformWrapper.getBoundingClientRect();
+            const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+            const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+            if (handle.classList.contains('rotate')) {
+                isRotating = true;
+                initialAngle = Math.atan2(startY - centerY, startX - centerX) * (180 / Math.PI) - rotation;
+            } else {
+                isResizing = true;
+                initialScale = scale;
+                const handleX = wrapperRect.left +
+                    (handle.classList.contains('tl') || handle.classList.contains('bl') ? 0 : wrapperRect.width);
+                const handleY = wrapperRect.top +
+                    (handle.classList.contains('tl') || handle.classList.contains('tr') ? 0 : wrapperRect.height);
+                initialDistance = Math.sqrt(
+                    Math.pow(handleX - centerX, 2) +
+                    Math.pow(handleY - centerY, 2)
+                );
+            }
+
+            startX = e.clientX;
+            startY = e.clientY;
+            document.addEventListener('mousemove', onHandleMove);
+            document.addEventListener('mouseup', onHandleUp);
+        });
+    });
+
+    // Existing controls
     zoomRange.addEventListener('input', handleZoom);
     fileInput.addEventListener('change', handleFileSelect);
     removeBgBtn.addEventListener('click', openBgModal);
-
-    // Shape buttons
     document.querySelectorAll('.ap-shape-btn').forEach(btn => {
         btn.addEventListener('click', handleShapeSelection);
     });
-
-    // Color buttons
     document.querySelectorAll('.ap-color-btn').forEach(btn => {
         btn.addEventListener('click', handleColorSelection);
     });
-
-    // Size buttons
     document.querySelectorAll('.ap-size-btn').forEach(btn => {
         btn.addEventListener('click', handleSizeSelection);
     });
-
-    // Text controls
-    document.getElementById('addTextBtn').addEventListener('click', function () {
+    document.getElementById('addTextBtn').addEventListener('click', () => {
         document.getElementById('textModal').style.display = 'block';
     });
-
     document.getElementById('addTextModalBtn').addEventListener('click', addTextFromModal);
 }
 
+function onHandleMove(e) {
+    if (isResizing) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
 
-function enableImageDrag(e) {
-    if (e.button === 0) {
+        const currentDistance = Math.sqrt(
+            Math.pow(e.clientX - centerX, 2) +
+            Math.pow(e.clientY - centerY, 2)
+        );
 
-        isDraggingImage = true;
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-        imageContainer.style.cursor = 'grabbing';
+        const scaleFactor = currentDistance / initialDistance;
+        scale = Math.max(0.1, initialScale * scaleFactor);
+        zoomRange.value = scale;
     }
-}
 
-function disableImageDrag() {
-    isDraggingImage = false;
-    imageContainer.style.cursor = 'default';
-}
+    if (isRotating) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
 
-function handleDrag(e) {
-    if (!isDraggingImage) return;
-    e.preventDefault();
-    currentX = e.clientX - initialX;
-    currentY = e.clientY - initialY;
-    xOffset = currentX;
-    yOffset = currentY;
-    updateImagePosition();
-}
-
-// Handle touch start
-function handleTouchStart(e) {
-    // Check if this is a double tap (for image dragging)
-    if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        const now = new Date().getTime();
-        const previousTouch = imageContainer.dataset.lastTouchTime || 0;
-
-        if (now - previousTouch < 300) { // Double tap detected
-            e.preventDefault();
-            isDraggingImage = true;
-            initialX = touch.clientX - xOffset;
-            initialY = touch.clientY - yOffset;
-            imageContainer.style.cursor = 'grabbing';
-        }
-        imageContainer.dataset.lastTouchTime = now;
+        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        rotation = angle - initialAngle;
     }
+
+    updateTransform();
 }
 
-// Handle touch move
-function handleTouchMove(e) {
-    if (isDraggingImage && e.touches.length === 1) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        currentX = touch.clientX - initialX;
-        currentY = touch.clientY - initialY;
-        xOffset = currentX;
-        yOffset = currentY;
-        updateImagePosition();
-    }
+function onHandleUp() {
+    isResizing = false;
+    isRotating = false;
+    document.removeEventListener('mousemove', onHandleMove);
+    document.removeEventListener('mouseup', onHandleUp);
 }
 
-// previewImage.style.transformOrigin = 'top left';
-
-// Update position and scale
-function updateImagePosition() {
-    previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
-}
 
 // Handle zoom
 function handleZoom() {
@@ -185,6 +568,8 @@ function handleShapeSelection() {
     // Add the selected shape class
     if (shape) {
         imageContainer.classList.add(`ap-${shape}-shape`);
+        document.querySelector('.img-pre').classList.add(`ap-${shape}-shape`);
+        updateHandles();
     }
 }
 
@@ -219,6 +604,7 @@ function handleSizeSelection() {
     // Update indicators
     widthInd.innerText = `Width ${aspectWidth} inch (${(aspectWidth * 2.54).toFixed(2)} cm)`;
     heightInd.innerText = `Height ${aspectHeight} inch (${(aspectHeight * 2.54).toFixed(2)} cm)`;
+    updateHandles();
 }
 
 // Handle size selection
