@@ -288,21 +288,41 @@ const CustomizePage = () => {
       const wrapperRect = transformWrapper.getBoundingClientRect();
       const editorRect = uploadBox.getBoundingClientRect();
 
-      const top = wrapperRect.top - editorRect.top;
-      const left = wrapperRect.left - editorRect.left;
-      const width = wrapperRect.width;
-      const height = wrapperRect.height;
+      // Get the original dimensions before transform
+      const originalWidth = transformWrapper.offsetWidth;
+      const originalHeight = transformWrapper.offsetHeight;
 
-      const tlX = left;
-      const tlY = top;
-      const trX = left + width;
-      const trY = top;
-      const brX = left + width;
-      const brY = top + height;
-      const blX = left;
-      const blY = top + height;
+      // Calculate the center point (accounts for current translation)
+      const centerX = wrapperRect.left + wrapperRect.width / 2 - editorRect.left;
+      const centerY = wrapperRect.top + wrapperRect.height / 2 - editorRect.top;
 
-      // Position handles
+      // Calculate half dimensions (scaled)
+      const halfWidth = (originalWidth * scale) / 2;
+      const halfHeight = (originalHeight * scale) / 2;
+
+      // Apply rotation to corner points
+      const angleRad = rotation * Math.PI / 180;
+      const cos = Math.cos(angleRad);
+      const sin = Math.sin(angleRad);
+
+      // Calculate exact edge positions (accounting for scale and rotation)
+      const tlX = centerX + (-halfWidth * cos - (-halfHeight) * sin);
+      const tlY = centerY + (-halfWidth * sin + (-halfHeight) * cos);
+
+      const trX = centerX + (halfWidth * cos - (-halfHeight) * sin);
+      const trY = centerY + (halfWidth * sin + (-halfHeight) * cos);
+
+      const brX = centerX + (halfWidth * cos - halfHeight * sin);
+      const brY = centerY + (halfWidth * sin + halfHeight * cos);
+
+      const blX = centerX + (-halfWidth * cos - halfHeight * sin);
+      const blY = centerY + (-halfWidth * sin + halfHeight * cos);
+
+      // Position handles with pixel-perfect precision
+      document.querySelectorAll('.afm-handle').forEach(handle => {
+        handle.style.transform = 'translate(-50%, -50%)'; // Center the handles
+      });
+
       document.querySelector('.afm-handle.tl').style.left = `${tlX}px`;
       document.querySelector('.afm-handle.tl').style.top = `${tlY}px`;
       document.querySelector('.afm-handle.tr').style.left = `${trX}px`;
@@ -312,27 +332,34 @@ const CustomizePage = () => {
       document.querySelector('.afm-handle.bl').style.left = `${blX}px`;
       document.querySelector('.afm-handle.bl').style.top = `${blY}px`;
 
-      // Update bounding lines
+      // Update bounding lines with sub-pixel precision
       document.getElementById('afm-line-tl-tr').setAttribute('x1', tlX);
       document.getElementById('afm-line-tl-tr').setAttribute('y1', tlY);
       document.getElementById('afm-line-tl-tr').setAttribute('x2', trX);
       document.getElementById('afm-line-tl-tr').setAttribute('y2', trY);
+
       document.getElementById('afm-line-tr-br').setAttribute('x1', trX);
       document.getElementById('afm-line-tr-br').setAttribute('y1', trY);
       document.getElementById('afm-line-tr-br').setAttribute('x2', brX);
       document.getElementById('afm-line-tr-br').setAttribute('y2', brY);
+
       document.getElementById('afm-line-br-bl').setAttribute('x1', brX);
       document.getElementById('afm-line-br-bl').setAttribute('y1', brY);
       document.getElementById('afm-line-br-bl').setAttribute('x2', blX);
       document.getElementById('afm-line-br-bl').setAttribute('y2', blY);
+
       document.getElementById('afm-line-bl-tl').setAttribute('x1', blX);
       document.getElementById('afm-line-bl-tl').setAttribute('y1', blY);
       document.getElementById('afm-line-bl-tl').setAttribute('x2', tlX);
       document.getElementById('afm-line-bl-tl').setAttribute('y2', tlY);
 
-      // Rotate handle
-      document.querySelector('.afm-handle.rotate').style.left = `${(tlX + trX) / 2}px`;
-      document.querySelector('.afm-handle.rotate').style.top = `${tlY - 40}px`;
+      // Position rotate handle with exact alignment
+      const rotateHandleDistance = 20 * scale;
+      const rotateX = centerX + (0 * cos - (-halfHeight - rotateHandleDistance) * sin);
+      const rotateY = centerY + (0 * sin + (-halfHeight - rotateHandleDistance) * cos);
+
+      document.querySelector('.afm-handle.rotate').style.left = `${rotateX}px`;
+      document.querySelector('.afm-handle.rotate').style.top = `${rotateY}px`;
     }
 
     function updateTransform() {
@@ -455,7 +482,6 @@ const CustomizePage = () => {
           const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
 
           if (handle.classList.contains('rotate')) {
-            console.log("sasscdfrtthmjm");
 
             isRotating = true;
             initialAngle = Math.atan2(startY - centerY, startX - centerX) * (180 / Math.PI) - rotation;
@@ -557,10 +583,14 @@ const CustomizePage = () => {
           placeholderText.style.display = "none";
           addTextBtn.style.display = 'block';
           shareBtn.style.display = 'block';
+          scale = 1;
+          rotation = 0;
           offsetX = 0;
           offsetY = 0;
-          rotation = 0;
-          scale = 1;
+          currentX = 0;
+          currentY = 0;
+          xOffset = 0;
+          yOffset = 0;
           updateTransform();
         };
         reader.readAsDataURL(file);
