@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ImSpinner2 } from "react-icons/im";
 import html2canvas from "html2canvas";
 import domtoimage from 'dom-to-image-more';
+import TransformableImageBox from "../TransformableImageBox";
 
 
 const CustomizePage = () => {
@@ -156,6 +157,7 @@ const CustomizePage = () => {
   }
 
   useEffect(() => {
+
     const uploadBox = document.getElementById('uploadBox');
     const fileInput = document.getElementById('fileInput');
     const previewImage = document.getElementById('afm-previewImage');
@@ -167,20 +169,415 @@ const CustomizePage = () => {
     const allThicknessBtn = document.querySelectorAll('.afm-thickness-btn');
     const leftPanel = document.querySelector('.afm-image-customization-page .afm-left');
     const cartBtn = document.getElementById('cartBtn');
-    const zoomRange = document.getElementById('afm-zoomRange');
+    // const zoomRange = document.getElementById('afm-zoomRange');
     const BASE_URL = window.BASE_URL;
+    const transformWrapper = document.getElementById("afm-transformWrapper");
+    const preImage = document.querySelector(".afm-img-pre");
+
     const allTextData = [];
+    let isDragging = false;
+
 
     let scale = 1;
     let isImageUploaded = false;
     let currentX = 0, currentY = 0;
+    let isResizing = false;
+    let isRotating = false;
+    let offsetX = 0, offsetY = 0;
+    let startX, startY;
+    let initialAngle = 0;
+    let initialDistance = 0;
+    let initialTouchDistance = 0;
     let rotation = 0;
+    let initialScale = 1;
+    let file;
+    let initialTouchScale = 1;
+
 
     // NEW: Variables for image dragging
     let isDraggingImage = false;
     let initialX, initialY;
     let xOffset = 0, yOffset = 0;
     let lastTouchTime = 0;
+
+    const handles = document.querySelector(".afm-handles");
+
+
+
+
+
+    // Touch events for dragging
+    transformWrapper.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+      handles.style.display = "block";
+      if (e.touches.length !== 1 || e.target.classList.contains('ap-handle')) return;
+      isDragging = true;
+      const touch = e.touches[0];
+      startX = touch.clientX - offsetX;
+      startY = touch.clientY - offsetY;
+      transformWrapper.style.cursor = 'grabbing';
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+      if (isDragging && e.touches.length === 1) {
+        const touch = e.touches[0];
+        offsetX = touch.clientX - startX;
+        offsetY = touch.clientY - startY;
+        updateTransform();
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+      if (isDragging) {
+        isDragging = false;
+        transformWrapper.style.cursor = 'grab';
+      }
+    });
+
+    // Pinch to zoom
+    transformWrapper.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        initialTouchDistance = Math.sqrt(
+          Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+        initialTouchScale = scale;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && !isDragging && !isResizing && !isRotating) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const currentDistance = Math.sqrt(
+          Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+
+        if (initialTouchDistance > 0) {
+          scale = initialTouchScale * (currentDistance / initialTouchDistance);
+          scale = Math.max(0.1, Math.min(scale, 5)); // Limit scale between 0.1 and 5
+          updateTransform();
+        }
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+      initialTouchDistance = 0;
+    });
+
+    previewImage.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handles.style.display = "block";
+      updateHandles();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!previewImage.contains(e.target)) {
+        handles.style.display = "none";
+      }
+    });
+
+    function updateHandles() {
+      const wrapperRect = transformWrapper.getBoundingClientRect();
+      const editorRect = uploadBox.getBoundingClientRect();
+
+      const top = wrapperRect.top - editorRect.top;
+      const left = wrapperRect.left - editorRect.left;
+      const width = wrapperRect.width;
+      const height = wrapperRect.height;
+
+      const tlX = left;
+      const tlY = top;
+      const trX = left + width;
+      const trY = top;
+      const brX = left + width;
+      const brY = top + height;
+      const blX = left;
+      const blY = top + height;
+
+      // Position handles
+      document.querySelector('.afm-handle.tl').style.left = `${tlX}px`;
+      document.querySelector('.afm-handle.tl').style.top = `${tlY}px`;
+      document.querySelector('.afm-handle.tr').style.left = `${trX}px`;
+      document.querySelector('.afm-handle.tr').style.top = `${trY}px`;
+      document.querySelector('.afm-handle.br').style.left = `${brX}px`;
+      document.querySelector('.afm-handle.br').style.top = `${brY}px`;
+      document.querySelector('.afm-handle.bl').style.left = `${blX}px`;
+      document.querySelector('.afm-handle.bl').style.top = `${blY}px`;
+
+      // Update bounding lines
+      document.getElementById('afm-line-tl-tr').setAttribute('x1', tlX);
+      document.getElementById('afm-line-tl-tr').setAttribute('y1', tlY);
+      document.getElementById('afm-line-tl-tr').setAttribute('x2', trX);
+      document.getElementById('afm-line-tl-tr').setAttribute('y2', trY);
+      document.getElementById('afm-line-tr-br').setAttribute('x1', trX);
+      document.getElementById('afm-line-tr-br').setAttribute('y1', trY);
+      document.getElementById('afm-line-tr-br').setAttribute('x2', brX);
+      document.getElementById('afm-line-tr-br').setAttribute('y2', brY);
+      document.getElementById('afm-line-br-bl').setAttribute('x1', brX);
+      document.getElementById('afm-line-br-bl').setAttribute('y1', brY);
+      document.getElementById('afm-line-br-bl').setAttribute('x2', blX);
+      document.getElementById('afm-line-br-bl').setAttribute('y2', blY);
+      document.getElementById('afm-line-bl-tl').setAttribute('x1', blX);
+      document.getElementById('afm-line-bl-tl').setAttribute('y1', blY);
+      document.getElementById('afm-line-bl-tl').setAttribute('x2', tlX);
+      document.getElementById('afm-line-bl-tl').setAttribute('y2', tlY);
+
+      // Rotate handle
+      document.querySelector('.afm-handle.rotate').style.left = `${(tlX + trX) / 2}px`;
+      document.querySelector('.afm-handle.rotate').style.top = `${tlY - 40}px`;
+    }
+
+    function updateTransform() {
+      transformWrapper.style.transform = `
+        translate(${offsetX}px, ${offsetY}px)
+        scale(${scale})
+        rotate(${rotation}deg)
+      `;
+      updateHandles();
+    }
+
+    // Mouse event handlers
+    const handleMouseDown = (e) => {
+
+      if (e.button !== 0 || e.target.classList.contains('ap-handle')) return;
+      isDragging = true;
+      startX = e.clientX - offsetX;
+      startY = e.clientY - offsetY;
+      transformWrapper.style.cursor = 'grabbing';
+      e.preventDefault();
+    };
+
+    const handleMouseMove = (e) => {
+      if (isDragging) {
+        offsetX = e.clientX - startX;
+        offsetY = e.clientY - startY;
+        updateTransform();
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging) {
+        isDragging = false;
+        transformWrapper.style.cursor = 'grab';
+      }
+    };
+
+    function onHandleMove(e) {
+      if (isResizing) {
+        const editorRect = uploadBox.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        const currentDistance = Math.sqrt(
+          Math.pow(e.clientX - centerX, 2) +
+          Math.pow(e.clientY - centerY, 2)
+        );
+
+        const scaleFactor = currentDistance / initialDistance;
+        scale = Math.max(0.1, initialScale * scaleFactor);
+      }
+
+      if (isRotating) {
+        const editorRect = uploadBox.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        rotation = angle - initialAngle;
+      }
+
+      updateTransform();
+    }
+
+    function onTouchHandleMove(e) {
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+
+      if (isResizing) {
+        const editorRect = uploadBox.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        const currentDistance = Math.sqrt(
+          Math.pow(touch.clientX - centerX, 2) +
+          Math.pow(touch.clientY - centerY, 2)
+        );
+
+        const scaleFactor = currentDistance / initialDistance;
+        scale = Math.max(0.1, initialScale * scaleFactor);
+      }
+
+      if (isRotating) {
+        const editorRect = uploadBox.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+        rotation = angle - initialAngle;
+      }
+
+      updateTransform();
+      e.preventDefault();
+    }
+
+    function onHandleUp() {
+      isResizing = false;
+      isRotating = false;
+      document.removeEventListener('mousemove', onHandleMove);
+      document.removeEventListener('touchmove', onTouchHandleMove);
+      document.removeEventListener('mouseup', onHandleUp);
+      document.removeEventListener('touchend', onHandleUp);
+    }
+
+    // Handle resize and rotate
+    const initResizeRotateHandlers = () => {
+      console.log("696");
+      document.querySelectorAll('.afm-handle').forEach(handle => {
+        handle.addEventListener('mousedown', e => {
+          console.log("699");
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          const editorRect = uploadBox.getBoundingClientRect();
+          const wrapperRect = transformWrapper.getBoundingClientRect();
+          const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+          const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+          if (handle.classList.contains('rotate')) {
+            isRotating = true;
+            initialAngle = Math.atan2(startY - centerY, startX - centerX) * (180 / Math.PI) - rotation;
+          } else {
+            isResizing = true;
+            initialScale = scale;
+            const handleX = wrapperRect.left +
+              (handle.classList.contains('tl') || handle.classList.contains('bl') ? 0 : wrapperRect.width);
+            const handleY = wrapperRect.top +
+              (handle.classList.contains('tl') || handle.classList.contains('tr') ? 0 : wrapperRect.height);
+            initialDistance = Math.sqrt(
+              Math.pow(handleX - centerX, 2) +
+              Math.pow(handleY - centerY, 2)
+            );
+          }
+
+          startX = e.clientX;
+          startY = e.clientY;
+          document.addEventListener('mousemove', onHandleMove);
+          document.addEventListener('mouseup', onHandleUp);
+        });
+
+        handle.addEventListener('touchstart', e => {
+          if (e.touches.length !== 1) return;
+          e.preventDefault();
+          e.stopPropagation();
+
+          const editorRect = uploadBox.getBoundingClientRect();
+          const wrapperRect = transformWrapper.getBoundingClientRect();
+          const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+          const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+          const touch = e.touches[0];
+
+          if (handle.classList.contains('rotate')) {
+            isRotating = true;
+            initialAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI) - rotation;
+          } else {
+            isResizing = true;
+            initialScale = scale;
+            const handleX = wrapperRect.left +
+              (handle.classList.contains('tl') || handle.classList.contains('bl') ? 0 : wrapperRect.width);
+            const handleY = wrapperRect.top +
+              (handle.classList.contains('tl') || handle.classList.contains('tr') ? 0 : wrapperRect.height);
+            initialDistance = Math.sqrt(
+              Math.pow(handleX - centerX, 2) +
+              Math.pow(handleY - centerY, 2)
+            );
+          }
+
+          startX = touch.clientX;
+          startY = touch.clientY;
+          document.addEventListener('touchmove', onTouchHandleMove, { passive: false });
+          document.addEventListener('touchend', onHandleUp);
+        });
+      });
+    };
+
+    const handleHandleMove = (e) => {
+      if (isResizing) {
+        const rect = transformWrapper.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const currentDistance = Math.sqrt(
+          Math.pow(e.clientX - centerX, 2) +
+          Math.pow(e.clientY - centerY, 2)
+        );
+        scale = initialDistance * (currentDistance / initialDistance);
+        scale = Math.max(0.5, Math.min(scale, 3));
+        // zoomRange.value = scale;
+        updateTransform();
+      }
+
+      if (isRotating) {
+        const rect = transformWrapper.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        rotation = angle - initialAngle;
+        updateTransform();
+      }
+    };
+
+    const handleHandleEnd = () => {
+      isResizing = false;
+      isRotating = false;
+      document.removeEventListener('mousemove', handleHandleMove);
+      document.removeEventListener('mouseup', handleHandleEnd);
+    };
+
+    // File input handler
+    const handleFileInput = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target.result;
+          previewImage.style.display = "block";
+          placeholderText.style.display = "none";
+          addTextBtn.style.display = 'block';
+          shareBtn.style.display = 'block';
+          offsetX = 0;
+          offsetY = 0;
+          rotation = 0;
+          scale = 1;
+          updateTransform();
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    // Add event listeners
+    previewImage.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    // transformWrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
+    // document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    // zoomRange.addEventListener('input', handleZoom);
+    fileInput.addEventListener('change', handleFileInput);
+    initResizeRotateHandlers();
 
     // Event handlers
     const handleUploadBoxClick = () => {
@@ -204,7 +601,6 @@ const CustomizePage = () => {
           previewImage.style.display = "block";
           placeholderText.style.display = "none";
           isImageUploaded = true;
-          initializeImageFeatures(previewImage);
           addTextBtn.style.display = 'block';
           shareBtn.style.display = 'block';
 
@@ -216,11 +612,6 @@ const CustomizePage = () => {
         };
         reader.readAsDataURL(file);
       }
-    };
-
-    const handleZoomRangeInput = function () {
-      scale = parseFloat(zoomRange.value);
-      updateImagePosition();
     };
 
     // NEW: Image drag functions
@@ -240,8 +631,6 @@ const CustomizePage = () => {
       isDraggingImage = false;
       uploadBox.style.cursor = 'default';
     };
-
-
 
     function handleTouchStart(e) {
       if (e.touches.length === 1) {
@@ -313,8 +702,8 @@ const CustomizePage = () => {
         textBox.style.transform = 'translate(-50%, -50%)';
         textBox.style.cursor = 'move';
         textBox.style.border = 'none';
-        textBox.style.zIndex = '1000'; // Ensure text is above image
-        document.getElementById('uploadBox').appendChild(textBox);
+        textBox.style.zIndex = '1000'; // Ensure text is above image        
+        preImage.appendChild(textBox);
 
         makeTextDraggable(textBox, { resize: 'afm-resize-handle', rotate: 'afm-rotate-handle' });
         makeTextResizable(textBox);
@@ -662,281 +1051,12 @@ const CustomizePage = () => {
       }
     }
 
-    // Helper functions
-    function initializeImageFeatures(imageElement) {
-      addRotateHandle(imageElement);
-      makeDraggable(imageElement, { rotate: 'afm-rotate' });
-    }
-
     function updateImagePosition() {
       previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale}) rotate(${rotation}deg)`;
     }
 
-    function addRotateHandle(imageElement) {
-      const rotateHandle = document.createElement('div');
-      rotateHandle.className = 'afm-rotate';
-      rotateHandle.style.position = 'absolute';
-      rotateHandle.style.top = '13%';
-      rotateHandle.style.left = '30%';
-      rotateHandle.style.transform = 'translateX(-50%)';
-      rotateHandle.style.cursor = 'pointer';
-      rotateHandle.innerHTML = '&#8635;';
-      rotateHandle.style.color = 'blue';
-      rotateHandle.style.fontWeight = 'bold';
-      rotateHandle.style.fontSize = '1.5rem';
-      rotateHandle.style.backgroundColor = 'transparent';
-
-      leftPanel.appendChild(rotateHandle);
-
-      const handleMouseDown = function (e) {
-        e.stopPropagation();
-        const rect = imageElement.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        function rotate(e) {
-          const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-          rotation = (angle * (180 / Math.PI) + 90) % 360;
-          updateImagePosition();
-        }
-
-        function stopRotating() {
-          document.removeEventListener('mousemove', rotate);
-          document.removeEventListener('mouseup', stopRotating);
-        }
-
-        document.addEventListener('mousemove', rotate);
-        document.addEventListener('mouseup', stopRotating);
-      };
-
-      rotateHandle.addEventListener('mousedown', handleMouseDown);
-
-      // Return cleanup function
-      return () => {
-        rotateHandle.removeEventListener('mousedown', handleMouseDown);
-        leftPanel.removeChild(rotateHandle);
-      };
-    }
-
     function closeTextModal() {
       document.getElementById('afm-textModal').style.display = 'none';
-    }
-
-    function makeDraggable(element, handle) {
-      let isDragging = false;
-      let offsetX, offsetY;
-
-      const handleMouseDown = function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-        isDragging = true;
-        offsetX = clientX - element.offsetLeft;
-        offsetY = clientY - element.offsetTop;
-        element.style.cursor = 'grabbing';
-        element.style.border = '2px dashed #248EE6';
-
-        if (handle.resize) {
-          const resizeEl = element.querySelector(`.${handle.resize}`);
-          if (resizeEl) resizeEl.style.display = 'block';
-        }
-
-        if (handle.rotate) {
-          const rotateEl = element.querySelector(`.${handle.rotate}`);
-          if (rotateEl) rotateEl.style.display = 'block';
-        }
-      };
-
-      const handleMouseMove = function (e) {
-        if (isDragging) {
-          e.preventDefault();
-          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-          const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-          element.style.left = clientX - offsetX + 'px';
-          element.style.top = clientY - offsetY + 'px';
-        }
-      };
-
-      const handleMouseUp = function () {
-        isDragging = false;
-        element.style.cursor = 'move';
-      };
-
-      const handleDocumentMouseDown = function (e) {
-        if (!element.contains(e.target)) {
-          element.style.border = 'none';
-
-          if (handle.resize) {
-            const resizeEl = element.querySelector(`.${handle.resize}`);
-            if (resizeEl) resizeEl.style.display = 'none';
-          }
-
-          if (handle.rotate) {
-            const rotateEl = element.querySelector(`.${handle.rotate}`);
-            if (rotateEl) rotateEl.style.display = 'none';
-          }
-        }
-      };
-
-      element.addEventListener('mousedown', handleMouseDown);
-      element.addEventListener('touchstart', handleMouseDown, { passive: false });
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('touchmove', handleMouseMove, { passive: false });
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchend', handleMouseUp);
-      document.addEventListener('mousedown', handleDocumentMouseDown);
-      document.addEventListener('touchstart', handleDocumentMouseDown, { passive: false });
-
-      // Return cleanup function
-      return () => {
-        element.removeEventListener('mousedown', handleMouseDown);
-        element.removeEventListener('touchstart', handleMouseDown);
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('touchmove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-        document.removeEventListener('touchend', handleMouseUp);
-        document.removeEventListener('mousedown', handleDocumentMouseDown);
-        document.removeEventListener('touchstart', handleDocumentMouseDown);
-      };
-    }
-
-    function makeResizable(element) {
-      const resizeHandle = document.createElement('div');
-      resizeHandle.className = 'afm-resize-handle';
-      resizeHandle.style.position = 'absolute';
-      resizeHandle.style.right = '-11.3px';
-      resizeHandle.style.bottom = '-6.5px';
-      resizeHandle.style.fontSize = '24px';
-      resizeHandle.style.cursor = 'crosshair';
-      resizeHandle.innerText = '+';
-      resizeHandle.style.display = 'none';
-      resizeHandle.style.touchAction = 'none';
-
-      element.appendChild(resizeHandle);
-
-      const handleMouseDown = function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const initialFontSize = parseFloat(window.getComputedStyle(element).fontSize);
-        const initialMouseX = e.clientX || (e.touches && e.touches[0].clientX);
-
-        function resize(e) {
-          e.preventDefault();
-          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-          const scaleFactor = 0.2;
-          const newSize = initialFontSize + (clientX - initialMouseX) * scaleFactor;
-
-          if (newSize > 10) {
-            element.style.fontSize = newSize + 'px';
-          }
-        }
-
-        function stopResizing() {
-          document.removeEventListener('mousemove', resize);
-          document.removeEventListener('touchmove', resize);
-          document.removeEventListener('mouseup', stopResizing);
-          document.removeEventListener('touchend', stopResizing);
-        }
-
-        document.addEventListener('mousemove', resize);
-        document.addEventListener('touchmove', resize, { passive: false });
-        document.addEventListener('mouseup', stopResizing);
-        document.addEventListener('touchend', stopResizing);
-      };
-
-      resizeHandle.addEventListener('mousedown', handleMouseDown);
-      resizeHandle.addEventListener('touchstart', handleMouseDown, { passive: false });
-
-      // Return cleanup function
-      return () => {
-        resizeHandle.removeEventListener('mousedown', handleMouseDown);
-        resizeHandle.removeEventListener('touchstart', handleMouseDown);
-        element.removeChild(resizeHandle);
-      };
-    }
-
-    function makeRotatable(element) {
-      const rotateHandle = document.createElement('div');
-      rotateHandle.className = 'afm-rotate-handle';
-      rotateHandle.style.position = 'absolute';
-      rotateHandle.style.bottom = '40px';
-      rotateHandle.style.left = '50%';
-      rotateHandle.style.transform = 'translateX(-50%)';
-      rotateHandle.style.width = '20px';
-      rotateHandle.style.height = '20px';
-      rotateHandle.style.cursor = 'grab';
-      rotateHandle.innerText = '⭯';
-      rotateHandle.style.display = 'none';
-      rotateHandle.style.touchAction = 'none';
-
-      element.appendChild(rotateHandle);
-
-      let isRotating = false;
-
-      const handleMouseDown = function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        isRotating = true;
-        const rect = element.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        function rotate(e) {
-          if (isRotating) {
-            e.preventDefault();
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-            const dx = clientX - centerX;
-            const dy = clientY - centerY;
-            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-            element.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
-          }
-        }
-
-        function stopRotating() {
-          isRotating = false;
-          document.removeEventListener('mousemove', rotate);
-          document.removeEventListener('touchmove', rotate);
-          document.removeEventListener('mouseup', stopRotating);
-          document.removeEventListener('touchend', stopRotating);
-        }
-
-        document.addEventListener('mousemove', rotate);
-        document.addEventListener('touchmove', rotate, { passive: false });
-        document.addEventListener('mouseup', stopRotating);
-        document.addEventListener('touchend', stopRotating);
-      };
-
-      rotateHandle.addEventListener('mousedown', handleMouseDown);
-      rotateHandle.addEventListener('touchstart', handleMouseDown, { passive: false });
-
-      // Return cleanup function
-      return () => {
-        rotateHandle.removeEventListener('mousedown', handleMouseDown);
-        rotateHandle.removeEventListener('touchstart', handleMouseDown);
-        element.removeChild(rotateHandle);
-      };
-    }
-
-    function updatePreview() {
-      const text = document.getElementById('modalTextInput').value || 'Preview Text';
-
-      document.querySelectorAll('option').forEach(option => {
-        const font = option.value;
-        option.style.fontFamily = font;
-        option.textContent = `${text}`;
-      });
-    }
-
-    function changeFontFamily() {
-      const selectedFont = document.getElementById('fontStyleSelect').value;
-      const textInput = document.getElementById('fontStyleSelect');
-      textInput.style.fontFamily = selectedFont;
     }
 
     // Size button event handlers
@@ -1009,19 +1129,19 @@ const CustomizePage = () => {
     uploadBox.addEventListener('click', handleUploadBoxClick);
     uploadButton.addEventListener('click', handleUploadButtonClick);
     fileInput.addEventListener("change", handleFileInputChange);
-    zoomRange.addEventListener('input', handleZoomRangeInput);
+    // zoomRange.addEventListener('input', handleZoomRangeInput);
     addTextBtn.addEventListener('click', handleAddTextClick);
     addTextBtn.addEventListener('touchend', handleAddTextClick);
     document.getElementById('afm-addTextModalBtn').addEventListener('click', handleAddTextModalClick);
     document.getElementById('afm-addTextModalBtn').addEventListener('touchend', handleAddTextModalClick);
 
     // NEW: Add drag event listeners
-    uploadBox.addEventListener('dblclick', enableImageDrag);
-    uploadBox.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('mousemove', handleDrag);
-    document.addEventListener('mouseup', disableImageDrag);
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', disableImageDrag);
+    // uploadBox.addEventListener('dblclick', enableImageDrag);
+    // uploadBox.addEventListener('touchstart', handleTouchStart, { passive: false });
+    // document.addEventListener('mousemove', handleDrag);
+    // document.addEventListener('mouseup', disableImageDrag);
+    // document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    // document.addEventListener('touchend', disableImageDrag);
 
     // Store cleanup functions
     const cleanupFunctions = [];
@@ -1031,6 +1151,23 @@ const CustomizePage = () => {
 
     // Return cleanup function
     return () => {
+
+
+      previewImage.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+
+      // zoomRange.removeEventListener('input', handleZoom);
+      fileInput.removeEventListener('change', handleFileInput);
+
+      document.querySelectorAll('.ap-handle').forEach(handle => {
+        handle.removeEventListener('mousedown', handleHandleMove);
+      });
+      document.removeEventListener('mousemove', handleHandleMove);
+      document.removeEventListener('mouseup', handleHandleEnd);
+
+
+
       // Remove event listeners with null checks
       if (uploadBox && uploadBox.removeEventListener) {
         uploadBox.removeEventListener('click', handleUploadBoxClick);
@@ -1044,9 +1181,9 @@ const CustomizePage = () => {
       if (fileInput && fileInput.removeEventListener) {
         fileInput.removeEventListener("change", handleFileInputChange);
       }
-      if (zoomRange && zoomRange.removeEventListener) {
-        zoomRange.removeEventListener('input', handleZoomRangeInput);
-      }
+      // if (zoomRange && zoomRange.removeEventListener) {
+      //   zoomRange.removeEventListener('input', handleZoomRangeInput);
+      // }
       if (addTextBtn && addTextBtn.removeEventListener) {
         addTextBtn.removeEventListener('click', handleAddTextClick);
         addTextBtn.removeEventListener('touchend', handleAddTextClick);
@@ -1264,7 +1401,29 @@ const CustomizePage = () => {
       <div className="afm-page-container">
         <div className="afm-left">
           <div className="afm-upload-box" id="uploadBox">
-            <img id="afm-previewImage" alt="Click to upload" style={{ display: "none" }} />
+
+            <TransformableImageBox alt="Click to upload" imageId="afm-previewImage" prefix="afm-" shape={shape ? `afm-${shape}` : ''} />
+
+            {/* <div className={`afm-img-pre ${shape ? `afm-${shape}` : ''}`}>
+              <div className="afm-htransform-wrapper" id='afm-transformWrapper'>
+                <img id="afm-previewImage" alt="Click to upload" />
+              </div>
+            </div>
+
+            <div className="afm-handles">
+              <svg className="afm-handle-lines" style={{ overflow: "visible" }}>
+                <line id="afm-line-tl-tr" stroke="#00caff" strokeWidth="1" />
+                <line id="afm-line-tr-br" stroke="#00caff" strokeWidth="1" />
+                <line id="afm-line-br-bl" stroke="#00caff" strokeWidth="1" />
+                <line id="afm-line-bl-tl" stroke="#00caff" strokeWidth="1" />
+              </svg>
+              <div className="afm-handle tl"></div>
+              <div className="afm-handle tr"></div>
+              <div className="afm-handle bl"></div>
+              <div className="afm-handle br"></div>
+              <div className="afm-handle rotate"></div>
+            </div> */}
+            {/* <img src="/assets/10 FRAM Copy.jpg" id="afm-previewImage" alt="Click to upload" style={{ display: "none" }} /> */}
             <input
               type="file"
               id="fileInput"
@@ -1277,7 +1436,7 @@ const CustomizePage = () => {
           </div>
         </div>
         <div className="afm-right">
-          <input
+          {/* <input
             type="range"
             id="afm-zoomRange"
             min="0.5"
@@ -1288,7 +1447,7 @@ const CustomizePage = () => {
               width: "200px",
               accentColor: "#000787",
             }}
-          />
+          /> */}
           <div className="afm-row">
 
             <button className="btn2 afm-upload">

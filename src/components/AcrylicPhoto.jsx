@@ -324,7 +324,7 @@ const AcrylicPhoto = () => {
           </div>
 
           <div className="ap-image-container" id="imageContainer">
-            <TransformableImageBox src="/assets/10 FRAM Copy.jpg" alt = "10 FRAM Copy" imageClass = "ap-preview-image" imageId = "previewImage"/>
+            <TransformableImageBox src="/assets/10 FRAM Copy.jpg" alt = "10 FRAM Copy" imageClass = "ap-preview-image" imageId = "previewImage" prefix="ap-"/>
             {/* <div className="img-pre">
               <div className="transform-wrapper" id="transformWrapper">
                 <img className="ap-preview-image" id="previewImage" src="/assets/10 FRAM Copy.jpg" alt="" />

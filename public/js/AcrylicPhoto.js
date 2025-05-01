@@ -316,15 +316,15 @@ const BASE_URL = window.BASE_URL;
 
 const imageContainer = document.querySelector('.ap-image-container');
 const previewImage = document.getElementById('previewImage');
-const transformWrapper = document.querySelector('.transform-wrapper');
+const transformWrapper = document.querySelector('.ap-transform-wrapper');
 const fileInput = document.getElementById('fileInput');
 const widthInd = document.getElementById('width');
 const heightInd = document.getElementById('height');
 const shareBtn = document.getElementById('shareBtn');
 const cartBtn = document.getElementById('cartBtn');
 const removeBgBtn = document.getElementById('removeBgBtn');
-const imgPre = document.querySelector('.img-pre');
-const handles = document.querySelector(".handles");
+const imgPre = document.querySelector('.ap-img-pre');
+const handles = document.querySelector(".ap-handles");
 
 let scale = 1;
 let rotation = 0;
@@ -387,22 +387,22 @@ function updateHandles() {
     document.querySelector('.ap-handle.bl').style.top = `${blY}px`;
 
     // Update bounding lines
-    document.getElementById('line-tl-tr').setAttribute('x1', tlX);
-    document.getElementById('line-tl-tr').setAttribute('y1', tlY);
-    document.getElementById('line-tl-tr').setAttribute('x2', trX);
-    document.getElementById('line-tl-tr').setAttribute('y2', trY);
-    document.getElementById('line-tr-br').setAttribute('x1', trX);
-    document.getElementById('line-tr-br').setAttribute('y1', trY);
-    document.getElementById('line-tr-br').setAttribute('x2', brX);
-    document.getElementById('line-tr-br').setAttribute('y2', brY);
-    document.getElementById('line-br-bl').setAttribute('x1', brX);
-    document.getElementById('line-br-bl').setAttribute('y1', brY);
-    document.getElementById('line-br-bl').setAttribute('x2', blX);
-    document.getElementById('line-br-bl').setAttribute('y2', blY);
-    document.getElementById('line-bl-tl').setAttribute('x1', blX);
-    document.getElementById('line-bl-tl').setAttribute('y1', blY);
-    document.getElementById('line-bl-tl').setAttribute('x2', tlX);
-    document.getElementById('line-bl-tl').setAttribute('y2', tlY);
+    document.getElementById('ap-line-tl-tr').setAttribute('x1', tlX);
+    document.getElementById('ap-line-tl-tr').setAttribute('y1', tlY);
+    document.getElementById('ap-line-tl-tr').setAttribute('x2', trX);
+    document.getElementById('ap-line-tl-tr').setAttribute('y2', trY);
+    document.getElementById('ap-line-tr-br').setAttribute('x1', trX);
+    document.getElementById('ap-line-tr-br').setAttribute('y1', trY);
+    document.getElementById('ap-line-tr-br').setAttribute('x2', brX);
+    document.getElementById('ap-line-tr-br').setAttribute('y2', brY);
+    document.getElementById('ap-line-br-bl').setAttribute('x1', brX);
+    document.getElementById('ap-line-br-bl').setAttribute('y1', brY);
+    document.getElementById('ap-line-br-bl').setAttribute('x2', blX);
+    document.getElementById('ap-line-br-bl').setAttribute('y2', blY);
+    document.getElementById('ap-line-bl-tl').setAttribute('x1', blX);
+    document.getElementById('ap-line-bl-tl').setAttribute('y1', blY);
+    document.getElementById('ap-line-bl-tl').setAttribute('x2', tlX);
+    document.getElementById('ap-line-bl-tl').setAttribute('y2', tlY);
 
     // Rotate handle
     document.querySelector('.ap-handle.rotate').style.left = `${(tlX + trX) / 2}px`;

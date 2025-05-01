@@ -61,7 +61,6 @@ body {
     margin-top: 1rem;
 }
 
-
 .ap-preview-image {
     width: 100%;
     height: 100%;
@@ -357,7 +356,7 @@ body {
 
 
 
-.transform-wrapper {
+.ap-transform-wrapper {
     position: absolute;
     /* top: 0;
     left: 0; */
@@ -373,7 +372,7 @@ body {
     user-select: none;
 } */
 
-.img-pre {
+.ap-img-pre {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -383,7 +382,7 @@ body {
     justify-content: center;
 }
 
-.handles {
+.ap-handles {
     position: absolute;
     top: -10px;
     left: -10px;
@@ -406,7 +405,7 @@ body {
 }
 
 .active .ap-handle,
-.active .handle-lines {
+.active .ap-handle-lines {
     display: block;
 }
 
@@ -428,11 +427,11 @@ body {
     background: #00caff;
 }
 
-.transform-wrapper:active {
+.ap-transform-wrapper:active {
     cursor: grabbing;
 }
 
-.handle-lines {
+.ap-handle-lines {
     position: absolute;
     top: 0;
     left: 0;
@@ -531,7 +530,7 @@ body {
         width: 200px;
         height: 200px;
     } */
-/* 
+    /* 
     .ap-potrait-shape {
         width: 150px;
         height: 220px;

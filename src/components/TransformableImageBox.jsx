@@ -2,27 +2,27 @@
 import React from "react";
 import "../assets/css/AcrylicPhoto.css";
 
-const TransformableImageBox = ({ src, alt="", imageClass="", imageId=""}) => {
+const TransformableImageBox = ({ prefix = "", src, alt = "", imageClass = "", imageId = "" ,shape=""}) => {
     return (
         <>
-            <div className="img-pre">
-                <div className="transform-wrapper" id='transformWrapper'>
+            <div className={`${prefix}img-pre ${shape}`}>
+                <div className={`${prefix}transform-wrapper`} id={`${prefix}transformWrapper`}>
                     <img className={imageClass} id={imageId} src={src} alt={alt} />
                 </div>
             </div>
 
-            <div className="handles">
-                <svg className="handle-lines" style={{ overflow: "visible" }}>
-                    <line id="line-tl-tr" stroke="#00caff" strokeWidth="1" />
-                    <line id="line-tr-br" stroke="#00caff" strokeWidth="1" />
-                    <line id="line-br-bl" stroke="#00caff" strokeWidth="1" />
-                    <line id="line-bl-tl" stroke="#00caff" strokeWidth="1" />
+            <div className={`${prefix}handles`}>
+                <svg className={`${prefix}handle-lines`} style={{ overflow: "visible" }}>
+                    <line id={`${prefix}line-tl-tr`} stroke="#00caff" strokeWidth="1" />
+                    <line id={`${prefix}line-tr-br`} stroke="#00caff" strokeWidth="1" />
+                    <line id={`${prefix}line-br-bl`} stroke="#00caff" strokeWidth="1" />
+                    <line id={`${prefix}line-bl-tl`} stroke="#00caff" strokeWidth="1" />
                 </svg>
-                <div className="ap-handle tl"></div>
-                <div className="ap-handle tr"></div>
-                <div className="ap-handle bl"></div>
-                <div className="ap-handle br"></div>
-                <div className="ap-handle rotate"></div>
+                <div className={`${prefix}handle tl`}></div>
+                <div className={`${prefix}handle tr`}></div>
+                <div className={`${prefix}handle bl`}></div>
+                <div className={`${prefix}handle br`}></div>
+                <div className={`${prefix}handle rotate`}></div>
             </div>
         </>
     );
