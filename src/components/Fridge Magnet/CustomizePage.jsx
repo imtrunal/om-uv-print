@@ -443,10 +443,8 @@ const CustomizePage = () => {
 
     // Handle resize and rotate
     const initResizeRotateHandlers = () => {
-      console.log("696");
       document.querySelectorAll('.afm-handle').forEach(handle => {
         handle.addEventListener('mousedown', e => {
-          console.log("699");
 
           e.preventDefault();
           e.stopPropagation();
@@ -457,6 +455,8 @@ const CustomizePage = () => {
           const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
 
           if (handle.classList.contains('rotate')) {
+            console.log("sasscdfrtthmjm");
+
             isRotating = true;
             initialAngle = Math.atan2(startY - centerY, startX - centerX) * (180 / Math.PI) - rotation;
           } else {

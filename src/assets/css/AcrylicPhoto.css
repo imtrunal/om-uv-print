@@ -425,6 +425,9 @@ body {
     cursor: grab;
     border-radius: 50%;
     background: #00caff;
+    width: auto;
+    height: auto;
+    padding: 2px;
 }
 
 .ap-transform-wrapper:active {

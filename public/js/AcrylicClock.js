@@ -1,3 +1,155 @@
+// const backgroundUrls = [
+//     "https://static.remove.bg/backgrounds/product/art-artistic-background-1279813-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/Nature/background-clouds-colors-726330-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/product/antique-backdrop-background-164005-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/car/new/bg3-size-156.png",
+//     "https://static.remove.bg/backgrounds/realestate/background-3104413_1920-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/Autumn/dawn-desktop-wallpaper-environment-2055389-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/Urban/architecture-building-business-2339009-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/new/pride_gradient-size-156.png",
+//     "https://static.remove.bg/backgrounds/realestate/pexels-pixabay-531756-size-156.jpg",
+//     "https://static.remove.bg/backgrounds/person/new/pexels-zaksheuskaya-1561020-size-156.jpg",
+//     "https://i.pinimg.com/736x/d0/09/52/d00952ba351f7b7f0905a4a9465b6fc8.jpg",
+//     "https://i.pinimg.com/736x/33/92/a6/3392a60bb7a4c4ec72f8bef181a9f556.jpg"
+// ];
+
+// const imageContainer = document.querySelector('.image-container');
+// const previewImage = document.getElementById('previewImage');
+// const fileInput = document.getElementById('fileInput');
+// const widthInd = document.getElementById('width');
+// const heightInd = document.getElementById('height');
+// const zoomRange = document.getElementById('zoomRange');
+// const removeBgBtn = document.getElementById('removeBgBtn');
+// removeBgBtn.addEventListener('click', openBgModal);
+// imageContainer.addEventListener('dblclick', dragStart);
+// imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+// imageContainer.addEventListener('mousemove', drag);
+// imageContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+// document.addEventListener('mouseup', dragEnd);
+// document.addEventListener('touchend', dragEnd)
+// const allShapeBtn = document.querySelectorAll('.shape-btn');
+// const cartBtn = document.getElementById('cartBtn');
+// const shareBtn = document.getElementById('shareBtn');
+// const imgPre = document.querySelector(".img-pre");
+// const handles = document.querySelector(".handles");
+// const transformWrapper = document.getElementById('transformWrapper');
+// const clockFace = document.querySelector('.clock-face');
+// const allSizeBtn = document.querySelectorAll('.size-btn');
+// const BASE_URL = window.BASE_URL;
+// let activeClock = {};
+// let clockNumbersStyle;
+
+// let isDragging = false;
+// let currentX = 0;
+// let currentY = 0;
+// let initialX;
+// let initialY;
+// let xOffset = 0;
+// let yOffset = 0;
+// let scale = 1;
+// let rotation = 0;
+// let isResizing = false;
+// let isRotating = false;
+// let offsetX = 0, offsetY = 0;
+// let startX, startY;
+// let initialAngle = 0;
+// let initialDistance = 0;
+
+
+// console.log(previewImage);
+
+
+// function initEventListeners() {
+//     console.log("INIT EVENT LISTENERS");
+//     updateHandles();
+
+//     previewImage.addEventListener('click', (e) => {
+//         e.stopPropagation();
+//         handles.style.display = "block";
+//     });
+//     clockFace.addEventListener('click', (e) => {
+//         e.stopPropagation();
+//         handles.style.display = "block";
+//     });
+
+//     document.addEventListener('click', (e) => {
+//         if (!previewImage.contains(e.target)) {
+//             handles.style.display = "none";
+//         }
+//     });
+// }
+
+
+// function updateHandles() {
+//     const wrapperRect = transformWrapper.getBoundingClientRect();
+//     const editorRect = imageContainer.getBoundingClientRect();
+
+//     const top = wrapperRect.top - editorRect.top;
+//     const left = wrapperRect.left - editorRect.left;
+//     const width = wrapperRect.width;
+//     const height = wrapperRect.height;
+
+//     const tlX = left;
+//     const tlY = top;
+//     const trX = left + width;
+//     const trY = top;
+//     const brX = left + width;
+//     const brY = top + height;
+//     const blX = left;
+//     const blY = top + height;
+
+//     // Position handles
+//     document.querySelector('.handle.tl').style.left = `${tlX}px`;
+//     document.querySelector('.handle.tl').style.top = `${tlY}px`;
+//     document.querySelector('.handle.tr').style.left = `${trX}px`;
+//     document.querySelector('.handle.tr').style.top = `${trY}px`;
+//     document.querySelector('.handle.br').style.left = `${brX}px`;
+//     document.querySelector('.handle.br').style.top = `${brY}px`;
+//     document.querySelector('.handle.bl').style.left = `${blX}px`;
+//     document.querySelector('.handle.bl').style.top = `${blY}px`;
+
+//     // Update bounding lines
+//     document.getElementById('line-tl-tr').setAttribute('x1', tlX);
+//     document.getElementById('line-tl-tr').setAttribute('y1', tlY);
+//     document.getElementById('line-tl-tr').setAttribute('x2', trX);
+//     document.getElementById('line-tl-tr').setAttribute('y2', trY);
+//     document.getElementById('line-tr-br').setAttribute('x1', trX);
+//     document.getElementById('line-tr-br').setAttribute('y1', trY);
+//     document.getElementById('line-tr-br').setAttribute('x2', brX);
+//     document.getElementById('line-tr-br').setAttribute('y2', brY);
+//     document.getElementById('line-br-bl').setAttribute('x1', brX);
+//     document.getElementById('line-br-bl').setAttribute('y1', brY);
+//     document.getElementById('line-br-bl').setAttribute('x2', blX);
+//     document.getElementById('line-br-bl').setAttribute('y2', blY);
+//     document.getElementById('line-bl-tl').setAttribute('x1', blX);
+//     document.getElementById('line-bl-tl').setAttribute('y1', blY);
+//     document.getElementById('line-bl-tl').setAttribute('x2', tlX);
+//     document.getElementById('line-bl-tl').setAttribute('y2', tlY);
+
+//     // Rotate handle
+//     document.querySelector('.handle.rotate').style.left = `${(tlX + trX) / 2}px`;
+//     document.querySelector('.handle.rotate').style.top = `${tlY - 20}px`;
+// }
+
+// fileInput.addEventListener('change', function (e) {
+//     const file = e.target.files[0];
+//     if (file) {
+//         const reader = new FileReader();
+//         reader.onload = function (e) {
+//             previewImage.src = e.target.result;
+//             previewImage.style.display = 'block';
+//             previewImage.style.transform = 'translate(0px, 0px) scale(1)';
+//         };
+//         reader.readAsDataURL(file);
+//         zoomRange.value = 1;
+//         updateHandles();
+//         shareBtn.style.display = 'block';
+//         // cartBtn.style.display = 'block';
+//     }
+
+// });
+
+
 const backgroundUrls = [
     "https://static.remove.bg/backgrounds/product/art-artistic-background-1279813-size-156.jpg",
     "https://static.remove.bg/backgrounds/person/Nature/background-clouds-colors-726330-size-156.jpg",
@@ -13,38 +165,344 @@ const backgroundUrls = [
     "https://i.pinimg.com/736x/33/92/a6/3392a60bb7a4c4ec72f8bef181a9f556.jpg"
 ];
 
+
+const allShapeBtn = document.querySelectorAll('.shape-btn');
+const cartBtn = document.getElementById('cartBtn');
+const shareBtn = document.getElementById('shareBtn');
+const imgPre = document.querySelector(".img-pre");
+const handles = document.querySelector(".handles");
+const transformWrapper = document.getElementById('transformWrapper');
+const clockFace = document.querySelector('.clock-face');
+const allSizeBtn = document.querySelectorAll('.size-btn');
 const imageContainer = document.querySelector('.image-container');
 const previewImage = document.getElementById('previewImage');
 const fileInput = document.getElementById('fileInput');
 const widthInd = document.getElementById('width');
 const heightInd = document.getElementById('height');
-const zoomRange = document.getElementById('zoomRange');
+// const zoomRange = document.getElementById('zoomRange');
 const removeBgBtn = document.getElementById('removeBgBtn');
-removeBgBtn.addEventListener('click', openBgModal);
-imageContainer.addEventListener('dblclick', dragStart);
-imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-imageContainer.addEventListener('mousemove', drag);
-imageContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-document.addEventListener('mouseup', dragEnd);
-document.addEventListener('touchend', dragEnd)
-const allShapeBtn = document.querySelectorAll('.shape-btn');
-const cartBtn = document.getElementById('cartBtn');
-const shareBtn = document.getElementById('shareBtn');
-
-const allSizeBtn = document.querySelectorAll('.size-btn');
 const BASE_URL = window.BASE_URL;
+
+let scale = 1;
+let rotation = 0;
+let isDragging = false;
+let isResizing = false;
+let isRotating = false;
+let offsetX = 0, offsetY = 0;
+let startX, startY;
+let initialAngle = 0;
+let initialDistance = 0;
 let activeClock = {};
 let clockNumbersStyle;
-
-let isDragging = false;
+let initialScale = 1;
+let file;
+let allTextData = [];
 let currentX = 0;
 let currentY = 0;
 let initialX;
 let initialY;
 let xOffset = 0;
 let yOffset = 0;
-let scale = 1;
+let isDraggingImage = false;
+let initialTouchDistance = 0;
+let initialTouchScale = 1;
 
+
+function updateTransform() {
+    transformWrapper.style.transform = `
+        translate(${offsetX}px, ${offsetY}px)
+        scale(${scale})
+        rotate(${rotation}deg)
+    `;
+    updateHandles();
+}
+
+function updateHandles() {
+    const wrapperRect = transformWrapper.getBoundingClientRect();
+    const editorRect = imageContainer.getBoundingClientRect();
+
+    const top = wrapperRect.top - editorRect.top;
+    const left = wrapperRect.left - editorRect.left;
+    const width = wrapperRect.width;
+    const height = wrapperRect.height;
+
+    const tlX = left;
+    const tlY = top;
+    const trX = left + width;
+    const trY = top;
+    const brX = left + width;
+    const brY = top + height;
+    const blX = left;
+    const blY = top + height;
+
+    // Position handles
+    document.querySelector('.handle.tl').style.left = `${tlX}px`;
+    document.querySelector('.handle.tl').style.top = `${tlY}px`;
+    document.querySelector('.handle.tr').style.left = `${trX}px`;
+    document.querySelector('.handle.tr').style.top = `${trY}px`;
+    document.querySelector('.handle.br').style.left = `${brX}px`;
+    document.querySelector('.handle.br').style.top = `${brY}px`;
+    document.querySelector('.handle.bl').style.left = `${blX}px`;
+    document.querySelector('.handle.bl').style.top = `${blY}px`;
+
+    // Update bounding lines
+    document.getElementById('line-tl-tr').setAttribute('x1', tlX);
+    document.getElementById('line-tl-tr').setAttribute('y1', tlY);
+    document.getElementById('line-tl-tr').setAttribute('x2', trX);
+    document.getElementById('line-tl-tr').setAttribute('y2', trY);
+    document.getElementById('line-tr-br').setAttribute('x1', trX);
+    document.getElementById('line-tr-br').setAttribute('y1', trY);
+    document.getElementById('line-tr-br').setAttribute('x2', brX);
+    document.getElementById('line-tr-br').setAttribute('y2', brY);
+    document.getElementById('line-br-bl').setAttribute('x1', brX);
+    document.getElementById('line-br-bl').setAttribute('y1', brY);
+    document.getElementById('line-br-bl').setAttribute('x2', blX);
+    document.getElementById('line-br-bl').setAttribute('y2', blY);
+    document.getElementById('line-bl-tl').setAttribute('x1', blX);
+    document.getElementById('line-bl-tl').setAttribute('y1', blY);
+    document.getElementById('line-bl-tl').setAttribute('x2', tlX);
+    document.getElementById('line-bl-tl').setAttribute('y2', tlY);
+
+    // Rotate handle
+    document.querySelector('.handle.rotate').style.left = `${(tlX + trX) / 2}px`;
+    document.querySelector('.handle.rotate').style.top = `${tlY - 20}px`;
+}
+
+// Event handlers
+function initEventListeners() {
+    previewImage.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handles.style.display = "block";
+        updateHandles();
+    });
+    clockFace.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handles.style.display = "block";
+        updateHandles();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!previewImage.contains(e.target)) {
+            handles.style.display = "none";
+        }
+    });
+
+    // Mouse events
+    [clockFace, transformWrapper, previewImage,].map(el => {
+        if (!el) return;
+        el.addEventListener('mousedown', (e) => {
+            if (e.button !== 0 || e.target.classList.contains('handle')) return;
+            isDragging = true;
+            startX = e.clientX - offsetX;
+            startY = e.clientY - offsetY;
+            el.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+    })
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            updateTransform();
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            transformWrapper.style.cursor = 'grab';
+        }
+    });
+
+    // Touch events
+    [transformWrapper, previewImage, clockFace].map(el => {
+        if (!el) return;
+        el.addEventListener('touchstart', (e) => {
+            handles.style.display = "block";
+            updateHandles();
+            if (e.touches.length !== 1 || e.target.classList.contains('handle')) return;
+            isDragging = true;
+            const touch = e.touches[0];
+            startX = touch.clientX - offsetX;
+            startY = touch.clientY - offsetY;
+            el.style.cursor = 'grabbing';
+            e.preventDefault();
+        }, { passive: false });
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches.length === 1) {
+            const touch = e.touches[0];
+            offsetX = touch.clientX - startX;
+            offsetY = touch.clientY - startY;
+            updateTransform();
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+        if (isDragging) {
+            isDragging = false;
+            [transformWrapper, previewImage, clockFace].map(el => {
+                if (!el) return;
+                el.style.cursor = 'grab';
+            })
+        }
+    });
+
+    // Handle events
+    document.querySelectorAll('.handle').forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            const editorRect = imageContainer.getBoundingClientRect();
+            const wrapperRect = transformWrapper.getBoundingClientRect();
+
+            // Get center point relative to container
+            const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+            const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+            if (handle.classList.contains('rotate')) {
+                isRotating = true;
+                initialAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) - rotation;
+            } else {
+                isResizing = true;
+                // Get initial distance from center to mouse position
+                initialDistance = Math.sqrt(
+                    Math.pow(e.clientX - centerX, 2) +
+                    Math.pow(e.clientY - centerY, 2)
+                );
+                initialScale = scale;
+            }
+
+            startX = e.clientX;
+            startY = e.clientY;
+            document.addEventListener('mousemove', onHandleMove);
+            document.addEventListener('mouseup', onHandleUp);
+        });
+
+        handle.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            e.preventDefault();
+            const editorRect = imageContainer.getBoundingClientRect();
+            const wrapperRect = transformWrapper.getBoundingClientRect();
+            const touch = e.touches[0];
+
+            // Get center point relative to container
+            const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+            const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+            if (handle.classList.contains('rotate')) {
+                isRotating = true;
+                initialAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI) - rotation;
+            } else {
+                isResizing = true;
+                // Get initial distance from center to touch position
+                initialDistance = Math.sqrt(
+                    Math.pow(touch.clientX - centerX, 2) +
+                    Math.pow(touch.clientY - centerY, 2)
+                );
+                initialScale = scale;
+            }
+
+            startX = touch.clientX;
+            startY = touch.clientY;
+            document.addEventListener('touchmove', onTouchHandleMove, { passive: false });
+            document.addEventListener('touchend', onHandleUp);
+        });
+    });
+}
+
+// Handle movement functions
+function onHandleMove(e) {
+    if (isResizing) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+
+        // Get center point relative to container
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        // Calculate current distance from center to mouse
+        const currentDistance = Math.sqrt(
+            Math.pow(e.clientX - centerX, 2) +
+            Math.pow(e.clientY - centerY, 2)
+        );
+
+        // Calculate scale based on distance ratio
+        scale = initialScale * (currentDistance / initialDistance);
+        scale = Math.max(0.5, Math.min(scale, 3)); // Limit scale range
+        // zoomRange.value = scale;
+        updateTransform();
+    }
+
+    if (isRotating) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+
+        // Get center point relative to container
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        // Calculate rotation angle
+        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        rotation = angle - initialAngle;
+        updateTransform();
+    }
+}
+
+function onTouchHandleMove(e) {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+
+    if (isResizing) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+
+        // Get center point relative to container
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        // Calculate current distance from center to touch
+        const currentDistance = Math.sqrt(
+            Math.pow(touch.clientX - centerX, 2) +
+            Math.pow(touch.clientY - centerY, 2)
+        );
+
+        // Calculate scale based on distance ratio
+        scale = initialScale * (currentDistance / initialDistance);
+        scale = Math.max(0.5, Math.min(scale, 3)); // Limit scale range
+        // zoomRange.value = scale;
+        updateTransform();
+    }
+
+    if (isRotating) {
+        const editorRect = imageContainer.getBoundingClientRect();
+        const wrapperRect = transformWrapper.getBoundingClientRect();
+
+        // Get center point relative to container
+        const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+        const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+        // Calculate rotation angle
+        const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+        rotation = angle - initialAngle;
+        updateTransform();
+    }
+    e.preventDefault();
+}
+
+function onHandleUp() {
+    isResizing = false;
+    isRotating = false;
+    document.removeEventListener('mousemove', onHandleMove);
+    document.removeEventListener('touchmove', onTouchHandleMove);
+    document.removeEventListener('mouseup', onHandleUp);
+    document.removeEventListener('touchend', onHandleUp);
+}
+
+
+// File input handling
 fileInput.addEventListener('change', function (e) {
     const file = e.target.files[0];
     if (file) {
@@ -52,17 +510,22 @@ fileInput.addEventListener('change', function (e) {
         reader.onload = function (e) {
             previewImage.src = e.target.result;
             previewImage.style.display = 'block';
-            previewImage.style.transform = 'translate(0px, 0px) scale(1)';
         };
         reader.readAsDataURL(file);
-        zoomRange.value = 1;
-        shareBtn.style.display = 'block';
-        // cartBtn.style.display = 'block';
+        // zoomRange.value = 1;
+        updateHandles();
     }
-
 });
 
+// Zoom control
+// zoomRange.addEventListener('input', function () {
+//     scale = parseFloat(this.value);
+//     updateTransform();
+// });
+
+
 allShapeBtn.forEach(btn => {
+
     btn.addEventListener('click', function () {
         allShapeBtn.forEach(button => button.classList.remove('active'));
         this.classList.add('active');
@@ -71,9 +534,11 @@ allShapeBtn.forEach(btn => {
             'circle-shape', 'square-shape', 'custom2-shape',
             'custom3-shape', 'custom4-shape'
         );
-        imageContainer.classList.remove('circle-shape', 'square-shape', 'custom2-shape', 'custom3-shape', 'custom4-shape');
+        imgPre.classList.remove('circle-shape', 'square-shape', 'custom2-shape', 'custom3-shape', 'custom4-shape');
         if (shape) {
             imageContainer.classList.add(`${shape}-shape`)
+            imgPre.classList.add(`${shape}-shape`)
+            console.log(imgPre);
             createClockNumbers();
         }
         if (activeClock.selectedClock && activeClock.type) {
@@ -183,21 +648,21 @@ function updateImagePosition() {
     previewImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
 }
 
-zoomRange.addEventListener('input', function () {
-    scale = parseFloat(zoomRange.value);
-    updateImagePosition();
-});
+// zoomRange.addEventListener('input', function () {
+//     scale = parseFloat(zoomRange.value);
+//     updateImagePosition();
+// });
 
 document.querySelectorAll('.size-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         allSizeBtn.forEach(button => button.classList.remove('active'));
         this.classList.add('active');
-        const isMobile = window.innerWidth <= 768; 
+        const isMobile = window.innerWidth <= 768;
 
         if (isMobile) {
             return;
         }
-        
+
         // const ratio = this.dataset.ratio.split('x');
         // const aspectWidth = ratio[0];
         // const aspectHeight = ratio[1];
@@ -580,7 +1045,7 @@ function createClockNumbers(type) {
     }
 
     if (containerWidth == 260 && containerHeight == 260) {
-        centerX = containerWidth / 2.18;
+        centerX = containerWidth / 2.15;
         centerY = containerHeight / 2.3;
         radius += 9;
 
@@ -820,3 +1285,5 @@ window.updatePreview = updatePreview;
 window.getImageDetails = getImageDetails;
 window.shareImage = shareImage;
 window.addEventListener('resize', () => createClockNumbers("default"));
+
+initEventListeners();

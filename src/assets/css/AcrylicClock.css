@@ -18,6 +18,7 @@
     background-image: url(https://omgs.in/wp-content/uploads/2021/02/wall-c.jpg);
 }
 
+
 .size-options {
     display: flex;
     justify-content: center;
@@ -52,13 +53,25 @@
     justify-content: center;
     align-items: center;
     border-radius: 5%;
-    overflow: hidden;
+    /* overflow: hidden; */
     backdrop-filter: blur(5px);
     background: transparent;
     z-index: 0;
     background: #000;
     margin-top: 1rem;
 }
+
+.img-pre {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 
 .preview-image {
     width: 100%;
@@ -235,6 +248,7 @@
     padding: 5px;
     cursor: move;
     z-index: 1;
+    touch-action: none;
 }
 
 .resize-handle {
@@ -280,8 +294,6 @@
 .clock-number {
     position: absolute;
     font-size: 1.7rem;
-    width: 100%;
-    height: 100%;
     line-height: 30px;
     font-weight: bold;
     color: white;
@@ -416,6 +428,90 @@
     transform: scale(1);
 }
 
+
+
+
+
+
+.transform-wrapper {
+    position: absolute;
+    /* top: 0;
+    left: 0; */
+    transform-origin: center;
+}
+
+/* .preview-image{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+} */
+
+
+
+.handles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: none;
+}
+
+.handle {
+    width: 14px;
+    height: 14px;
+    background: white;
+    border: 1.5px solid black;
+    position: absolute;
+    pointer-events: auto;
+    /* display: none; */
+    z-index: 10;
+    transform: translate(-50%, -50%);
+}
+
+.active .handle,
+.active .handle-lines {
+    display: block;
+}
+
+.handle.tl,
+.handle.br {
+    cursor: nwse-resize;
+}
+
+.handle.tr,
+.handle.bl {
+    cursor: nesw-resize;
+}
+
+.handle.rotate {
+    top: -20px;
+    left: 50%;
+    cursor: grab;
+    border-radius: 50%;
+    background: #00caff;
+    width: auto;
+    height: auto;
+    padding: 2px;
+}
+
+.transform-wrapper:active {
+    cursor: grabbing;
+}
+
+.handle-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    /* display: none; */
+}
+
 /* ============================================ */
 /* ============================================ */
 /* ============================================ */
@@ -454,7 +550,7 @@
 
     .size-btn {
         padding: 5px 5px;
-        font-size: 17px;
+        font-size: 15px;
         width: 50px;
     }
 

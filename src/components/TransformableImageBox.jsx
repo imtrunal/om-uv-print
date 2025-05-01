@@ -1,6 +1,7 @@
 // components/TransformableImageBox.jsx
 import React from "react";
 import "../assets/css/AcrylicPhoto.css";
+import { FaArrowsRotate } from "react-icons/fa6";
 
 const TransformableImageBox = ({ prefix = "", src, alt = "", imageClass = "", imageId = "" ,shape=""}) => {
     return (
@@ -22,7 +23,7 @@ const TransformableImageBox = ({ prefix = "", src, alt = "", imageClass = "", im
                 <div className={`${prefix}handle tr`}></div>
                 <div className={`${prefix}handle bl`}></div>
                 <div className={`${prefix}handle br`}></div>
-                <div className={`${prefix}handle rotate`}></div>
+                <div className={`${prefix}handle rotate`}><FaArrowsRotate /></div>
             </div>
         </>
     );

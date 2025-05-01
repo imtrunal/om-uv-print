@@ -63,6 +63,7 @@
     touch-action: pan-y;
     user-select: none;
     align-items: center;
+    overflow: hidden;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
@@ -362,6 +363,9 @@
     cursor: grab;
     border-radius: 50%;
     background: #00caff;
+    width: auto;
+    height: auto;
+    padding: 2px;
 }
 
 .afm-transform-wrapper:active {
@@ -474,9 +478,6 @@
 
 /* Very Small Devices (phones, 480px and down) */
 @media (max-width: 480px) {
-    .afm-container {
-        /* grid-template-columns: 1fr; */
-    }
 
     .afm-upload-box {
         width: 200px;

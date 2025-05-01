@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { ImSpinner2 } from "react-icons/im";
 import domtoimage from 'dom-to-image-more';
+import TransformableImageBox from "./TransformableImageBox";
 
 const ClockCustomizer = () => {
     const [loading, setLoading] = useState(false);
@@ -307,12 +308,7 @@ const ClockCustomizer = () => {
                     Height 9 inch (22.86 cm)
                 </div>
                 <div className="image-container" id="imageContainer">
-                    <img
-                        className="preview-image"
-                        id="previewImage"
-                        src="https://images.unsplash.com/photo-1574169208507-84376144848b?q=80&w=1779&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                        alt="Clock Background"
-                    />
+                    <TransformableImageBox src="/assets/images/clockBG.jpeg" imageClass="preview-image" imageId="previewImage" />
                     <div className="analog-clock">
                         <div className="clock-face">
                             <div className="clock-center"></div>
@@ -344,7 +340,7 @@ const ClockCustomizer = () => {
                 <button className="btn upload" onClick={() => document.getElementById("fileInput").click()}>
                     <FaUpload />
                 </button>
-                <input type="range" id="zoomRange" min="0.5" max="3" step="0.1" defaultValue="1" style={{ width: "200px" }} />
+                {/* <input type="range" id="zoomRange" min="0.5" max="3" step="0.1" defaultValue="1" style={{ width: "200px" }} /> */}
                 <button className="btn share" id="shareBtn" onClick={handleShare} disabled={loading}>
                     {loading ? <ImSpinner2 className="spin" /> : <FaShareAlt />}
                 </button>
