@@ -4,7 +4,7 @@ import "../../assets/css/FridgeMagnet.css";
 
 const dictionary = {
   item1: {
-    image: "assets/07 FRAM.jpg",
+    image: "/assets/images/07 FRAM.jpg",
     description: "Round Corners Acrylic Fridge Magnet",
     type: "round-corners"
   },
