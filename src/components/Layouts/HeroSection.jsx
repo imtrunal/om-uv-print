@@ -29,7 +29,7 @@ function HeroSection() {
         <div className="w-full lg:w-[65%] relative">
           <div className="rounded-md relative">
             <img
-              src="/public/assets/images/WEB BENAR.jpg"
+              src="/assets/images/WEB BENAR.jpg"
               alt="Designer Merch and Gifts"
               className="rounded-xl w-full h-auto object-cover"
             />
