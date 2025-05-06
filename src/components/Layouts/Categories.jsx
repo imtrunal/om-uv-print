@@ -56,11 +56,11 @@ function Categories() {
               }}
               key={index}
             >
-              <div className="w-full h-[250px] sm:h-[300px] md:h-[319px]">
+              <div className="w-full">
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-full object-cover rounded-lg border-b shadow-lg"
+                  className="w-full h-full rounded-lg border-b shadow-lg"
                 />
               </div>
               <div className="rounded-b-lg bg-white p-4 sm:p-5">

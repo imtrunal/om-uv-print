@@ -1391,8 +1391,6 @@ const CustomizePage = () => {
 
     const subject = JSON.parse(formData.get("subject"));
     const details = JSON.parse(formData.get("details"));
-    console.log(subject, details);
-
     const {
       name,
       type,

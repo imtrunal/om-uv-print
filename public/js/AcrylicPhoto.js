@@ -142,6 +142,7 @@ function initEventListeners() {
     previewImage.addEventListener('click', (e) => {
         e.stopPropagation();
         handles.style.display = "block";
+        updateHandles();
     });
 
     document.addEventListener('click', (e) => {

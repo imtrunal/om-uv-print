@@ -17,13 +17,13 @@ export const products = {
             title: "Acrylic Photo",
             description: "Discover premium acrylic photo products for decor.",
             path: "/acrylic",
-            image: "/assets/02 FRAM.jpg",
+            image: "/assets/images/02 FRAM.jpg",
         },
         {
             title: "Clear Acrylic Photo",
             description: "Get high-quality transparent acrylic photo frames.",
             path: "/clear-acrylic",
-            image: "assets/03 FRAM.jpg",
+            image: "/assets/images/03 FRAM.jpg",
         },
     ],
     "Fridge Magnets": [
@@ -37,7 +37,7 @@ export const products = {
             title: "Round Corners Fridge Magnets",
             description: "Custom round-corner fridge magnets with vibrant prints.",
             path: "/fridge-magnets/round-corners",
-            image: "assets/07 FRAM.jpg",
+            image: "/assets/images/07 FRAM.jpg",
         },
         {
             title: "Leaf Shape Fridge Magnets",
@@ -57,19 +57,19 @@ export const products = {
             title: "5 Pics Collage Premium Acrylic Wall Photo",
             description: "Premium acrylic wall collage with 5 photo slots.",
             path: "/collage/5-pics",
-            image: "https://s.omgs.in/wp-content/uploads/2021/10/5-pics-acrylic-print-min-500x500.jpg",
+            image: "/assets/images/COLLAGE 8 FRAM.jpg",
         },
         {
             title: "8 Collage Portrait Acrylic Wall Photo",
             description: "Stunning 8-photo portrait acrylic collage for walls.",
             path: "/collage/8-pics",
-            image: "https://s.omgs.in/wp-content/uploads/2021/10/8-Collage-Portrait-Acrylic-Wall-Photo-min-500x500.jpg",
+            image: "/assets/images/COLLAGE 5 FRAM.jpg",
         },
         {
             title: "2 Photo Collage Acrylic Wall Photo",
             description: "A sleek 2-photo acrylic collage for modern decor.",
             path: "/collage/2-pics",
-            image: "https://s.omgs.in/wp-content/uploads/2021/10/2-Photo-Collage-Acrylic-min-500x500.jpg",
+            image: "/assets/images/COLLAGE 01 FRAM.jpg",
         },
     ],
     "Wall Clocks": [
@@ -77,7 +77,7 @@ export const products = {
             title: "Acrylic Wall Clock",
             description: "Stylish acrylic wall clocks for your home decor.",
             path: "/acrylic-wall-clock",
-            image: "assets/04 FRAM.jpg",
+            image: "/assets/images/04 FRAM.jpg",
         },
     ],
 };
@@ -95,25 +95,25 @@ export const cards = [
         title: "Acrylic Photo",
         description: "Discover premium acrylic photo products for decor.",
         path: "/acrylic",
-        image: "/assets/02 FRAM.jpg",
+        image: "/assets/images/02 FRAM.jpg",
     },
     {
         title: "Acrylic Photo",
         description: "Discover premium acrylic photo products for decor.",
         path: "/acrylic",
-        image: "/assets/01 FRAM.jpg",
+        image: "/assets/images/01 FRAM.jpg",
     },
     {
         title: "Clear Acrylic Photo",
         description: "Get high-quality transparent acrylic photo frames.",
         path: "/clear-acrylic",
-        image: "assets/03 FRAM.jpg",
+        image: "/assets/images/03 FRAM.jpg",
     },
     {
         title: "Clear Acrylic Photo",
         description: "Get high-quality transparent acrylic photo frames.",
         path: "/clear-acrylic",
-        image: "assets/12 FRAM.jpg",
+        image: "/assets/images/12 FRAM.jpg",
     },
     {
         title: "Acrylic Fridge Magnets",
@@ -125,17 +125,17 @@ export const cards = [
         title: "Acrylic Wall Clock",
         description: "Stylish acrylic wall clocks for your home decor.",
         path: "/acrylic-wall-clock",
-        image: "assets/04 FRAM.jpg",
+        image: "/assets/images/04 FRAM.jpg",
     },
     {
         title: "Acrylic Wall Clock",
         description: "Stylish acrylic wall clocks for your home decor.",
         path: "/acrylic-wall-clock",
-        image: "assets/05 FRAM.jpg",
+        image: "/assets/images/05 FRAM.jpg",
     },
     {
         title: "Round Corners Fridge Magnets",
-        image: "assets/07 FRAM.jpg",
+        image: "/assets/images/07 FRAM.jpg",
         description: "Custom round-corner fridge magnets with vibrant prints.",
         path: "/fridge-magnets/round-corners"
     },
@@ -159,19 +159,19 @@ export const cards = [
     },
     {
         title: "5 Pics Collage Premium Wall Photo",
-        image: "https://s.omgs.in/wp-content/uploads/2021/10/5-pics-acrylic-print-min-500x500.jpg",
+        image: "/assets/images/COLLAGE 5 FRAM.jpg",
         description: "Premium acrylic wall collage with 5 photo slots.",
         path: "/collage/5-pics"
     },
     {
         title: "8 Collage Portrait Acrylic Wall Photo",
-        image: "https://s.omgs.in/wp-content/uploads/2021/10/8-Collage-Portrait-Acrylic-Wall-Photo-min-500x500.jpg",
+        image: "/assets/images/COLLAGE 8 FRAM.jpg",
         description: "Stunning 8-photo portrait acrylic collage for walls.",
         path: "/collage/8-pics"
     },
     {
         title: "2 Photo Collage Acrylic Wall Photo",
-        image: "https://s.omgs.in/wp-content/uploads/2021/10/2-Photo-Collage-Acrylic-min-500x500.jpg",
+        image: "/assets/images/COLLAGE 01 FRAM.jpg",
         description: "A sleek 2-photo acrylic collage for modern decor.",
         path: "/collage/2-pics"
     }
@@ -182,22 +182,22 @@ export const ideas = [
     {
         name: "Benefits Of Using Cotton Bags And Pouch Over Plastic Pouch/Bags",
         des: "Cotton tote bags are more than just versatile; there are several benefits of cloth bags. Let us have a look at what is a tote bag and what is a tote bag used for.",
-        image: "/assets/washable-tote-bags.jpg",
+        image: "/assets/images/washable-tote-bags.jpg",
     },
     {
         name: "10+ Romantic Wedding Couple Poses For 2025",
         des: "You will find the best wedding couple poses for 2025 here whether you need romantic wedding couple poses, fun couple poses or elegant husband-wife photo poses.",
-        image: "/assets/wedding-pose-ideas-for-2025.webp",
+        image: "/assets/images/wedding-pose-ideas-for-2025.webp",
     },
     {
         name: "How To Create A Photo Journal – Using Photo Prints",
         des: "A Step-by-Step Guide to Creating an Inspiring Photo Journal",
-        image: "/assets/steps-to-make-your-photo-journal.jpg",
+        image: "/assets/images/steps-to-make-your-photo-journal.jpg",
     },
     {
         name: "10 Money Management Tips To Help Improve Your Finances",
         des: "Managing your money doesn’t have to feel overwhelming. These money management tips will help you improve your financial well-bring in a seamless and strategic way",
-        image: "/assets/name-on-finance-journal.jpg",
+        image: "/assets/images/name-on-finance-journal.jpg",
     },
 ];
 
@@ -242,45 +242,45 @@ export const shop = [
     {
         name: "Karwa Chauth",
         des: "Celebrate New Beginnings with a Personalized Baby Arrival Gift.",
-        image: "/assets/12 X 18 - BABY BORN.jpg",
+        image: "/assets/images/12 X 18 - BABY BORN.jpg",
     },
     {
         name: "Farewell",
         des: "Capture Every Moment of Love with a Personalized Story Timeline",
-        image: "/assets/12 X 18 - OUR LOVE STORY.jpg",
+        image: "/assets/images/12 X 18 - OUR LOVE STORY.jpg",
     },
     {
         name: "Fathers Day",
         des: "Honor Dad with a Personalized Fathers Day Gift.",
-        image: "/assets/fathers-day.webp",
+        image: "/assets/images/fathers-day.webp",
     },
     {
         name: "Friendship Day",
         des: "Celebrate Bonds with a Personalized Friendship Gift.",
-        image: "/assets/friendships-day.jpg",
+        image: "/assets/images/friendships-day.jpg",
     },
 ];
 
 //Trend
 export const trendPhoto = [
     {
-        image: "/assets/image_0 (1).webp",
-        tag: "/assets/post.svg",
+        image: "/assets/images/image_0 (1).webp",
+        tag: "/assets/images/post.svg",
     },
     {
-        image: "/assets/5.5-customized-softcover-photobook.webp",
-        tag: "/assets/camera.svg",
+        image: "/assets/images/5.5-customized-softcover-photobook.webp",
+        tag: "/assets/images/camera.svg",
     },
     {
-        image: "/assets/image_0 (4).webp",
-        tag: "/assets/post.svg",
+        image: "/assets/images/image_0 (4).webp",
+        tag: "/assets/images/post.svg",
     },
     {
-        image: "/assets/image_0 (5).webp",
-        tag: "/assets/camera.svg",
+        image: "/assets/images/image_0 (5).webp",
+        tag: "/assets/images/camera.svg",
     },
     {
-        image: "/assets/image_0.webp",
-        tag: "/assets/post.svg",
+        image: "/assets/images/image_0.webp",
+        tag: "/assets/images/post.svg",
     },
 ];

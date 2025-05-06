@@ -55,9 +55,8 @@
     border-radius: 5%;
     /* overflow: hidden; */
     backdrop-filter: blur(5px);
-    background: transparent;
+    background: white;
     z-index: 0;
-    background: #000;
     margin-top: 1rem;
 }
 

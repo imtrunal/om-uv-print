@@ -13,6 +13,7 @@ import useCartStore from "../../manage/CartStore";
 import { ImSpinner2 } from "react-icons/im";
 import html2canvas from "html2canvas";
 import domtoimage from 'dom-to-image-more';
+import TransformableImageBox from "../TransformableImageBox";
 
 const collageLayouts = {
 
@@ -172,6 +173,24 @@ const CollageAcrylicPhoto = () => {
 
 
     useEffect(() => {
+        // Variables to track state for each image
+        let activeImage = null;
+        let scale = 1;
+        let rotation = 0;
+        let offsetX = 0, offsetY = 0;
+        let isDragging = false;
+        let isResizing = false;
+        let isRotating = false;
+        let startX, startY;
+        let initialAngle = 0;
+        let initialScale = 1;
+        let initialDistance = 0;
+
+        // Get all image elements and handles
+        const imageElements = document.querySelectorAll('.acol-previewImage');
+        const transformWrappers = document.querySelectorAll('.acol-transform-wrapper');
+        const handles = document.querySelectorAll('.acol-handles');
+        const imageContainer = document.querySelector('.acol-collage-frame');
         const textInput = document.getElementById('acol-textInput');
         const addTextBtn = document.getElementById('acol-addTextBtn');
         const deleteTextBtn = document.getElementById('acol-deleteTextBtn');
@@ -179,35 +198,256 @@ const CollageAcrylicPhoto = () => {
         const allSizeBtn = document.querySelectorAll('.acol-size-btn');
         const allThicknessBtn = document.querySelectorAll('.acol-thickness-btn');
         const cartBtn = document.getElementById('cartBtn');
-        const collagePhoto = document.querySelector('.acol-collage-frame');
         const iminus = document.getElementById('acol-iminus');
         const iplus = document.getElementById('acol-iplus');
         const fontFamilyOptions = document.getElementById('acol-fontStyleSelect');
         const shareBtn = document.getElementById('acol-shareBtn');
         const textModal = document.querySelector('.acol-textModal');
         const zoomRange = document.getElementById('acol-zoomRange');
-        const BASE_URL = window.BASE_URL;
         const allTextData = [];
-    
         let uploadedImagesCount = 0;
         let totalImages = document.querySelectorAll(".acol-small-img, .acol-big-img").length;
         let activeTextBox = null;
-        let activeImage = null;
-        let scale = 1;
-        let rotation = 0;
-        let currentX = 0, currentY = 0;
-    
-        // NEW: Variables for image dragging
-        let isDraggingImage = false;
-        let initialX, initialY;
-        let xOffset = 0, yOffset = 0;
-        let lastTouchTime = 0;
-    
+
+        // Function to update transform for active image
+        function updateTransform() {
+            if (activeImage) {
+                const transformWrapper = activeImage.closest('.acol-transform-wrapper');
+                transformWrapper.style.transform = `
+                    translate(${offsetX}px, ${offsetY}px)
+                    scale(${scale})
+                    rotate(${rotation}deg)
+                `;
+                updateHandles(activeImage);
+            }
+        }
+
+        // Function to update handles position for active image
+        // function updateHandles(imageElement) {
+        //     if (!imageElement || !activeImage) return;
+
+        //     const wrapperRect = imageElement.closest('.acol-transform-wrapper').getBoundingClientRect();
+        //     const editorRect = imageContainer.getBoundingClientRect();
+        //     const originalWidth = imageElement.offsetWidth;
+        //     const originalHeight = imageElement.offsetHeight;
+
+        //     // Calculate center point
+        //     const centerX = wrapperRect.left + wrapperRect.width / 2 - editorRect.left;
+        //     const centerY = wrapperRect.top + wrapperRect.height / 2 - editorRect.top;
+
+        //     // Calculate half dimensions (scaled)
+        //     const halfWidth = (originalWidth * scale) / 2;
+        //     const halfHeight = (originalHeight * scale) / 2;
+
+        //     // Apply rotation to corner points
+        //     const angleRad = rotation * Math.PI / 180;
+        //     const cos = Math.cos(angleRad);
+        //     const sin = Math.sin(angleRad);
+
+        //     // Calculate exact edge positions
+        //     const tlX = centerX + (-halfWidth * cos - (-halfHeight) * sin);
+        //     const tlY = centerY + (-halfWidth * sin + (-halfHeight) * cos);
+
+        //     const trX = centerX + (halfWidth * cos - (-halfHeight) * sin);
+        //     const trY = centerY + (halfWidth * sin + (-halfHeight) * cos);
+
+        //     const brX = centerX + (halfWidth * cos - halfHeight * sin);
+        //     const brY = centerY + (halfWidth * sin + halfHeight * cos);
+
+        //     const blX = centerX + (-halfWidth * cos - halfHeight * sin);
+        //     const blY = centerY + (-halfWidth * sin + halfHeight * cos);
+
+        //     // Get handles container for this image
+        //     const imageHandles = imageElement.closest('.acol-img-pre').nextElementSibling;
+        //     if (!imageHandles) return;
+
+        //     // Position handles
+        //     imageHandles.querySelector(`.acol-handle.tl`).style.left = `${tlX}px`;
+        //     imageHandles.querySelector(`.acol-handle.tl`).style.top = `${tlY}px`;
+        //     imageHandles.querySelector(`.acol-handle.tr`).style.left = `${trX}px`;
+        //     imageHandles.querySelector(`.acol-handle.tr`).style.top = `${trY}px`;
+        //     imageHandles.querySelector(`.acol-handle.br`).style.left = `${brX}px`;
+        //     imageHandles.querySelector(`.acol-handle.br`).style.top = `${brY}px`;
+        //     imageHandles.querySelector(`.acol-handle.bl`).style.left = `${blX}px`;
+        //     imageHandles.querySelector(`.acol-handle.bl`).style.top = `${blY}px`;
+
+        //     // Update bounding lines
+        //     imageHandles.querySelector(`#acol-line-tl-tr`).setAttribute('x1', tlX);
+        //     imageHandles.querySelector(`#acol-line-tl-tr`).setAttribute('y1', tlY);
+        //     imageHandles.querySelector(`#acol-line-tl-tr`).setAttribute('x2', trX);
+        //     imageHandles.querySelector(`#acol-line-tl-tr`).setAttribute('y2', trY);
+
+        //     imageHandles.querySelector(`#acol-line-tr-br`).setAttribute('x1', trX);
+        //     imageHandles.querySelector(`#acol-line-tr-br`).setAttribute('y1', trY);
+        //     imageHandles.querySelector(`#acol-line-tr-br`).setAttribute('x2', brX);
+        //     imageHandles.querySelector(`#acol-line-tr-br`).setAttribute('y2', brY);
+
+        //     imageHandles.querySelector(`#acol-line-br-bl`).setAttribute('x1', brX);
+        //     imageHandles.querySelector(`#acol-line-br-bl`).setAttribute('y1', brY);
+        //     imageHandles.querySelector(`#acol-line-br-bl`).setAttribute('x2', blX);
+        //     imageHandles.querySelector(`#acol-line-br-bl`).setAttribute('y2', blY);
+
+        //     imageHandles.querySelector(`#acol-line-bl-tl`).setAttribute('x1', blX);
+        //     imageHandles.querySelector(`#acol-line-bl-tl`).setAttribute('y1', blY);
+        //     imageHandles.querySelector(`#acol-line-bl-tl`).setAttribute('x2', tlX);
+        //     imageHandles.querySelector(`#acol-line-bl-tl`).setAttribute('y2', tlY);
+
+        //     // Position rotate handle
+        //     const rotateHandleDistance = 20 * scale;
+        //     const rotateX = centerX + (0 * cos - (-halfHeight - rotateHandleDistance) * sin);
+        //     const rotateY = centerY + (0 * sin + (-halfHeight - rotateHandleDistance) * cos);
+
+        //     imageHandles.querySelector(`.acol-handle.rotate`).style.left = `${rotateX}px`;
+        //     imageHandles.querySelector(`.acol-handle.rotate`).style.top = `${rotateY}px`;
+        // }
+
+        function updateHandles(imageElement) {
+            if (!imageElement || !activeImage) return;
+
+            const transformWrapper = imageElement.closest('.acol-transform-wrapper');
+            const container = transformWrapper.parentElement;
+            const containerRect = container.getBoundingClientRect();
+            const wrapperRect = transformWrapper.getBoundingClientRect();
+
+            // Calculate position relative to container
+            const relativeLeft = wrapperRect.left - containerRect.left;
+            const relativeTop = wrapperRect.top - containerRect.top;
+
+            // Get the handles container for this image
+            const imageHandles = container.nextElementSibling;
+            if (!imageHandles) return;
+
+            // Set handles container to match the image container size
+            imageHandles.style.width = `${containerRect.width}px`;
+            imageHandles.style.height = `${containerRect.height}px`;
+            imageHandles.style.position = 'absolute';
+            imageHandles.style.left = '50%';
+            imageHandles.style.top = '50%';
+
+            // Calculate center point
+            const centerX = relativeLeft + wrapperRect.width / 2;
+            const centerY = relativeTop + wrapperRect.height / 2;
+
+            // Calculate half dimensions
+            const halfWidth = wrapperRect.width / 2;
+            const halfHeight = wrapperRect.height / 2;
+
+            // Apply rotation to corner points
+            const angleRad = rotation * Math.PI / 180;
+            const cos = Math.cos(angleRad);
+            const sin = Math.sin(angleRad);
+
+            // Calculate exact edge positions
+            const tlX = centerX + (-halfWidth * cos - (-halfHeight) * sin);
+            const tlY = centerY + (-halfWidth * sin + (-halfHeight) * cos);
+
+            const trX = centerX + (halfWidth * cos - (-halfHeight) * sin);
+            const trY = centerY + (halfWidth * sin + (-halfHeight) * cos);
+
+            const brX = centerX + (halfWidth * cos - halfHeight * sin);
+            const brY = centerY + (halfWidth * sin + halfHeight * cos);
+
+            const blX = centerX + (-halfWidth * cos - halfHeight * sin);
+            const blY = centerY + (-halfWidth * sin + halfHeight * cos);
+
+            // Position handles
+            imageHandles.querySelector(`.acol-handle.tl`).style.left = `${tlX}px`;
+            imageHandles.querySelector(`.acol-handle.tl`).style.top = `${tlY}px`;
+            imageHandles.querySelector(`.acol-handle.tr`).style.left = `${trX}px`;
+            imageHandles.querySelector(`.acol-handle.tr`).style.top = `${trY}px`;
+            imageHandles.querySelector(`.acol-handle.br`).style.left = `${brX}px`;
+            imageHandles.querySelector(`.acol-handle.br`).style.top = `${brY}px`;
+            imageHandles.querySelector(`.acol-handle.bl`).style.left = `${blX}px`;
+            imageHandles.querySelector(`.acol-handle.bl`).style.top = `${blY}px`;
+
+            // Update bounding lines - with visibility fixes
+            const svg = imageHandles.querySelector('svg');
+            if (svg) {
+                // Ensure SVG is properly positioned and visible
+                svg.style.position = 'absolute';
+                svg.style.top = '0';
+                svg.style.left = '0';
+                svg.style.color = '#000000'; // Ensure stroke color
+                svg.style.width = `${containerRect.width}px`;
+                svg.style.height = `${containerRect.height}px`;
+                svg.style.overflow = 'visible';
+                svg.style.pointerEvents = 'none';
+
+                // Set line attributes with stroke and visibility
+                const setLineAttributes = (line, x1, y1, x2, y2) => {
+                    if (line) {
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('stroke', '#000000'); // Ensure stroke color
+                        line.setAttribute('stroke-width', '1'); // Ensure stroke width
+                        line.setAttribute('stroke-linecap', 'round');
+                        line.style.display = 'block';
+                    }
+                };
+
+                setLineAttributes(svg.querySelector('#acol-line-tl-tr'), tlX, tlY, trX, trY);
+                setLineAttributes(svg.querySelector('#acol-line-tr-br'), trX, trY, brX, brY);
+                setLineAttributes(svg.querySelector('#acol-line-br-bl'), brX, brY, blX, blY);
+                setLineAttributes(svg.querySelector('#acol-line-bl-tl'), blX, blY, tlX, tlY);
+            }
+
+            // Position rotate handle
+            const rotateHandleDistance = 20 * scale;
+            const rotateX = centerX + (0 * cos - (-halfHeight - rotateHandleDistance) * sin);
+            const rotateY = centerY + (0 * sin + (-halfHeight - rotateHandleDistance) * cos);
+
+            imageHandles.querySelector(`.acol-handle.rotate`).style.left = `${rotateX}px`;
+            imageHandles.querySelector(`.acol-handle.rotate`).style.top = `${rotateY}px`;
+        }
+
+        // Function to set active image
+
+        function setActiveImage(imageElement) {
+            // Hide all handles first
+            handles.forEach(handle => {
+                handle.style.display = 'none';
+            });
+
+            // Set new active image
+            activeImage = imageElement;
+
+            // Get the handles for this image
+            const imageHandles = imageElement.closest('.acol-img-pre').nextElementSibling;
+            if (imageHandles) {
+                imageHandles.style.display = 'block';
+            }
+
+            // Initialize transform values
+            const transformWrapper = imageElement.closest('.acol-transform-wrapper');
+            const transform = window.getComputedStyle(transformWrapper).transform;
+
+            if (transform !== 'none') {
+                const matrix = new DOMMatrix(transform);
+                // Extract translation
+                offsetX = matrix.m41;
+                offsetY = matrix.m42;
+                // Extract scale (assuming uniform scaling)
+                scale = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
+                // Extract rotation
+                rotation = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
+            } else {
+                offsetX = 0;
+                offsetY = 0;
+                scale = 1;
+                rotation = 0;
+            }
+
+            // Update zoom range to match current scale
+            zoomRange.value = scale;
+        }
+
         // Event handlers
         const handleSlotClick = (slot, input) => {
             if (!input.disabled) input.click();
         };
-    
+
         const handleFileInputChange = function (input, previewImage, placeholder) {
             const file = input.files[0];
             if (file) {
@@ -223,31 +463,28 @@ const CollageAcrylicPhoto = () => {
                 reader.readAsDataURL(file);
             }
         };
-    
+
         const handlePreviewImageClick = (previewImage) => {
             setActiveImage(previewImage);
         };
-    
+
         const handleAddTextClick = function () {
             textModal.style.display = 'flex';
             fontFamilyOptions.style.display = 'block';
-    
+
             const textColor = document.getElementById('acol-textColor').value;
             const newTextBox = document.createElement('div');
             newTextBox.className = 'acol-text-box';
             newTextBox.innerText = 'New Custom Text';
             newTextBox.style.color = textColor;
-            // newTextBox.style.wordBreak = 'break-word';
-            // newTextBox.style.whiteSpace = 'pre-wrap';
-            // newTextBox.style.overflow = 'hidden';
             newTextBox.style.maxWidth = '100%';
-    
+
             collagePhoto.appendChild(newTextBox);
             attachHandles(newTextBox);
             makeDraggable(newTextBox, { resize: 'acol-resize-handle', rotate: 'acol-rotate-handle' });
             activeTextBox = newTextBox;
         };
-    
+
         const handleDeleteTextClick = function () {
             if (activeTextBox) {
                 activeTextBox.remove();
@@ -258,21 +495,21 @@ const CollageAcrylicPhoto = () => {
             fontFamilyOptions.style.display = 'none';
             document.getElementById('acol-textColor').value = "#000000";
         };
-    
+
         const handleSizeBtnClick = function (btn) {
             return function () {
                 allSizeBtn.forEach(button => button.classList.remove('acol-active'));
                 btn.classList.add('acol-active');
             };
         };
-    
+
         const handleThicknessBtnClick = function (btn) {
             return function () {
                 allThicknessBtn.forEach(button => button.classList.remove('acol-active'));
                 btn.classList.add('acol-active');
             };
         };
-    
+
         const handleIminusClick = function () {
             if (activeTextBox) {
                 const currentFontSize = parseInt(window.getComputedStyle(activeTextBox).fontSize);
@@ -280,7 +517,7 @@ const CollageAcrylicPhoto = () => {
                 attachHandles(activeTextBox);
             }
         };
-    
+
         const handleIplusClick = function () {
             if (activeTextBox) {
                 const currentFontSize = parseInt(window.getComputedStyle(activeTextBox).fontSize);
@@ -288,331 +525,252 @@ const CollageAcrylicPhoto = () => {
                 attachHandles(activeTextBox);
             }
         };
-    
+
         const handleResetClick = () => {
             location.reload();
         };
-    
+
         const handleZoomRangeInput = function () {
             scale = parseFloat(zoomRange.value);
-            updateImagePosition();
+            updateTransform();
         };
-    
-        // NEW: Image drag functions
-        const enableImageDrag = (e) => {
-            // Only enable image drag if not clicking on a text element
-            if (!e.target.closest('.acol-text-box')) {
-                isDraggingImage = true;
-                if (e.type === 'dblclick') {
-                    initialX = e.clientX - xOffset;
-                    initialY = e.clientY - yOffset;
+
+        // Mouse/Touch event handlers for images
+        function handleImageClick(e) {
+            e.stopPropagation();
+            setActiveImage(e.currentTarget);
+        }
+
+        function handleDocumentClick(e) {
+            console.log("clickdef");
+
+            if (activeImage && !activeImage.contains(e.target)) {
+                const imageHandles = activeImage.closest('.acol-img-pre').nextElementSibling;
+                if (imageHandles) {
+                    imageHandles.style.display = 'none';
                 }
-                document.body.style.cursor = 'grabbing';
+                activeImage = null;
             }
-        };
-    
-        const disableImageDrag = () => {
-            isDraggingImage = false;
-            document.body.style.cursor = '';
-        };
-    
-        const handleTouchStart = (e) => {
+        }
+
+        function handleMouseDown(e) {
+            if (e.button !== 0 || !activeImage || e.target.classList.contains('acol-handle')) return;
+
+            isDragging = true;
+            startX = e.clientX - offsetX;
+            startY = e.clientY - offsetY;
+
+            const transformWrapper = activeImage.closest('.acol-transform-wrapper');
+            transformWrapper.style.cursor = 'grabbing';
+            e.preventDefault();
+        }
+
+        function handleTouchStart(e) {
+            if (!activeImage || e.target.classList.contains('acol-handle')) return;
+
             if (e.touches.length === 1) {
-                const now = Date.now();
-                if (now - lastTouchTime < 300) { // Double tap detected
-                    // Only enable image drag if not touching a text element
-                    if (!e.target.closest('.acol-text-box')) {
-                        e.preventDefault();
-                        isDraggingImage = true;
-                        const touch = e.touches[0];
-                        initialX = touch.clientX - xOffset;
-                        initialY = touch.clientY - yOffset;
-                        document.body.style.cursor = 'grabbing';
-                    }
-                }
-                lastTouchTime = now;
-            }
-        };
-    
-        const handleDrag = (e) => {
-            if (isDraggingImage && activeImage) {
-                e.preventDefault();
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                
-                currentX = clientX - initialX;
-                currentY = clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-                updateImagePosition();
-            }
-        };
-    
-        const handleTouchMove = (e) => {
-            if (isDraggingImage && e.touches.length === 1 && activeImage) {
-                e.preventDefault();
+                isDragging = true;
                 const touch = e.touches[0];
-                currentX = touch.clientX - initialX;
-                currentY = touch.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-                updateImagePosition();
+                startX = touch.clientX - offsetX;
+                startY = touch.clientY - offsetY;
+
+                const transformWrapper = activeImage.closest('.acol-transform-wrapper');
+                transformWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
             }
-        };
-    
-        // Initialize image slots
-        const slotCleanupFunctions = [];
-        document.querySelectorAll(".acol-small-img, .acol-big-img").forEach((slot) => {
-            const input = slot.querySelector("input");
-            const placeholder = slot.querySelector("p");
-            const previewImage = slot.querySelector("img");
-    
-            const slotClickHandler = () => handleSlotClick(slot, input);
-            const fileInputHandler = () => handleFileInputChange(input, previewImage, placeholder);
-            const previewClickHandler = () => handlePreviewImageClick(previewImage);
-    
-            slot.addEventListener("click", slotClickHandler);
-            input.addEventListener("change", fileInputHandler);
-            previewImage.addEventListener("click", previewClickHandler);
-    
-            slotCleanupFunctions.push(() => {
-                slot.removeEventListener("click", slotClickHandler);
-                input.removeEventListener("change", fileInputHandler);
-                previewImage.removeEventListener("click", previewClickHandler);
-            });
-        });
-    
-        // Add other event listeners
-        addTextBtn.addEventListener('click', handleAddTextClick);
-        deleteTextBtn.addEventListener('click', handleDeleteTextClick);
-        iminus.addEventListener('click', handleIminusClick);
-        iplus.addEventListener('click', handleIplusClick);
-        resetBtn.addEventListener('click', handleResetClick);
-        zoomRange.addEventListener('input', handleZoomRangeInput);
-    
-        // Add image drag event listeners
-        collagePhoto.addEventListener('dblclick', enableImageDrag);
-        collagePhoto.addEventListener('touchstart', handleTouchStart, { passive: false });
-        document.addEventListener('mousemove', handleDrag);
-        document.addEventListener('touchmove', handleTouchMove, { passive: false });
-        document.addEventListener('mouseup', disableImageDrag);
-        document.addEventListener('touchend', disableImageDrag);
-    
-        // Add size and thickness button handlers
-        const sizeBtnCleanupFunctions = [];
-        allSizeBtn.forEach(btn => {
-            const handler = handleSizeBtnClick(btn);
-            btn.addEventListener('click', handler);
-            sizeBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
-        });
-    
-        const thicknessBtnCleanupFunctions = [];
-        allThicknessBtn.forEach(btn => {
-            const handler = handleThicknessBtnClick(btn);
-            btn.addEventListener('click', handler);
-            thicknessBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
-        });
-    
+        }
+
+        function handleMouseMove(e) {
+            if (isDragging && activeImage) {
+                offsetX = e.clientX - startX;
+                offsetY = e.clientY - startY;
+                updateTransform();
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (isDragging && activeImage && e.touches.length === 1) {
+                const touch = e.touches[0];
+                offsetX = touch.clientX - startX;
+                offsetY = touch.clientY - startY;
+                updateTransform();
+                e.preventDefault();
+            }
+        }
+
+        function handleMouseUp() {
+            if (isDragging) {
+                isDragging = false;
+                if (activeImage) {
+                    const transformWrapper = activeImage.closest('.acol-transform-wrapper');
+                    transformWrapper.style.cursor = 'grab';
+                }
+            }
+        }
+
+        function handleTouchEnd() {
+            if (isDragging) {
+                isDragging = false;
+                if (activeImage) {
+                    const transformWrapper = activeImage.closest('.acol-transform-wrapper');
+                    transformWrapper.style.cursor = 'grab';
+                }
+            }
+        }
+
+        // Handle events for resize and rotate
+        function handleHandleMouseDown(e, type) {
+            if (!activeImage) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const editorRect = imageContainer.getBoundingClientRect();
+            const wrapperRect = activeImage.closest('.acol-transform-wrapper').getBoundingClientRect();
+            const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+            const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+            if (type === 'rotate') {
+                isRotating = true;
+                initialAngle = Math.atan2(startY - centerY, startX - centerX) * (180 / Math.PI) - rotation;
+            } else {
+                isResizing = true;
+                initialScale = scale;
+                const handleX = wrapperRect.left +
+                    (e.target.classList.contains('tl') || e.target.classList.contains('bl') ? 0 : wrapperRect.width);
+                const handleY = wrapperRect.top +
+                    (e.target.classList.contains('tl') || e.target.classList.contains('tr') ? 0 : wrapperRect.height);
+                initialDistance = Math.sqrt(
+                    Math.pow(handleX - centerX, 2) +
+                    Math.pow(handleY - centerY, 2)
+                );
+            }
+
+            startX = e.clientX;
+            startY = e.clientY;
+        }
+
+        function handleHandleTouchStart(e, type) {
+            if (!activeImage || e.touches.length !== 1) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const editorRect = imageContainer.getBoundingClientRect();
+            const wrapperRect = activeImage.closest('.acol-transform-wrapper').getBoundingClientRect();
+            const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+            const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+            const touch = e.touches[0];
+
+            if (type === 'rotate') {
+                isRotating = true;
+                initialAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI) - rotation;
+            } else {
+                isResizing = true;
+                initialScale = scale;
+                const handleX = wrapperRect.left +
+                    (e.target.classList.contains('tl') || e.target.classList.contains('bl') ? 0 : wrapperRect.width);
+                const handleY = wrapperRect.top +
+                    (e.target.classList.contains('tl') || e.target.classList.contains('tr') ? 0 : wrapperRect.height);
+                initialDistance = Math.sqrt(
+                    Math.pow(handleX - centerX, 2) +
+                    Math.pow(handleY - centerY, 2)
+                );
+            }
+
+            startX = touch.clientX;
+            startY = touch.clientY;
+        }
+
+        function handleHandleMove(e) {
+            if (!activeImage) return;
+
+            if (isResizing) {
+                const editorRect = imageContainer.getBoundingClientRect();
+                const wrapperRect = activeImage.closest('.acol-transform-wrapper').getBoundingClientRect();
+                const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+                const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+                const currentDistance = Math.sqrt(
+                    Math.pow(e.clientX - centerX, 2) +
+                    Math.pow(e.clientY - centerY, 2)
+                );
+
+                const scaleFactor = currentDistance / initialDistance;
+                scale = Math.max(0.1, initialScale * scaleFactor);
+            }
+
+            if (isRotating) {
+                const editorRect = imageContainer.getBoundingClientRect();
+                const wrapperRect = activeImage.closest('.acol-transform-wrapper').getBoundingClientRect();
+                const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+                const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+                const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+                rotation = angle - initialAngle;
+            }
+
+            updateTransform();
+        }
+
+        function handleHandleTouchMove(e) {
+            if (!activeImage || e.touches.length !== 1) return;
+
+            const touch = e.touches[0];
+
+            if (isResizing) {
+                const editorRect = imageContainer.getBoundingClientRect();
+                const wrapperRect = activeImage.closest('.acol-transform-wrapper').getBoundingClientRect();
+                const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+                const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+                const currentDistance = Math.sqrt(
+                    Math.pow(touch.clientX - centerX, 2) +
+                    Math.pow(touch.clientY - centerY, 2)
+                );
+
+                const scaleFactor = currentDistance / initialDistance;
+                scale = Math.max(0.1, initialScale * scaleFactor);
+            }
+
+            if (isRotating) {
+                const editorRect = imageContainer.getBoundingClientRect();
+                const wrapperRect = activeImage.closest('.acol-transform-wrapper').getBoundingClientRect();
+                const centerX = editorRect.left + (wrapperRect.left - editorRect.left + wrapperRect.width / 2);
+                const centerY = editorRect.top + (wrapperRect.top - editorRect.top + wrapperRect.height / 2);
+
+                const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+                rotation = angle - initialAngle;
+            }
+
+            updateTransform();
+            e.preventDefault();
+        }
+
+        function handleHandleUp() {
+            isResizing = false;
+            isRotating = false;
+        }
+
         // Helper functions
         function incrementUploadedImages() {
             uploadedImagesCount++;
             if (totalImages === uploadedImagesCount) {
                 shareBtn.style.display = "block";
-                // cartBtn.style.display = 'block';
             }
         }
-    
-        function setActiveImage(imageElement) {
-            removeExistingHandles();
-            makeDraggable(imageElement, { resize: 'acol-resize', rotate: 'acol-rotate' });
-            addRotateHandle(imageElement);
-            activeImage = imageElement;
-    
-            if (!imageElement.dataset.scale) imageElement.dataset.scale = 1;
-            if (!imageElement.dataset.rotation) imageElement.dataset.rotation = 0;
-            if (!imageElement.dataset.x) imageElement.dataset.x = 0;
-            if (!imageElement.dataset.y) imageElement.dataset.y = 0;
-    
-            scale = parseFloat(imageElement.dataset.scale);
-            zoomRange.value = scale;
-            rotation = parseFloat(imageElement.dataset.rotation);
-            currentX = parseFloat(imageElement.dataset.x);
-            currentY = parseFloat(imageElement.dataset.y);
-    
-            updateImagePosition();
-        }
-    
-        function removeExistingHandles() {
-            document.querySelectorAll(".acol-resize, .acol-rotate").forEach((handle) => handle.remove());
-        }
-    
-        function updateImagePosition() {
-            if (activeImage) {
-                activeImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale}) rotate(${rotation}deg)`;
-                activeImage.dataset.scale = scale;
-                activeImage.dataset.rotation = rotation;
-                activeImage.dataset.x = currentX;
-                activeImage.dataset.y = currentY;
-            }
-        }
-    
-        function addRotateHandle(imageElement) {
-            const rotateHandle = document.createElement('div');
-            rotateHandle.className = 'acol-rotate';
-            rotateHandle.innerHTML = '&#8635;';
-    
-            collagePhoto.style.position = 'relative';
-            collagePhoto.appendChild(rotateHandle);
-    
-            const rotateMouseDownHandler = function (e) {
-                e.stopPropagation();
-                const rect = imageElement.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-    
-                function rotate(e) {
-                    const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-                    rotation = (angle * (180 / Math.PI) + 90) % 360;
-                    updateImagePosition();
-                }
-    
-                function stopRotating() {
-                    document.removeEventListener('mousemove', rotate);
-                    document.removeEventListener('mouseup', stopRotating);
-                    document.removeEventListener('touchmove', rotate);
-                    document.removeEventListener('touchend', stopRotating);
-                }
-    
-                document.addEventListener('mousemove', rotate);
-                document.addEventListener('touchmove', rotate, { passive: false });
-                document.addEventListener('mouseup', stopRotating);
-                document.addEventListener('touchend', stopRotating);
-            };
-    
-            rotateHandle.addEventListener('mousedown', rotateMouseDownHandler);
-            rotateHandle.addEventListener('touchstart', rotateMouseDownHandler, { passive: false });
-    
-            return () => {
-                rotateHandle.removeEventListener('mousedown', rotateMouseDownHandler);
-                rotateHandle.removeEventListener('touchstart', rotateMouseDownHandler);
-                collagePhoto.removeChild(rotateHandle);
-            };
-        }
-    
-        function makeDraggable(element, handle) {
-            let isDragging = false;
-            let offsetX = 0, offsetY = 0, startX, startY;
-            let rotation = 0;
-    
-            const elementClickHandler = function () {
-                const resizeHandle = element.querySelector(`.${handle.resize}`);
-                const rotateHandle = element.querySelector(`.${handle.rotate}`);
-    
-                if (resizeHandle) resizeHandle.style.display = 'block';
-                if (rotateHandle) rotateHandle.style.display = 'block';
-    
-                element.style.border = '2px dashed #248EE6';
-            };
-    
-            const elementMouseDownHandler = function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                
-                const resizeHandle = element.querySelector(`.${handle.resize}`);
-                const rotateHandle = element.querySelector(`.${handle.rotate}`);
-    
-                if (resizeHandle) resizeHandle.style.display = 'block';
-                if (rotateHandle) rotateHandle.style.display = 'block';
-    
-                isDragging = true;
-                startX = clientX - offsetX;
-                startY = clientY - offsetY;
-                element.style.cursor = 'grabbing';
-    
-                const transform = window.getComputedStyle(element).transform;
-                if (transform !== 'none') {
-                    const matrix = new DOMMatrix(transform);
-                    rotation = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
-                }
-            };
-    
-            const documentMouseMoveHandler = function (e) {
-                if (!isDragging) return;
-                e.preventDefault();
-    
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    
-                offsetX = clientX - startX;
-                offsetY = clientY - startY;
-    
-                element.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale}) rotate(${rotation}deg)`;
-            };
-    
-            const documentMouseUpHandler = function () {
-                if (isDragging) {
-                    isDragging = false;
-                    element.style.cursor = '';
-                    currentX = offsetX;
-                    currentY = offsetY;
-    
-                    if (activeImage) {
-                        activeImage.dataset.x = currentX;
-                        activeImage.dataset.y = currentY;
-                    }
-                }
-            };
-    
-            const documentMouseDownHandler = function (e) {
-                const target = e.target || (e.touches && e.touches[0].target);
-                if (!element.contains(target)) {
-                    element.style.border = 'none';
-    
-                    const resizeHandle = element.querySelector(`.${handle.resize}`);
-                    const rotateHandle = element.querySelector(`.${handle.rotate}`);
-    
-                    if (resizeHandle) resizeHandle.style.display = 'none';
-                    if (rotateHandle) rotateHandle.style.display = 'none';
-                }
-            };
-    
-            element.addEventListener('click', elementClickHandler);
-            element.addEventListener('mousedown', elementMouseDownHandler);
-            element.addEventListener('touchstart', elementMouseDownHandler, { passive: false });
-            document.addEventListener('mousemove', documentMouseMoveHandler);
-            document.addEventListener('touchmove', documentMouseMoveHandler, { passive: false });
-            document.addEventListener('mouseup', documentMouseUpHandler);
-            document.addEventListener('touchend', documentMouseUpHandler);
-            document.addEventListener('mousedown', documentMouseDownHandler);
-            document.addEventListener('touchstart', documentMouseDownHandler, { passive: false });
-    
-            return () => {
-                element.removeEventListener('click', elementClickHandler);
-                element.removeEventListener('mousedown', elementMouseDownHandler);
-                element.removeEventListener('touchstart', elementMouseDownHandler);
-                document.removeEventListener('mousemove', documentMouseMoveHandler);
-                document.removeEventListener('touchmove', documentMouseMoveHandler);
-                document.removeEventListener('mouseup', documentMouseUpHandler);
-                document.removeEventListener('touchend', documentMouseUpHandler);
-                document.removeEventListener('mousedown', documentMouseDownHandler);
-                document.removeEventListener('touchstart', documentMouseDownHandler);
-            };
-        }
-    
+
         function updatePreview() {
             if (activeTextBox) {
                 const text = document.getElementById('acol-textInput').value || 'New Custom Text';
                 const textColor = document.getElementById('acol-textColor').value;
-    
+
                 activeTextBox.innerText = text;
                 activeTextBox.style.color = textColor;
                 attachHandles(activeTextBox);
             }
         }
-    
+
         function attachHandles(element) {
             if (!element.querySelector('.acol-resize-handle')) {
                 const resizeHandle = document.createElement('div');
@@ -625,43 +783,43 @@ const CollageAcrylicPhoto = () => {
                 resizeHandle.innerText = '+';
                 resizeHandle.style.display = 'none';
                 resizeHandle.style.touchAction = 'none';
-    
+
                 element.appendChild(resizeHandle);
-    
+
                 const resizeMouseDownHandler = function (e) {
                     e.stopPropagation();
                     e.preventDefault();
                     const initialFontSize = parseFloat(window.getComputedStyle(element).fontSize);
                     const initialMouseX = e.clientX || (e.touches && e.touches[0].clientX);
-    
+
                     function resize(e) {
                         e.preventDefault();
                         const clientX = e.clientX || (e.touches && e.touches[0].clientX);
                         const scaleFactor = 0.2;
                         const newSize = initialFontSize + (clientX - initialMouseX) * scaleFactor;
-    
+
                         if (newSize > 10) {
                             element.style.fontSize = newSize + 'px';
                         }
                     }
-    
+
                     function stopResizing() {
                         document.removeEventListener('mousemove', resize);
                         document.removeEventListener('touchmove', resize);
                         document.removeEventListener('mouseup', stopResizing);
                         document.removeEventListener('touchend', stopResizing);
                     }
-    
+
                     document.addEventListener('mousemove', resize);
                     document.addEventListener('touchmove', resize, { passive: false });
                     document.addEventListener('mouseup', stopResizing);
                     document.addEventListener('touchend', stopResizing);
                 };
-    
+
                 resizeHandle.addEventListener('mousedown', resizeMouseDownHandler);
                 resizeHandle.addEventListener('touchstart', resizeMouseDownHandler, { passive: false });
             }
-    
+
             if (!element.querySelector('.acol-rotate-handle')) {
                 const rotateHandle = document.createElement('div');
                 rotateHandle.className = 'acol-rotate-handle';
@@ -674,9 +832,9 @@ const CollageAcrylicPhoto = () => {
                 rotateHandle.innerHTML = '&#8635;';
                 rotateHandle.style.display = 'none';
                 rotateHandle.style.touchAction = 'none';
-    
+
                 element.appendChild(rotateHandle);
-    
+
                 const rotateMouseDownHandler = function (e) {
                     e.stopPropagation();
                     e.preventDefault();
@@ -685,55 +843,151 @@ const CollageAcrylicPhoto = () => {
                     const centerY = rect.top + rect.height / 2;
                     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
                     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    
+
                     const startAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
                     const transform = window.getComputedStyle(element).transform;
                     let currentRotation = 0;
-                    
+
                     if (transform !== 'none') {
                         const matrix = new DOMMatrix(transform);
                         currentRotation = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
                     }
-    
+
                     const adjustedStartAngle = startAngle - currentRotation;
-    
+
                     function rotate(e) {
                         e.preventDefault();
                         const clientX = e.clientX || (e.touches && e.touches[0].clientX);
                         const clientY = e.clientY || (e.touches && e.touches[0].clientY);
                         const angle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
                         const rotation = angle - adjustedStartAngle;
-                        
+
                         // Preserve existing transform properties
                         const currentTransform = element.style.transform.replace(/rotate\([^)]*\)/, '');
                         element.style.transform = `${currentTransform} rotate(${rotation}deg)`;
                     }
-    
+
                     function stopRotating() {
                         document.removeEventListener('mousemove', rotate);
                         document.removeEventListener('touchmove', rotate);
                         document.removeEventListener('mouseup', stopRotating);
                         document.removeEventListener('touchend', stopRotating);
                     }
-    
+
                     document.addEventListener('mousemove', rotate);
                     document.addEventListener('touchmove', rotate, { passive: false });
                     document.addEventListener('mouseup', stopRotating);
                     document.addEventListener('touchend', stopRotating);
                 };
-    
+
                 rotateHandle.addEventListener('mousedown', rotateMouseDownHandler);
                 rotateHandle.addEventListener('touchstart', rotateMouseDownHandler, { passive: false });
             }
         }
-    
+
+        function makeDraggable(element, handle) {
+            let isDragging = false;
+            let offsetX = 0, offsetY = 0, startX, startY;
+            let rotation = 0;
+
+            const elementClickHandler = function () {
+                const resizeHandle = element.querySelector(`.${handle.resize}`);
+                const rotateHandle = element.querySelector(`.${handle.rotate}`);
+
+                if (resizeHandle) resizeHandle.style.display = 'block';
+                if (rotateHandle) rotateHandle.style.display = 'block';
+
+                element.style.border = '2px dashed #248EE6';
+            };
+
+            const elementMouseDownHandler = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                const resizeHandle = element.querySelector(`.${handle.resize}`);
+                const rotateHandle = element.querySelector(`.${handle.rotate}`);
+
+                if (resizeHandle) resizeHandle.style.display = 'block';
+                if (rotateHandle) rotateHandle.style.display = 'block';
+
+                isDragging = true;
+                startX = clientX - offsetX;
+                startY = clientY - offsetY;
+                element.style.cursor = 'grabbing';
+
+                const transform = window.getComputedStyle(element).transform;
+                if (transform !== 'none') {
+                    const matrix = new DOMMatrix(transform);
+                    rotation = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
+                }
+            };
+
+            const documentMouseMoveHandler = function (e) {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                offsetX = clientX - startX;
+                offsetY = clientY - startY;
+
+                element.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale}) rotate(${rotation}deg)`;
+            };
+
+            const documentMouseUpHandler = function () {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.cursor = '';
+                }
+            };
+
+            const documentMouseDownHandler = function (e) {
+                const target = e.target || (e.touches && e.touches[0].target);
+                if (!element.contains(target)) {
+                    element.style.border = 'none';
+
+                    const resizeHandle = element.querySelector(`.${handle.resize}`);
+                    const rotateHandle = element.querySelector(`.${handle.rotate}`);
+
+                    if (resizeHandle) resizeHandle.style.display = 'none';
+                    if (rotateHandle) rotateHandle.style.display = 'none';
+                }
+            };
+
+            element.addEventListener('click', elementClickHandler);
+            element.addEventListener('mousedown', elementMouseDownHandler);
+            element.addEventListener('touchstart', elementMouseDownHandler, { passive: false });
+            document.addEventListener('mousemove', documentMouseMoveHandler);
+            document.addEventListener('touchmove', documentMouseMoveHandler, { passive: false });
+            document.addEventListener('mouseup', documentMouseUpHandler);
+            document.addEventListener('touchend', documentMouseUpHandler);
+            document.addEventListener('mousedown', documentMouseDownHandler);
+            document.addEventListener('touchstart', documentMouseDownHandler, { passive: false });
+
+            return () => {
+                element.removeEventListener('click', elementClickHandler);
+                element.removeEventListener('mousedown', elementMouseDownHandler);
+                element.removeEventListener('touchstart', elementMouseDownHandler);
+                document.removeEventListener('mousemove', documentMouseMoveHandler);
+                document.removeEventListener('touchmove', documentMouseMoveHandler);
+                document.removeEventListener('mouseup', documentMouseUpHandler);
+                document.removeEventListener('touchend', documentMouseUpHandler);
+                document.removeEventListener('mousedown', documentMouseDownHandler);
+                document.removeEventListener('touchstart', documentMouseDownHandler);
+            };
+        }
+
         function changeFontFamily() {
             const selectedFont = document.getElementById('acol-fontStyleSelect').value;
             if (activeTextBox) {
                 activeTextBox.style.fontFamily = selectedFont;
             }
         }
-    
+
         function getImageDetails() {
             const imageContainers = document.querySelectorAll('.acol-small-img');
             const selectedSize = document.querySelector('.acol-size-btn.acol-active');
@@ -742,7 +996,7 @@ const CollageAcrylicPhoto = () => {
                 ? selectedSize.dataset.ratio
                 : "default";
             let imagesData = [];
-    
+
             imageContainers.forEach(container => {
                 const imageElement = container.querySelector('.acol-previewImage');
                 const fileInput = container.querySelector('input[type="file"]');
@@ -755,12 +1009,12 @@ const CollageAcrylicPhoto = () => {
                 };
                 imagesData.push(imageDetails);
             });
-    
+
             const textElements = document.querySelector('.acol-text-box');
             const text = document.getElementById('acol-textInput').value || 'New Custom Text';
             const textColor = document.getElementById('acol-textColor').value;
             const selectedFont = document.getElementById('acol-fontStyleSelect').value;
-    
+
             const imageDetails = {
                 name: `Acrylic Collage (${size})`,
                 images: imagesData,
@@ -774,14 +1028,98 @@ const CollageAcrylicPhoto = () => {
                     style: selectedFont
                 }] : []
             };
-    
+
             return imageDetails;
         }
-    
+
+        // Initialize image slots
+        const slotCleanupFunctions = [];
+        document.querySelectorAll(".acol-small-img, .acol-big-img").forEach((slot) => {
+            const input = slot.querySelector("input");
+            const placeholder = slot.querySelector("p");
+            const previewImage = slot.querySelector("img");
+
+            const slotClickHandler = () => handleSlotClick(slot, input);
+            const fileInputHandler = () => handleFileInputChange(input, previewImage, placeholder);
+            const previewClickHandler = (e) => handlePreviewImageClick(e.currentTarget);
+
+            slot.addEventListener("click", slotClickHandler);
+            input.addEventListener("change", fileInputHandler);
+            previewImage.addEventListener("click", previewClickHandler);
+
+            slotCleanupFunctions.push(() => {
+                slot.removeEventListener("click", slotClickHandler);
+                input.removeEventListener("change", fileInputHandler);
+                previewImage.removeEventListener("click", previewClickHandler);
+            });
+        });
+
+        // Add other event listeners
+        addTextBtn.addEventListener('click', handleAddTextClick);
+        deleteTextBtn.addEventListener('click', handleDeleteTextClick);
+        iminus.addEventListener('click', handleIminusClick);
+        iplus.addEventListener('click', handleIplusClick);
+        resetBtn.addEventListener('click', handleResetClick);
+        zoomRange.addEventListener('input', handleZoomRangeInput);
+
+        // Add image transformation event listeners
+        document.addEventListener('click', handleDocumentClick);
+        document.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('touchstart', handleTouchStart, { passive: false });
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('touchend', handleTouchEnd);
+
+        // Add handle event listeners (delegated)
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('acol-handle')) {
+                const type = e.target.classList.contains('rotate') ? 'rotate' : 'resize';
+                handleHandleMouseDown(e, type);
+            }
+        });
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.classList.contains('acol-handle')) {
+                const type = e.target.classList.contains('rotate') ? 'rotate' : 'resize';
+                handleHandleTouchStart(e, type);
+            }
+        }, { passive: false });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isResizing || isRotating) {
+                handleHandleMove(e);
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if ((isResizing || isRotating) && e.touches.length === 1) {
+                handleHandleTouchMove(e);
+            }
+        }, { passive: false });
+
+        document.addEventListener('mouseup', handleHandleUp);
+        document.addEventListener('touchend', handleHandleUp);
+
+        // Add size and thickness button handlers
+        const sizeBtnCleanupFunctions = [];
+        allSizeBtn.forEach(btn => {
+            const handler = handleSizeBtnClick(btn);
+            btn.addEventListener('click', handler);
+            sizeBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
+        });
+
+        const thicknessBtnCleanupFunctions = [];
+        allThicknessBtn.forEach(btn => {
+            const handler = handleThicknessBtnClick(btn);
+            btn.addEventListener('click', handler);
+            thicknessBtnCleanupFunctions.push(() => btn.removeEventListener('click', handler));
+        });
+
         window.updatePreview = updatePreview;
         window.changeFontFamily = changeFontFamily;
         window.getImageDetails = getImageDetails;
-    
+
         // Cleanup function
         return () => {
             // Remove event listeners with null checks
@@ -803,17 +1141,42 @@ const CollageAcrylicPhoto = () => {
             if (zoomRange && zoomRange.removeEventListener) {
                 zoomRange.removeEventListener('input', handleZoomRangeInput);
             }
-    
-            // Remove image drag event listeners
-            if (collagePhoto && collagePhoto.removeEventListener) {
-                collagePhoto.removeEventListener('dblclick', enableImageDrag);
-                collagePhoto.removeEventListener('touchstart', handleTouchStart);
-            }
-            document.removeEventListener('mousemove', handleDrag);
+
+            // Remove image transformation event listeners
+            document.removeEventListener('click', handleDocumentClick);
+            document.removeEventListener('mousedown', handleMouseDown);
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('mouseup', disableImageDrag);
-            document.removeEventListener('touchend', disableImageDrag);
-    
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('touchend', handleTouchEnd);
+
+            // Remove handle event listeners
+            document.removeEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('acol-handle')) {
+                    const type = e.target.classList.contains('rotate') ? 'rotate' : 'resize';
+                    handleHandleMouseDown(e, type);
+                }
+            });
+            document.removeEventListener('touchstart', (e) => {
+                if (e.target.classList.contains('acol-handle')) {
+                    const type = e.target.classList.contains('rotate') ? 'rotate' : 'resize';
+                    handleHandleTouchStart(e, type);
+                }
+            });
+            document.removeEventListener('mousemove', (e) => {
+                if (isResizing || isRotating) {
+                    handleHandleMove(e);
+                }
+            });
+            document.removeEventListener('touchmove', (e) => {
+                if ((isResizing || isRotating) && e.touches.length === 1) {
+                    handleHandleTouchMove(e);
+                }
+            });
+            document.removeEventListener('mouseup', handleHandleUp);
+            document.removeEventListener('touchend', handleHandleUp);
+
             // Execute all cleanup functions with validation
             if (slotCleanupFunctions && Array.isArray(slotCleanupFunctions)) {
                 slotCleanupFunctions.forEach(cleanup => {
@@ -836,7 +1199,7 @@ const CollageAcrylicPhoto = () => {
                     }
                 });
             }
-    
+
             // Remove window functions safely
             const windowProperties = ['updatePreview', 'changeFontFamily', 'getImageDetails'];
             windowProperties.forEach(prop => {
@@ -849,7 +1212,8 @@ const CollageAcrylicPhoto = () => {
                 }
             });
         };
-    }, []);
+    }, [collageType]);
+
 
     if (!layout) return <h2>Invalid collage type</h2>;
 
@@ -1016,7 +1380,8 @@ const CollageAcrylicPhoto = () => {
                 <div className="acol-collage-frame" style={layout.style}>
                     {layout.images.map((img) => (
                         <div className={img.type} data-slot={img.id} key={img.id} style={{ border: "1px solid #000" }}>
-                            <img className="acol-previewImage" id={`acol-previewImage${img.id}`} alt="Click to upload" style={{ display: "none" }} />
+                            {/* <img className="acol-previewImage" id={`acol-previewImage${img.id}`} alt="Click to upload" style={{ display: "none" }} /> */}
+                            <TransformableImageBox imageClass="acol-previewImage" imageId={`acol-previewImage${img.id}`} alt="Click to upload" prefix="acol-" />
                             <input type="file" id={`acol-fileInput${img.id}`} accept="image/jpeg, image/png, image/webp, image/jpg" style={{ display: "none" }} />
                             <p className="acol-placeholderText">
                                 <FaImage />
