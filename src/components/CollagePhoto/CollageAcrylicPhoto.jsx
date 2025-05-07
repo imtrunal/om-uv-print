@@ -1396,7 +1396,7 @@ const CollageAcrylicPhoto = () => {
                 </div>
 
                 <div>
-                    {/* <input
+                    <input
                         type="range"
                         id="acol-zoomRange"
                         min="0.5"
@@ -1406,8 +1406,9 @@ const CollageAcrylicPhoto = () => {
                         style={{
                             width: "200px",
                             accentColor: "#000787",
+                            display:"none"
                         }}
-                    /> */}
+                    />
                     <div className="acol-row">
                         <input type="color" id="acol-textColor" defaultValue="#000000" onInput={() => window.updatePreview()} />
                         <div className="acol-row">
