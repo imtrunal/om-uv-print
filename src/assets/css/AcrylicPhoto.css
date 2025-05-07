@@ -199,6 +199,7 @@ body {
 .ap-shape-btn.ap-rect {
     border-radius: 5%;
     height: 20px;
+    display: none;
 }
 
 .ap-shape-btn.ap-oval {

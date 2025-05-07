@@ -321,8 +321,6 @@ const CollageAcrylicPhoto = () => {
             imageHandles.style.width = `${containerRect.width}px`;
             imageHandles.style.height = `${containerRect.height}px`;
             imageHandles.style.position = 'absolute';
-            imageHandles.style.left = '50%';
-            imageHandles.style.top = '50%';
 
             // Calculate center point
             const centerX = relativeLeft + wrapperRect.width / 2;
@@ -447,13 +445,16 @@ const CollageAcrylicPhoto = () => {
         const handleSlotClick = (slot, input) => {
             if (!input.disabled) input.click();
         };
-
         const handleFileInputChange = function (input, previewImage, placeholder) {
+            console.log(previewImage);
+
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = () => {
                     previewImage.src = reader.result;
+                    const parent = previewImage.closest('.acol-img-pre');
+                    if (parent) parent.style.display = "flex";
                     previewImage.style.display = "block";
                     placeholder.style.display = "none";
                     input.disabled = true;

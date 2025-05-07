@@ -462,6 +462,8 @@ function handleColorSelection() {
     updateHandles();
 }
 
+const hidePortraitFor = ["16x12"];
+const hideRectangleFor = ["8x12", "12x15", "12x18", "16x24", "18x24", "20x30", "20x36"];
 function handleSizeSelection() {
     document.querySelectorAll('.ap-size-btn').forEach(button => button.classList.remove('ap-active'));
     this.classList.add('ap-active');
@@ -475,20 +477,57 @@ function handleSizeSelection() {
 
     const pixelsPerInch = isMobile ? aspectWidth >= 20 ? 10 : 15 : aspectWidth >= 20 ? 15 : 20;
 
-    // Calculate dimensions based on real-world size
     let width = aspectWidth * pixelsPerInch;
     let height = aspectHeight * pixelsPerInch;
 
-    // Apply dimensions
     imageContainer.style.width = `${Math.round(width)}px`;
     imageContainer.style.height = `${Math.round(height)}px`;
     imageContainer.style.aspectRatio = `${aspectWidth}/${aspectHeight}`;
 
-    // Update indicators
     widthInd.innerText = `Width ${aspectWidth} inch (${(aspectWidth * 2.54).toFixed(2)} cm)`;
     heightInd.innerText = `Height ${aspectHeight} inch (${(aspectHeight * 2.54).toFixed(2)} cm)`;
     updateHandles();
+
+    const shapeButtons = document.querySelectorAll('.ap-shape-btn');
+    let hasActive = false;
+
+    shapeButtons.forEach(button => {
+        const shape = button.dataset.shape;
+        console.log(shape);
+
+
+        if (shape === "potrait") {
+            button.style.display = hidePortraitFor.includes(this.dataset.ratio) ? "none" : "block";
+        }
+        else if (shape === "rect") {
+            button.style.display = hideRectangleFor.includes(this.dataset.ratio) ? "none" : "block";
+        }
+        else {
+            button.style.display = "block";
+        }
+        if (button.classList.contains('ap-active')) {
+            // If active button is being hidden, remove active class
+            if (button.style.display === "none") {
+                button.classList.remove('ap-active');
+            } else {
+                hasActive = true;
+            }
+            console.log(button.classList.contains('ap-active'));
+            
+        }
+    });
+
+    if (!hasActive) {
+        const buttons = document.querySelectorAll('.ap-shape-btn');
+        for (let i = 0; i < buttons.length; i++) {
+            if (window.getComputedStyle(buttons[i]).display !== "none") {
+                buttons[i].classList.add('ap-active');
+                break;
+            }
+        }
+    }
 }
+
 
 // Handle size selection
 // function handleSizeSelection() {
