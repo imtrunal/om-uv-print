@@ -427,7 +427,6 @@ const AcrylicPhoto = () => {
               "16x24",
               "18x24",
               "20x30",
-              "16x12",
               "20x36",
             ].map((ratio, index) => (
               <button

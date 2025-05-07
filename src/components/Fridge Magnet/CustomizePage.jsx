@@ -1496,8 +1496,8 @@ const CustomizePage = () => {
           </div>
           <h3>Thickness:</h3>
           <div className="afm-row">
-            <button className="afm-thickness-btn afm-active">5 MM</button>
-            <button className="afm-thickness-btn">8 MM</button>
+            <button className="afm-thickness-btn afm-active">3 MM</button>
+            <button className="afm-thickness-btn">5 MM</button>
           </div>
           <br />
           <div style={{ display: "flex", gap: "1rem" }}>

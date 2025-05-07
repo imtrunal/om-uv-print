@@ -436,22 +436,45 @@ function handleShapeSelection() {
     const shape = this.dataset.shape;
 
     // Remove previous shape classes
-    imageContainer.classList.remove(
+    const shapeClasses = [
         'ap-circle-shape', 'ap-square-shape', 'ap-oval-shape', 'ap-rect-shape',
         'ap-potrait-shape', 'ap-custom-shape', 'ap-custom2-shape', 'ap-custom3-shape', 'ap-custom4-shape'
-    );
-    imgPre.classList.remove(
-        'ap-circle-shape', 'ap-square-shape', 'ap-oval-shape', 'ap-rect-shape',
-        'ap-potrait-shape', 'ap-custom-shape', 'ap-custom2-shape', 'ap-custom3-shape', 'ap-custom4-shape'
-    );
+    ];
+    imageContainer.classList.remove(...shapeClasses);
+    imgPre.classList.remove(...shapeClasses);
 
     // Add the selected shape class
     if (shape) {
         imageContainer.classList.add(`ap-${shape}-shape`);
         imgPre.classList.add(`ap-${shape}-shape`);
+
+        // ROTATE container if "rect", revert if "potrait"
+        if (shape === "rect" || shape === "potrait") {
+            const currentWidth = imageContainer.offsetWidth;
+            const currentHeight = imageContainer.offsetHeight;
+
+            // If selecting "rect", rotate dimensions to landscape
+            if (shape === "rect" && currentHeight > currentWidth) {
+                imageContainer.style.width = `${currentHeight}px`;
+                imageContainer.style.height = `${currentWidth}px`;
+            }
+
+            // If selecting "potrait", rotate dimensions back to portrait
+            if (shape === "potrait" && currentWidth > currentHeight) {
+                imageContainer.style.width = `${currentHeight}px`;
+                imageContainer.style.height = `${currentWidth}px`;
+            }
+
+            // Adjust aspect ratio accordingly
+            const w = imageContainer.offsetWidth;
+            const h = imageContainer.offsetHeight;
+            imageContainer.style.aspectRatio = `${w}/${h}`;
+        }
+
         updateHandles();
     }
 }
+
 
 // Handle color selection
 function handleColorSelection() {
@@ -462,8 +485,7 @@ function handleColorSelection() {
     updateHandles();
 }
 
-const hidePortraitFor = ["16x12"];
-const hideRectangleFor = ["8x12", "12x15", "12x18", "16x24", "18x24", "20x30", "20x36"];
+
 function handleSizeSelection() {
     document.querySelectorAll('.ap-size-btn').forEach(button => button.classList.remove('ap-active'));
     this.classList.add('ap-active');
@@ -488,44 +510,7 @@ function handleSizeSelection() {
     heightInd.innerText = `Height ${aspectHeight} inch (${(aspectHeight * 2.54).toFixed(2)} cm)`;
     updateHandles();
 
-    const shapeButtons = document.querySelectorAll('.ap-shape-btn');
-    let hasActive = false;
 
-    shapeButtons.forEach(button => {
-        const shape = button.dataset.shape;
-        console.log(shape);
-
-
-        if (shape === "potrait") {
-            button.style.display = hidePortraitFor.includes(this.dataset.ratio) ? "none" : "block";
-        }
-        else if (shape === "rect") {
-            button.style.display = hideRectangleFor.includes(this.dataset.ratio) ? "none" : "block";
-        }
-        else {
-            button.style.display = "block";
-        }
-        if (button.classList.contains('ap-active')) {
-            // If active button is being hidden, remove active class
-            if (button.style.display === "none") {
-                button.classList.remove('ap-active');
-            } else {
-                hasActive = true;
-            }
-            console.log(button.classList.contains('ap-active'));
-            
-        }
-    });
-
-    if (!hasActive) {
-        const buttons = document.querySelectorAll('.ap-shape-btn');
-        for (let i = 0; i < buttons.length; i++) {
-            if (window.getComputedStyle(buttons[i]).display !== "none") {
-                buttons[i].classList.add('ap-active');
-                break;
-            }
-        }
-    }
 }
 
 
