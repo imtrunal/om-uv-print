@@ -466,6 +466,7 @@ const CollageAcrylicPhoto = () => {
         };
 
         const handlePreviewImageClick = (previewImage) => {
+            updateHandles(previewImage);
             setActiveImage(previewImage);
         };
 
@@ -1156,6 +1157,8 @@ const CollageAcrylicPhoto = () => {
             document.removeEventListener('mousedown', (e) => {
                 if (e.target.classList.contains('acol-handle')) {
                     const type = e.target.classList.contains('rotate') ? 'rotate' : 'resize';
+                    console.log("handleHandleMouseDown", e, type);
+                    
                     handleHandleMouseDown(e, type);
                 }
             });
@@ -1393,7 +1396,7 @@ const CollageAcrylicPhoto = () => {
                 </div>
 
                 <div>
-                    <input
+                    {/* <input
                         type="range"
                         id="acol-zoomRange"
                         min="0.5"
@@ -1404,7 +1407,7 @@ const CollageAcrylicPhoto = () => {
                             width: "200px",
                             accentColor: "#000787",
                         }}
-                    />
+                    /> */}
                     <div className="acol-row">
                         <input type="color" id="acol-textColor" defaultValue="#000000" onInput={() => window.updatePreview()} />
                         <div className="acol-row">

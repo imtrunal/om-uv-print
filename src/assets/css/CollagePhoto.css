@@ -386,6 +386,7 @@
     width: auto;
     height: auto;
     padding: 2px;
+    display: none;
 }
 
 .acol-transform-wrapper:active {
